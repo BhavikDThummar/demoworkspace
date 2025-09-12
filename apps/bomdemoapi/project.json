@@ -1,5 +1,5 @@
 {
-  "name": "bomdemoapi",
+  "name": "@org/bomdemoapi",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/bomdemoapi/src",
   "projectType": "application",
@@ -26,7 +26,7 @@
       "defaultConfiguration": "development",
       "dependsOn": ["build"],
       "options": {
-        "buildTarget": "bomdemoapi:build",
+        "buildTarget": "@org/bomdemoapi:build",
         "runBuildTargetDependencies": false,
         "env": {
           "NODE_ENV": "development"
@@ -34,13 +34,13 @@
       },
       "configurations": {
         "development": {
-          "buildTarget": "bomdemoapi:build:development",
+          "buildTarget": "@org/bomdemoapi:build:development",
           "env": {
             "NODE_ENV": "development"
           }
         },
         "production": {
-          "buildTarget": "bomdemoapi:build:production",
+          "buildTarget": "@org/bomdemoapi:build:production",
           "env": {
             "NODE_ENV": "production"
           }

@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  port: process.env.PORT || 3000,
+  port: process.env.PORT || 8000,
   apiPrefix: process.env.API_PREFIX || 'api',
   nodeEnv: process.env.NODE_ENV || 'production',
 

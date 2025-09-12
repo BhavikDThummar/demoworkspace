@@ -27,23 +27,14 @@
       "dependsOn": ["build"],
       "options": {
         "buildTarget": "@org/bomdemoapi:build",
-        "runBuildTargetDependencies": false,
-        "env": {
-          "NODE_ENV": "development"
-        }
+        "runBuildTargetDependencies": false
       },
       "configurations": {
         "development": {
-          "buildTarget": "@org/bomdemoapi:build:development",
-          "env": {
-            "NODE_ENV": "development"
-          }
+          "buildTarget": "@org/bomdemoapi:build:development"
         },
         "production": {
-          "buildTarget": "@org/bomdemoapi:build:production",
-          "env": {
-            "NODE_ENV": "production"
-          }
+          "buildTarget": "@org/bomdemoapi:build:production"
         }
       }
     },

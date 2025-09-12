@@ -18,14 +18,16 @@ async function bootstrap() {
   app.setGlobalPrefix(globalPrefix);
 
   // Enable validation pipes
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   // CORS configuration
-  const corsOrigin = configService.get('CORS_ORIGIN', 'http://localhost:4200');
+  const corsOrigin = true; //   configService.get('CORS_ORIGIN', 'http://localhost:4200');
   const corsCredentials = configService.get('CORS_CREDENTIALS', 'true') === 'true';
 
   app.enableCors({

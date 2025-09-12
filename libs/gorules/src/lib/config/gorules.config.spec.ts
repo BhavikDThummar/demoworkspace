@@ -73,7 +73,7 @@ describe('GoRulesConfigService', () => {
       };
 
       expect(() => new GoRulesConfigService(invalidConfig)).toThrow(
-        'timeout must be between 1 and 300000 milliseconds'
+        'timeout must be greater than 0'
       );
     });
 
@@ -84,7 +84,7 @@ describe('GoRulesConfigService', () => {
       };
 
       expect(() => new GoRulesConfigService(invalidConfig)).toThrow(
-        'retryAttempts must be between 0 and 10'
+        'retryAttempts must be 0 or greater'
       );
     });
   });

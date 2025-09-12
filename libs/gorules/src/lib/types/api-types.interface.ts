@@ -1,7 +1,7 @@
 /**
  * HTTP method types for GoRules API calls
  */
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD';
 
 /**
  * HTTP status codes relevant to GoRules API

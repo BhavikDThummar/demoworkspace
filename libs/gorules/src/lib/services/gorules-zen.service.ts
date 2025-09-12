@@ -10,6 +10,7 @@ import {
   PerformanceMetrics,
   GoRulesException,
   GoRulesErrorCode,
+  RuleInputData,
 } from '../types/index.js';
 
 /**
@@ -150,7 +151,7 @@ export class GoRulesZenService {
   /**
    * Execute multiple rules in batch
    */
-  async executeBatch<T = any, R = unknown>(
+  async executeBatch<T extends RuleInputData = RuleInputData, R = unknown>(
     executions: BatchRuleExecution<T>[]
   ): Promise<BatchRuleExecutionResult<R>[]> {
     const config = this.configService.getConfig();

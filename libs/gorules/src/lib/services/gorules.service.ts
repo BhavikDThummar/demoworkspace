@@ -81,6 +81,9 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
 
     // Start comprehensive monitoring
     this.monitoringService.startExecution(ruleId, executionId, input);
+    
+    // Start logging execution
+    this.loggerService.logExecutionStart(ruleId, executionId, input);
 
     try {
 
@@ -117,6 +120,12 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
       // Complete monitoring with success
       this.monitoringService.completeExecution(ruleId, executionId, response.result, totalTime);
 
+      // Log execution success
+      this.loggerService.logExecutionSuccess(executionId, response.result);
+
+      // Record metrics
+      this.metricsService.recordExecutionTime(ruleId, totalTime, true);
+
       // Update execution statistics
       this.updateExecutionStats(ruleId, totalTime, false);
 
@@ -152,6 +161,12 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
       // Complete monitoring with failure
       this.monitoringService.failExecution(ruleId, executionId, error instanceof Error ? error : new Error(String(error)), totalTime);
 
+      // Log execution failure
+      this.loggerService.logExecutionError(executionId, error instanceof Error ? error : new Error(String(error)));
+
+      // Record error metrics
+      this.metricsService.recordExecutionTime(ruleId, totalTime, false);
+
       // Update error statistics
       this.updateExecutionStats(ruleId, totalTime, true);
 
@@ -180,9 +195,8 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
     this.ensureInitialized();
     this.validateBatchExecutions(executions);
 
-    const config = this.configService.getConfig();
-    
-    if (config.enableLogging) {
+    // Log batch execution start
+    if (this.configService.getConfig().enableLogging) {
       this.logger.debug(`Executing batch of ${executions.length} rules`);
     }
 
@@ -223,9 +237,10 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
       });
     }
 
-    if (config.enableLogging) {
-      const successCount = results.filter(r => !r.error).length;
-      const errorCount = results.length - successCount;
+    // Log batch execution completion
+    const successCount = results.filter(r => !r.error).length;
+    const errorCount = results.length - successCount;
+    if (this.configService.getConfig().enableLogging) {
       this.logger.log(`Batch execution completed: ${successCount} success, ${errorCount} errors`);
     }
 

@@ -3,7 +3,9 @@ import {
   RuleExecutionResult,
   BatchRuleExecution,
   BatchRuleExecutionResult,
-  RuleMetadata
+  RuleMetadata,
+  RuleInputData,
+  RuleValidationResult
 } from '../types/index.js';
 
 /**
@@ -17,7 +19,7 @@ export interface IGoRulesService {
    * @param options - Optional execution options
    * @returns Promise resolving to the rule execution result
    */
-  executeRule<T = any, R = any>(
+  executeRule<T extends RuleInputData = RuleInputData, R = unknown>(
     ruleId: string,
     input: T,
     options?: RuleExecutionOptions
@@ -28,7 +30,7 @@ export interface IGoRulesService {
    * @param executions - Array of rule executions to perform
    * @returns Promise resolving to array of batch execution results
    */
-  executeBatch<T = any, R = unknown>(
+  executeBatch<T extends RuleInputData = RuleInputData, R = unknown>(
     executions: BatchRuleExecution<T>[]
   ): Promise<BatchRuleExecutionResult<R>[]>;
 
@@ -45,4 +47,11 @@ export interface IGoRulesService {
    * @returns Promise resolving to rule metadata
    */
   getRuleMetadata(ruleId: string): Promise<RuleMetadata>;
+
+  /**
+   * Validate a rule's structure and configuration
+   * @param ruleId - The ID of the rule to validate
+   * @returns Promise resolving to validation result
+   */
+  validateRule?(ruleId: string): Promise<RuleValidationResult>;
 }

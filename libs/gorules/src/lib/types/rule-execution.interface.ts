@@ -1,4 +1,9 @@
 /**
+ * Generic type for rule input data
+ */
+export type RuleInputData = Record<string, unknown>;
+
+/**
  * Options for rule execution
  */
 export interface RuleExecutionOptions {
@@ -9,20 +14,20 @@ export interface RuleExecutionOptions {
   trace?: boolean;
   
   /** Additional context data for rule execution */
-  context?: Record<string, any>;
+  context?: RuleInputData;
 }
 
 /**
  * Input data for rule execution
  */
-export interface RuleInput {
-  [key: string]: any;
+export interface RuleInput extends RuleInputData {
+  [key: string]: unknown;
 }
 
 /**
  * Batch rule execution request
  */
-export interface BatchRuleExecution<T = any> {
+export interface BatchRuleExecution<T = RuleInputData> {
   /** Unique identifier for the rule */
   ruleId: string;
   
@@ -64,10 +69,10 @@ export interface TraceStep {
   duration: number;
   
   /** Input data for this step */
-  input?: any;
+  input?: unknown;
   
   /** Output data from this step */
-  output?: any;
+  output?: unknown;
 }
 
 /**

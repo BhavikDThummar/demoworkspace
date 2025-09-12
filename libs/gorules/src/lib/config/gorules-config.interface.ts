@@ -25,9 +25,9 @@ export interface GoRulesConfig {
  * Options for asynchronous GoRules module configuration
  */
 export interface GoRulesAsyncOptions {
-  imports?: any[];
-  useFactory?: (...args: any[]) => Promise<GoRulesConfig> | GoRulesConfig;
-  inject?: any[];
+  imports?: unknown[];
+  useFactory?: (...args: unknown[]) => Promise<GoRulesConfig> | GoRulesConfig;
+  inject?: unknown[];
   useClass?: Type<GoRulesOptionsFactory>;
   useExisting?: Type<GoRulesOptionsFactory>;
 }
@@ -42,6 +42,6 @@ export interface GoRulesOptionsFactory {
 /**
  * Type helper for class constructors
  */
-export interface Type<T = {}> {
-  new (...args: any[]): T;
+export interface Type<T = object> {
+  new (...args: unknown[]): T;
 }

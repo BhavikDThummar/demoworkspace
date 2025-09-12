@@ -3,7 +3,7 @@ import { ExecutionTrace, PerformanceMetrics, RuleMetadata } from './rule-executi
 /**
  * Result of a rule execution
  */
-export interface RuleExecutionResult<T = any> {
+export interface RuleExecutionResult<T = unknown> {
   /** The decision/result from the rule execution */
   result: T;
   
@@ -20,7 +20,7 @@ export interface RuleExecutionResult<T = any> {
 /**
  * Rule decision result
  */
-export interface RuleResult<T = any> {
+export interface RuleResult<T = unknown> {
   /** The actual decision data */
   decision: T;
   
@@ -37,7 +37,7 @@ export interface RuleResult<T = any> {
 /**
  * Result of batch rule execution
  */
-export interface BatchRuleExecutionResult<T = any> {
+export interface BatchRuleExecutionResult<T = unknown> {
   /** Execution ID for tracking */
   executionId: string;
   
@@ -62,7 +62,7 @@ export interface RuleExecutionError {
   message: string;
   
   /** Additional error details */
-  details?: any;
+  details?: unknown;
   
   /** Whether this error is retryable */
   retryable: boolean;
@@ -89,7 +89,7 @@ export class GoRulesException extends Error {
     public readonly code: GoRulesErrorCode,
     message: string,
     public readonly details?: unknown,
-    public readonly retryable: boolean = false
+    public readonly retryable = false
   ) {
     super(message);
     this.name = 'GoRulesException';

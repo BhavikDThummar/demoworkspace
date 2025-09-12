@@ -1,0 +1,29 @@
+{
+  "name": "@org/gorules",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/gorules/src",
+  "projectType": "library",
+  "tags": ["type:library", "scope:shared"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "libs/gorules/dist",
+        "main": "libs/gorules/src/index.ts",
+        "tsConfig": "libs/gorules/tsconfig.lib.json",
+        "assets": ["libs/gorules/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/gorules/jest.config.ts"
+      }
+    }
+  }
+}

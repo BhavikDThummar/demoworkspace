@@ -1,0 +1,61 @@
+{
+  "name": "bomdemoapi",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/bomdemoapi/src",
+  "projectType": "application",
+  "tags": ["type:api", "scope:backend"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "webpack-cli build",
+        "args": ["--node-env=production"],
+        "cwd": "apps/bomdemoapi"
+      },
+      "configurations": {
+        "development": {
+          "args": ["--node-env=development"]
+        },
+        "production": {
+          "args": ["--node-env=production"]
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "bomdemoapi:build",
+        "runBuildTargetDependencies": false,
+        "env": {
+          "NODE_ENV": "development"
+        }
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "bomdemoapi:build:development",
+          "env": {
+            "NODE_ENV": "development"
+          }
+        },
+        "production": {
+          "buildTarget": "bomdemoapi:build:production",
+          "env": {
+            "NODE_ENV": "production"
+          }
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/bomdemoapi/jest.config.ts"
+      }
+    }
+  }
+}

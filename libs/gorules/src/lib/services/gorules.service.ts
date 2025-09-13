@@ -40,12 +40,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
     private readonly metricsService: GoRulesMetricsService,
     private readonly monitoringService: GoRulesMonitoringService
   ) {
-    // Initialize monitoring with configuration
-    this.monitoringService.logConfigurationEvent('service-initialized', {
-      enableLogging: this.configService.getConfig().enableLogging,
-      timeout: this.configService.getConfig().timeout,
-      retryAttempts: this.configService.getConfig().retryAttempts,
-    });
+    // Don't initialize in constructor - do it in onModuleInit
   }
 
   /**
@@ -53,6 +48,18 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
    */
   async onModuleInit(): Promise<void> {
     await this.initializeService();
+    
+    // Initialize monitoring with configuration after all services are ready
+    try {
+      this.monitoringService.logConfigurationEvent('service-initialized', {
+        enableLogging: this.configService.getConfig().enableLogging,
+        timeout: this.configService.getConfig().timeout,
+        retryAttempts: this.configService.getConfig().retryAttempts,
+      });
+    } catch (error) {
+      // Log error but don't fail initialization
+      this.logger.warn('Failed to log configuration event', error);
+    }
   }
 
   /**

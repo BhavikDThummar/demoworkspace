@@ -20,15 +20,20 @@ import {
 export class GoRulesZenService {
   private readonly logger = new Logger(GoRulesZenService.name);
   private zenEngine!: ZenEngine;
+  private isInitialized = false;
 
   constructor(private readonly configService: GoRulesConfigService) {
-    this.initializeZenEngine();
+    // Don't initialize in constructor - do it lazily
   }
 
   /**
    * Initialize the Zen Engine with configuration
    */
   private initializeZenEngine(): void {
+    if (this.isInitialized) {
+      return;
+    }
+
     const config = this.configService.getConfig();
     
     const engineOptions: ZenEngineOptions = {
@@ -45,6 +50,7 @@ export class GoRulesZenService {
     };
 
     this.zenEngine = new ZenEngine(engineOptions);
+    this.isInitialized = true;
     
     if (config.enableLogging) {
       this.logger.log('GoRules Zen Engine initialized successfully');
@@ -59,6 +65,7 @@ export class GoRulesZenService {
     input: T,
     options?: RuleExecutionOptions
   ): Promise<RuleExecutionResult<R>> {
+    this.initializeZenEngine();
     const config = this.configService.getConfig();
     const startTime = Date.now();
 
@@ -216,6 +223,7 @@ export class GoRulesZenService {
    */
   async validateRuleExists(ruleId: string): Promise<boolean> {
     try {
+      this.initializeZenEngine();
       // Try to get the decision to validate it exists
       await this.zenEngine.getDecision(ruleId);
       return true;

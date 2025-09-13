@@ -19,8 +19,8 @@ export class GoRulesConfigFactory implements GoRulesOptionsFactory {
 
     const config: GoRulesConfig = {
       apiUrl: this.configService.get<string>('GORULES_API_URL', 'https://triveni.gorules.io'),
-      apiKey: this.configService.getOrThrow<string>('GORULES_API_KEY'),
-      projectId: this.configService.getOrThrow<string>('GORULES_PROJECT_ID'),
+      apiKey: this.configService.get<string>('GORULES_API_KEY', 'development-key'),
+      projectId: this.configService.get<string>('GORULES_PROJECT_ID', 'development-project-id'),
       timeout: this.configService.get<number>('GORULES_TIMEOUT', 30000),
       retryAttempts: this.configService.get<number>('GORULES_RETRY_ATTEMPTS', 3),
       enableLogging: this.configService.get<boolean>('GORULES_ENABLE_LOGGING', false),
@@ -59,8 +59,8 @@ export class GoRulesAsyncConfigFactory implements GoRulesOptionsFactory {
 
     const config: GoRulesConfig = {
       apiUrl: this.configService.get<string>('GORULES_API_URL', 'https://triveni.gorules.io'),
-      apiKey: this.configService.getOrThrow<string>('GORULES_API_KEY'),
-      projectId: this.configService.getOrThrow<string>('GORULES_PROJECT_ID'),
+      apiKey: this.configService.get<string>('GORULES_API_KEY', 'development-key'),
+      projectId: this.configService.get<string>('GORULES_PROJECT_ID', 'development-project-id'),
       timeout: this.configService.get<number>('GORULES_TIMEOUT', 30000),
       retryAttempts: this.configService.get<number>('GORULES_RETRY_ATTEMPTS', 3),
       enableLogging: this.configService.get<boolean>('GORULES_ENABLE_LOGGING', false),
@@ -123,8 +123,8 @@ export class GoRulesEnvironmentConfigFactory implements GoRulesOptionsFactory {
    */
   private getBaseConfiguration(): Pick<GoRulesConfig, 'apiKey' | 'projectId'> {
     return {
-      apiKey: this.configService.getOrThrow<string>('GORULES_API_KEY'),
-      projectId: this.configService.getOrThrow<string>('GORULES_PROJECT_ID'),
+      apiKey: this.configService.get<string>('GORULES_API_KEY', 'development-key'),
+      projectId: this.configService.get<string>('GORULES_PROJECT_ID', 'development-project-id'),
     };
   }
 

@@ -74,6 +74,40 @@ export class GoRulesModule {
       inject: [GORULES_CONFIG_TOKEN, GoRulesLoggerService, GoRulesMetricsService],
     };
 
+    const goRulesServiceProvider: Provider = {
+      provide: GoRulesService,
+      useFactory: (
+        configService: GoRulesConfigService,
+        resilienceService: GoRulesResilienceService,
+        loggerService: GoRulesLoggerService,
+        metricsService: GoRulesMetricsService,
+        monitoringService: GoRulesMonitoringService
+      ) => {
+        return new GoRulesService(
+          configService,
+          resilienceService,
+          loggerService,
+          metricsService,
+          monitoringService
+        );
+      },
+      inject: [
+        GoRulesConfigService,
+        GoRulesResilienceService,
+        GoRulesLoggerService,
+        GoRulesMetricsService,
+        GoRulesMonitoringService,
+      ],
+    };
+
+    const goRulesZenServiceProvider: Provider = {
+      provide: GoRulesZenService,
+      useFactory: (configService: GoRulesConfigService) => {
+        return new GoRulesZenService(configService);
+      },
+      inject: [GoRulesConfigService],
+    };
+
     return {
       module: GoRulesModule,
       imports: [ConfigModule],
@@ -85,8 +119,8 @@ export class GoRulesModule {
         monitoringServiceProvider,
         GoRulesResilienceService,
         GoRulesHttpService,
-        GoRulesZenService,
-        GoRulesService,
+        goRulesZenServiceProvider,
+        goRulesServiceProvider,
         // Configuration factories (available for injection if needed)
         GoRulesConfigFactory,
         GoRulesAsyncConfigFactory,
@@ -145,6 +179,40 @@ export class GoRulesModule {
       inject: [GORULES_CONFIG_TOKEN, GoRulesLoggerService, GoRulesMetricsService],
     };
 
+    const goRulesServiceProvider: Provider = {
+      provide: GoRulesService,
+      useFactory: (
+        configService: GoRulesConfigService,
+        resilienceService: GoRulesResilienceService,
+        loggerService: GoRulesLoggerService,
+        metricsService: GoRulesMetricsService,
+        monitoringService: GoRulesMonitoringService
+      ) => {
+        return new GoRulesService(
+          configService,
+          resilienceService,
+          loggerService,
+          metricsService,
+          monitoringService
+        );
+      },
+      inject: [
+        GoRulesConfigService,
+        GoRulesResilienceService,
+        GoRulesLoggerService,
+        GoRulesMetricsService,
+        GoRulesMonitoringService,
+      ],
+    };
+
+    const goRulesZenServiceProvider: Provider = {
+      provide: GoRulesZenService,
+      useFactory: (configService: GoRulesConfigService) => {
+        return new GoRulesZenService(configService);
+      },
+      inject: [GoRulesConfigService],
+    };
+
     return {
       module: GoRulesModule,
       imports: [ConfigModule, ...(options.imports || [])],
@@ -156,8 +224,8 @@ export class GoRulesModule {
         monitoringServiceProvider,
         GoRulesResilienceService,
         GoRulesHttpService,
-        GoRulesZenService,
-        GoRulesService,
+        goRulesZenServiceProvider,
+        goRulesServiceProvider,
         // Configuration factories
         GoRulesConfigFactory,
         GoRulesAsyncConfigFactory,

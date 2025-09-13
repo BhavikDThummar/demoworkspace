@@ -1,18 +1,17 @@
 {
   "name": "@org/gorules",
   "version": "0.0.1",
-  "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "main": "./src/index.js",
+  "module": "./src/index.js",
+  "types": "./src/index.d.ts",
   "exports": {
-    "./package.json": "./package.json",
     ".": {
-      "@org/source": "./src/index.ts",
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    }
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
@@ -35,5 +34,8 @@
     "@nestjs/core": {
       "optional": false
     }
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

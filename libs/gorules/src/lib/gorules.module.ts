@@ -74,6 +74,14 @@ export class GoRulesModule {
       inject: [GORULES_CONFIG_TOKEN, GoRulesLoggerService, GoRulesMetricsService],
     };
 
+    const resilienceServiceProvider: Provider = {
+      provide: GoRulesResilienceService,
+      useFactory: (configService: GoRulesConfigService) => {
+        return new GoRulesResilienceService(configService);
+      },
+      inject: [GoRulesConfigService],
+    };
+
     const goRulesServiceProvider: Provider = {
       provide: GoRulesService,
       useFactory: (
@@ -117,7 +125,7 @@ export class GoRulesModule {
         loggerServiceProvider,
         GoRulesMetricsService,
         monitoringServiceProvider,
-        GoRulesResilienceService,
+        resilienceServiceProvider,
         GoRulesHttpService,
         goRulesZenServiceProvider,
         goRulesServiceProvider,
@@ -179,6 +187,14 @@ export class GoRulesModule {
       inject: [GORULES_CONFIG_TOKEN, GoRulesLoggerService, GoRulesMetricsService],
     };
 
+    const resilienceServiceProvider: Provider = {
+      provide: GoRulesResilienceService,
+      useFactory: (configService: GoRulesConfigService) => {
+        return new GoRulesResilienceService(configService);
+      },
+      inject: [GoRulesConfigService],
+    };
+
     const goRulesServiceProvider: Provider = {
       provide: GoRulesService,
       useFactory: (
@@ -222,7 +238,7 @@ export class GoRulesModule {
         loggerServiceProvider,
         GoRulesMetricsService,
         monitoringServiceProvider,
-        GoRulesResilienceService,
+        resilienceServiceProvider,
         GoRulesHttpService,
         goRulesZenServiceProvider,
         goRulesServiceProvider,

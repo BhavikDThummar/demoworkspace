@@ -12,7 +12,14 @@
         "outputPath": "libs/gorules/dist",
         "main": "libs/gorules/src/index.ts",
         "tsConfig": "libs/gorules/tsconfig.lib.json",
-        "assets": ["libs/gorules/*.md"]
+        "assets": [
+          "libs/gorules/*.md",
+          {
+            "glob": "**/*",
+            "input": "libs/gorules/src/lib/jdm_directory",
+            "output": "src/lib/jdm_directory"
+          }
+        ]
       }
     },
     "lint": {

@@ -93,6 +93,29 @@ export class SimpleRulesController {
     }
   }
 
+    /**
+   * Execute a test Shiping fees
+   */
+  @Post('execute-shipping-fees')
+  async executeShippingFeesRule(@Body() dto: any) {
+    try {
+      this.logger.log('Shipping Fees execution request', {
+        value: dto.value,
+        category: dto.category,
+      });
+
+      const result = await this.simpleRulesService.executeSimpleRule(dto);
+
+      return {
+        success: true,
+        data: result,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      return this.handleError(error, 'Shipping Fees execution failed');
+    }
+  }
+
   /**
    * Execute a rule with tracing enabled
    */
@@ -253,7 +276,7 @@ export class SimpleRulesController {
     } catch (error) {
       // This endpoint should not throw errors, but handle them gracefully
       this.logger.error('Unexpected error in error handling demonstration', error);
-      
+
       return {
         success: false,
         error: {
@@ -426,7 +449,7 @@ export class SimpleRulesController {
 
     if (error instanceof GoRulesException) {
       const statusCode = this.mapGoRulesErrorToHttpStatus(error.code);
-      
+
       throw new HttpException(
         {
           success: false,

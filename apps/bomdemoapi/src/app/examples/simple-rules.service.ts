@@ -53,6 +53,34 @@ export class SimpleRulesService {
     }
   }
 
+    /**
+   * Execute a simple rule with basic error handling
+   */
+  async executeShippingFeesRule(input: any): Promise<any> {
+    try {
+      this.logger.debug('Executing Shipping Fees', { input });
+
+      const result = await this.goRulesService.executeRule<any, any>(
+        'shipping-fees',
+        input,
+        {
+          timeout: 5000,
+          trace: false,
+        }
+      );
+
+      this.logger.debug('Shipping Fees executed successfully', {
+        executionTime: result.performance.executionTime,
+        result: result.result,
+      });
+
+      return result.result;
+    } catch (error) {
+      this.logger.error('Shipping Fees execution failed', error);
+      throw this.wrapError(error, 'Failed to execute simple rule');
+    }
+  }
+
   /**
    * Execute a rule with tracing enabled for debugging
    */
@@ -221,7 +249,7 @@ export class SimpleRulesService {
       this.logger.debug('Getting rule information', { ruleId });
 
       const exists = await this.goRulesService.validateRuleExists(ruleId);
-      
+
       if (!exists) {
         return {
           exists: false,
@@ -242,7 +270,7 @@ export class SimpleRulesService {
       };
     } catch (error) {
       this.logger.error('Failed to get rule information', error);
-      
+
       return {
         exists: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -325,7 +353,7 @@ export class SimpleRulesService {
       };
     } catch (error) {
       this.logger.error('Failed to get service health', error);
-      
+
       return {
         healthy: false,
         statistics: null,

@@ -21,6 +21,8 @@ import {
   ExecutionTrace,
   TraceStep,
 } from '../types/index.js';
+import { readFile } from 'fs/promises';
+import * as path from 'path';
 
 /**
  * Main GoRules service implementation with comprehensive error handling and validation
@@ -38,7 +40,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
     private readonly resilienceService: GoRulesResilienceService,
     private readonly loggerService: GoRulesLoggerService,
     private readonly metricsService: GoRulesMetricsService,
-    private readonly monitoringService: GoRulesMonitoringService
+    private readonly monitoringService: GoRulesMonitoringService,
   ) {
     // Don't initialize in constructor - do it in onModuleInit
   }
@@ -48,7 +50,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
    */
   async onModuleInit(): Promise<void> {
     await this.initializeService();
-    
+
     // Initialize monitoring with configuration after all services are ready
     try {
       this.monitoringService.logConfigurationEvent('service-initialized', {
@@ -75,7 +77,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
   async executeRule<T extends RuleInputData = RuleInputData, R = unknown>(
     ruleId: string,
     input: T,
-    options?: RuleExecutionOptions
+    options?: RuleExecutionOptions,
   ): Promise<RuleExecutionResult<R>> {
     this.ensureInitialized();
     this.validateRuleId(ruleId);
@@ -88,12 +90,11 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
 
     // Start comprehensive monitoring
     this.monitoringService.startExecution(ruleId, executionId, input);
-    
+
     // Start logging execution
     this.loggerService.logExecutionStart(ruleId, executionId, input);
 
     try {
-
       // Create execution options with timeout
       const evaluateOptions: ZenEvaluateOptions = {
         trace: options?.trace || false,
@@ -118,7 +119,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
             successThreshold: 3,
             requestTimeout: executionTimeout,
           },
-        }
+        },
       );
 
       const endTime = Date.now();
@@ -158,18 +159,24 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
         result.trace = this.buildExecutionTrace(response.trace, totalTime, [ruleId]);
       }
 
-
-
       return result;
     } catch (error) {
       const endTime = Date.now();
       const totalTime = endTime - startTime;
 
       // Complete monitoring with failure
-      this.monitoringService.failExecution(ruleId, executionId, error instanceof Error ? error : new Error(String(error)), totalTime);
+      this.monitoringService.failExecution(
+        ruleId,
+        executionId,
+        error instanceof Error ? error : new Error(String(error)),
+        totalTime,
+      );
 
       // Log execution failure
-      this.loggerService.logExecutionError(executionId, error instanceof Error ? error : new Error(String(error)));
+      this.loggerService.logExecutionError(
+        executionId,
+        error instanceof Error ? error : new Error(String(error)),
+      );
 
       // Record error metrics
       this.metricsService.recordExecutionTime(ruleId, totalTime, false);
@@ -188,7 +195,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
         this.mapErrorToCode(error),
         `Rule execution failed: ${error instanceof Error ? error.message : String(error)}`,
         { ruleId, originalError: error, inputKeys: Object.keys(input) },
-        isRetryable
+        isRetryable,
       );
     }
   }
@@ -197,7 +204,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
    * Execute multiple rules in batch with parallel processing support
    */
   async executeBatch<T extends RuleInputData = RuleInputData, R = unknown>(
-    executions: BatchRuleExecution<T>[]
+    executions: BatchRuleExecution<T>[],
   ): Promise<BatchRuleExecutionResult<R>[]> {
     this.ensureInitialized();
     this.validateBatchExecutions(executions);
@@ -213,10 +220,10 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
     // Process executions in chunks to respect concurrency limits
     for (let i = 0; i < executions.length; i += maxConcurrency) {
       const chunk = executions.slice(i, i + maxConcurrency);
-      const chunkPromises = chunk.map(execution => this.executeSingleBatchItem<T, R>(execution));
-      
+      const chunkPromises = chunk.map((execution) => this.executeSingleBatchItem<T, R>(execution));
+
       const chunkResults = await Promise.allSettled(chunkPromises);
-      
+
       chunkResults.forEach((result, index) => {
         const execution = chunk[index];
         const executionId = execution.executionId || `batch-${Date.now()}-${i + index}`;
@@ -235,7 +242,8 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
             },
             error: {
               code: GoRulesErrorCode.INTERNAL_ERROR,
-              message: result.reason instanceof Error ? result.reason.message : String(result.reason),
+              message:
+                result.reason instanceof Error ? result.reason.message : String(result.reason),
               details: { originalError: result.reason },
               retryable: false,
             },
@@ -245,7 +253,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
     }
 
     // Log batch execution completion
-    const successCount = results.filter(r => !r.error).length;
+    const successCount = results.filter((r) => !r.error).length;
     const errorCount = results.length - successCount;
     if (this.configService.getConfig().enableLogging) {
       this.logger.log(`Batch execution completed: ${successCount} success, ${errorCount} errors`);
@@ -278,18 +286,22 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
             successThreshold: 2,
             requestTimeout: 5000,
           },
-        }
+        },
       );
-      
+
       // Cache the successful validation
       if (!this.ruleCache.has(ruleId)) {
         const metadata = await this.getOrCreateRuleMetadata(ruleId);
         this.ruleCache.set(ruleId, { metadata, lastAccessed: new Date() });
       }
-      
+
       return true;
     } catch (error) {
-      this.logger.debug(`Rule validation failed for ${ruleId}: ${error instanceof Error ? error.message : String(error)}`);
+      this.logger.debug(
+        `Rule validation failed for ${ruleId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
       return false;
     }
   }
@@ -308,7 +320,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
         GoRulesErrorCode.RULE_NOT_FOUND,
         `Failed to get metadata for rule: ${ruleId}`,
         { ruleId, originalError: error },
-        false
+        false,
       );
     }
   }
@@ -337,7 +349,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
       // Try to get the decision for additional validation
       try {
         const decision = await this.zenEngine.getDecision(ruleId);
-        
+
         // Validate the decision structure (basic validation)
         if (!decision) {
           errors.push({
@@ -349,7 +361,9 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
       } catch (error) {
         errors.push({
           code: 'DECISION_LOAD_ERROR',
-          message: `Failed to load rule decision: ${error instanceof Error ? error.message : String(error)}`,
+          message: `Failed to load rule decision: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
           path: 'decision',
           details: error,
         });
@@ -368,7 +382,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
         GoRulesErrorCode.INTERNAL_ERROR,
         `Rule validation failed: ${error instanceof Error ? error.message : String(error)}`,
         { ruleId, originalError: error },
-        false
+        false,
       );
     }
   }
@@ -376,9 +390,12 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
   /**
    * Get execution statistics for monitoring
    */
-  getExecutionStatistics(): Record<string, { count: number; averageTime: number; errorRate: number }> {
+  getExecutionStatistics(): Record<
+    string,
+    { count: number; averageTime: number; errorRate: number }
+  > {
     const stats: Record<string, { count: number; averageTime: number; errorRate: number }> = {};
-    
+
     this.executionStats.forEach((stat, ruleId) => {
       stats[ruleId] = {
         count: stat.count,
@@ -425,7 +442,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
    */
   resetAllCircuitBreakers(): void {
     const stats = this.resilienceService.getAllCircuitBreakerStats();
-    Object.keys(stats).forEach(operationName => {
+    Object.keys(stats).forEach((operationName) => {
       this.resilienceService.resetCircuitBreaker(operationName);
     });
     this.logger.log('All circuit breakers reset');
@@ -440,24 +457,41 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
     }
 
     const config = this.configService.getConfig();
-    
+
     try {
+      // const engineOptions: ZenEngineOptions = {
+      //   loader: async (key: string) => {
+      //     // This will be implemented to load rules from GoRules API
+      //     // For now, we'll throw an error to indicate it needs implementation
+      //     throw new GoRulesException(
+      //       GoRulesErrorCode.RULE_NOT_FOUND,
+      //       `Rule loader not implemented for key: ${key}`,
+      //       { key },
+      //       false
+      //     );
+      //   },
+      // };
       const engineOptions: ZenEngineOptions = {
         loader: async (key: string) => {
-          // This will be implemented to load rules from GoRules API
-          // For now, we'll throw an error to indicate it needs implementation
-          throw new GoRulesException(
-            GoRulesErrorCode.RULE_NOT_FOUND,
-            `Rule loader not implemented for key: ${key}`,
-            { key },
-            false
-          );
+          try {
+            // This will be implemented to load rules from GoRules API
+            // For testing purpose it's loaded from file
+            const filePath = path.resolve(__dirname, '../jdm_directory', `${key}.json`);
+            return await readFile(filePath);
+          } catch (error) {
+            throw new GoRulesException(
+              GoRulesErrorCode.RULE_NOT_FOUND,
+              `Failed to load rule for key: ${key}`,
+              { key, error: error instanceof Error ? error.message : String(error) },
+              false,
+            );
+          }
         },
       };
 
       this.zenEngine = new ZenEngine(engineOptions);
       this.isInitialized = true;
-      
+
       if (config.enableLogging) {
         this.logger.log('GoRules service initialized successfully');
       }
@@ -467,7 +501,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
         GoRulesErrorCode.INTERNAL_ERROR,
         `Service initialization failed: ${error instanceof Error ? error.message : String(error)}`,
         { originalError: error },
-        false
+        false,
       );
     }
   }
@@ -476,15 +510,15 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
    * Execute a single batch item
    */
   private async executeSingleBatchItem<T extends RuleInputData, R>(
-    execution: BatchRuleExecution<T>
+    execution: BatchRuleExecution<T>,
   ): Promise<BatchRuleExecutionResult<R>> {
     const executionId = execution.executionId || `batch-${Date.now()}-${Math.random()}`;
-    
+
     try {
       const result = await this.executeRule<T, R>(
         execution.ruleId,
         execution.input,
-        execution.options
+        execution.options,
       );
 
       return {
@@ -548,7 +582,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
   private buildExecutionTrace(
     zenTrace: Record<string, any>,
     totalDuration: number,
-    rulesEvaluated: string[]
+    rulesEvaluated: string[],
   ): ExecutionTrace {
     const steps: TraceStep[] = Object.values(zenTrace).map((trace: any) => ({
       id: trace.id,
@@ -570,7 +604,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
    */
   private updateExecutionStats(ruleId: string, executionTime: number, isError: boolean): void {
     const current = this.executionStats.get(ruleId) || { count: 0, totalTime: 0, errors: 0 };
-    
+
     current.count++;
     current.totalTime += executionTime;
     if (isError) {
@@ -579,8 +613,6 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
 
     this.executionStats.set(ruleId, current);
   }
-
-
 
   /**
    * Validate rule ID
@@ -591,7 +623,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
         GoRulesErrorCode.INVALID_INPUT,
         'Rule ID must be a non-empty string',
         { ruleId },
-        false
+        false,
       );
     }
   }
@@ -605,7 +637,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
         GoRulesErrorCode.INVALID_INPUT,
         'Input must be a valid object',
         { input: typeof input },
-        false
+        false,
       );
     }
   }
@@ -618,8 +650,11 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
       throw new GoRulesException(
         GoRulesErrorCode.INVALID_INPUT,
         'Batch executions must be a non-empty array',
-        { executionsType: typeof executions, length: Array.isArray(executions) ? executions.length : 'N/A' },
-        false
+        {
+          executionsType: typeof executions,
+          length: Array.isArray(executions) ? executions.length : 'N/A',
+        },
+        false,
       );
     }
 
@@ -629,7 +664,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
           GoRulesErrorCode.INVALID_INPUT,
           `Batch execution at index ${index} is missing ruleId`,
           { index, execution },
-          false
+          false,
         );
       }
 
@@ -638,7 +673,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
           GoRulesErrorCode.INVALID_INPUT,
           `Batch execution at index ${index} is missing input`,
           { index, execution },
-          false
+          false,
         );
       }
     });
@@ -653,7 +688,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
         GoRulesErrorCode.INTERNAL_ERROR,
         'GoRules service is not initialized',
         {},
-        false
+        false,
       );
     }
   }
@@ -667,8 +702,9 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
     }
 
     // Network errors, timeouts, and temporary failures are typically retryable
-    const errorMessage = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-    
+    const errorMessage =
+      error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+
     return (
       errorMessage.includes('timeout') ||
       errorMessage.includes('network') ||
@@ -686,7 +722,8 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
       return error.code;
     }
 
-    const errorMessage = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+    const errorMessage =
+      error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
 
     if (errorMessage.includes('timeout')) {
       return GoRulesErrorCode.TIMEOUT;

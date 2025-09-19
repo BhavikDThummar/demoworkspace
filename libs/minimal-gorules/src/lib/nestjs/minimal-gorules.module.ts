@@ -60,7 +60,6 @@ export class MinimalGoRulesModule {
    */
   static forRootAsync(options: MinimalGoRulesModuleAsyncOptions): DynamicModule {
     const providers: Provider[] = [];
-    debugger;
     // Create config provider based on options
     if (options.useFactory) {
       providers.push({

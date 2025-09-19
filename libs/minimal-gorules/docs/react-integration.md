@@ -25,6 +25,7 @@ npm install @your-org/minimal-gorules
 The Minimal GoRules Engine supports two integration approaches for React applications:
 
 ### 1. API-Based Integration (Recommended)
+
 - React app calls NestJS backend endpoints
 - Backend runs the GoRules engine
 - Better security (API keys not exposed)
@@ -32,6 +33,7 @@ The Minimal GoRules Engine supports two integration approaches for React applica
 - Easier deployment and updates
 
 ### 2. Direct Client-Side Integration (Future)
+
 - React app runs GoRules engine directly in browser
 - Requires WebAssembly compilation
 - Good for offline scenarios
@@ -95,8 +97,8 @@ export class GoRulesApiService extends React.ReactGoRulesService {
       headers: {
         'Content-Type': 'application/json',
         // Add authentication headers if needed
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
     });
   }
 
@@ -106,13 +108,9 @@ export class GoRulesApiService extends React.ReactGoRulesService {
       // Handle authentication errors
       window.location.href = '/login';
     }
-    
+
     console.error('GoRules API Error:', error);
-    throw new Error(
-      error.response?.data?.message || 
-      error.message || 
-      'Unknown API error'
-    );
+    throw new Error(error.response?.data?.message || error.message || 'Unknown API error');
   }
 }
 
@@ -130,50 +128,47 @@ export class GoRulesServiceWithRetry extends React.ReactGoRulesService {
   private maxRetries = 3;
   private retryDelay = 1000;
 
-  async executeRule<T = unknown>(
-    ruleId: string, 
-    input: Record<string, unknown>
-  ): Promise<T> {
+  async executeRule<T = unknown>(ruleId: string, input: Record<string, unknown>): Promise<T> {
     return this.withRetry(() => super.executeRule<T>(ruleId, input));
   }
 
   async executeRules<T = unknown>(
-    ruleIds: string[], 
-    input: Record<string, unknown>
+    ruleIds: string[],
+    input: Record<string, unknown>,
   ): Promise<React.MinimalExecutionResult<T>> {
     return this.withRetry(() => super.executeRules<T>(ruleIds, input));
   }
 
   private async withRetry<T>(operation: () => Promise<T>): Promise<T> {
     let lastError: Error;
-    
+
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
         return await operation();
       } catch (error) {
         lastError = error as Error;
-        
+
         if (attempt === this.maxRetries) {
           break;
         }
-        
+
         // Only retry on network errors, not business logic errors
         if (this.shouldRetry(error)) {
           await this.delay(this.retryDelay * attempt);
           continue;
         }
-        
+
         throw error;
       }
     }
-    
+
     throw lastError!;
   }
 
   private shouldRetry(error: any): boolean {
     // Retry on network errors, timeouts, and 5xx server errors
     return (
-      !error.response || 
+      !error.response ||
       error.code === 'NETWORK_ERROR' ||
       error.code === 'TIMEOUT' ||
       (error.response.status >= 500 && error.response.status < 600)
@@ -181,7 +176,7 @@ export class GoRulesServiceWithRetry extends React.ReactGoRulesService {
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 ```
@@ -201,66 +196,72 @@ export function useRuleExecution() {
   const [error, setError] = useState<string | null>(null);
   const [lastResult, setLastResult] = useState<any>(null);
 
-  const executeRule = useCallback(async <T = unknown>(
-    ruleId: string,
-    input: Record<string, unknown>
-  ): Promise<T | null> => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const result = await goRulesService.executeRule<T>(ruleId, input);
-      setLastResult(result);
-      return result;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(errorMessage);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const executeRule = useCallback(
+    async <T = unknown>(ruleId: string, input: Record<string, unknown>): Promise<T | null> => {
+      setLoading(true);
+      setError(null);
 
-  const executeRules = useCallback(async <T = unknown>(
-    ruleIds: string[],
-    input: Record<string, unknown>
-  ): Promise<React.MinimalExecutionResult<T> | null> => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const result = await goRulesService.executeRules<T>(ruleIds, input);
-      setLastResult(result);
-      return result;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(errorMessage);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      try {
+        const result = await goRulesService.executeRule<T>(ruleId, input);
+        setLastResult(result);
+        return result;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        setError(errorMessage);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
-  const executeByTags = useCallback(async <T = unknown>(
-    tags: string[],
-    input: Record<string, unknown>,
-    mode: 'parallel' | 'sequential' = 'parallel'
-  ): Promise<React.MinimalExecutionResult<T> | null> => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const result = await goRulesService.executeByTags<T>(tags, input, mode);
-      setLastResult(result);
-      return result;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(errorMessage);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const executeRules = useCallback(
+    async <T = unknown>(
+      ruleIds: string[],
+      input: Record<string, unknown>,
+    ): Promise<React.MinimalExecutionResult<T> | null> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const result = await goRulesService.executeRules<T>(ruleIds, input);
+        setLastResult(result);
+        return result;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        setError(errorMessage);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
+  const executeByTags = useCallback(
+    async <T = unknown>(
+      tags: string[],
+      input: Record<string, unknown>,
+      mode: 'parallel' | 'sequential' = 'parallel',
+    ): Promise<React.MinimalExecutionResult<T> | null> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const result = await goRulesService.executeByTags<T>(tags, input, mode);
+        setLastResult(result);
+        return result;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        setError(errorMessage);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   const clearError = useCallback(() => {
     setError(null);
@@ -273,7 +274,7 @@ export function useRuleExecution() {
     loading,
     error,
     lastResult,
-    clearError
+    clearError,
   };
 }
 ```
@@ -324,7 +325,7 @@ export function useEngineStatus(refreshInterval?: number) {
     status,
     loading,
     error,
-    refresh
+    refresh,
   };
 }
 ```
@@ -339,14 +340,16 @@ import { goRulesService } from '../services/goRulesService';
 
 export function useRuleMetadata(ruleId?: string) {
   const [metadata, setMetadata] = useState<React.MinimalRuleMetadata | null>(null);
-  const [allMetadata, setAllMetadata] = useState<Map<string, React.MinimalRuleMetadata> | null>(null);
+  const [allMetadata, setAllMetadata] = useState<Map<string, React.MinimalRuleMetadata> | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchMetadata = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const meta = await goRulesService.getRuleMetadata(id);
       setMetadata(meta);
@@ -361,7 +364,7 @@ export function useRuleMetadata(ruleId?: string) {
   const fetchAllMetadata = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const allMeta = await goRulesService.getAllRuleMetadata();
       setAllMetadata(allMeta);
@@ -394,7 +397,7 @@ export function useRuleMetadata(ruleId?: string) {
     error,
     refresh,
     fetchMetadata,
-    fetchAllMetadata
+    fetchAllMetadata,
   };
 }
 ```
@@ -419,7 +422,7 @@ export const RuleExecutor: React.FC<RuleExecutorProps> = ({
   ruleId,
   initialInput = {},
   onResult,
-  onError
+  onError,
 }) => {
   const [input, setInput] = useState(JSON.stringify(initialInput, null, 2));
   const [result, setResult] = useState<any>(null);
@@ -429,7 +432,7 @@ export const RuleExecutor: React.FC<RuleExecutorProps> = ({
     try {
       const parsedInput = JSON.parse(input);
       const executionResult = await executeRule(ruleId, parsedInput);
-      
+
       if (executionResult) {
         setResult(executionResult);
         onResult?.(executionResult);
@@ -449,7 +452,7 @@ export const RuleExecutor: React.FC<RuleExecutorProps> = ({
   return (
     <div className="rule-executor">
       <h3>Execute Rule: {ruleId}</h3>
-      
+
       <div className="input-section">
         <label htmlFor="input">Input Data (JSON):</label>
         <textarea
@@ -462,11 +465,7 @@ export const RuleExecutor: React.FC<RuleExecutorProps> = ({
         />
       </div>
 
-      <button 
-        onClick={handleExecute} 
-        disabled={loading}
-        className="execute-button"
-      >
+      <button onClick={handleExecute} disabled={loading} className="execute-button">
         {loading ? 'Executing...' : 'Execute Rule'}
       </button>
 
@@ -504,7 +503,7 @@ type ExecutionMode = 'single' | 'multiple' | 'tags';
 
 export const AdvancedRuleExecutor: React.FC<AdvancedRuleExecutorProps> = ({
   onResult,
-  onError
+  onError,
 }) => {
   const [mode, setMode] = useState<ExecutionMode>('single');
   const [ruleId, setRuleId] = useState('');
@@ -513,7 +512,7 @@ export const AdvancedRuleExecutor: React.FC<AdvancedRuleExecutorProps> = ({
   const [input, setInput] = useState('{}');
   const [executionMode, setExecutionMode] = useState<'parallel' | 'sequential'>('parallel');
   const [result, setResult] = useState<any>(null);
-  
+
   const { executeRule, executeRules, executeByTags, loading, error } = useRuleExecution();
 
   const handleExecute = async () => {
@@ -531,7 +530,10 @@ export const AdvancedRuleExecutor: React.FC<AdvancedRuleExecutorProps> = ({
           break;
 
         case 'multiple':
-          const ruleIdArray = ruleIds.split(',').map(id => id.trim()).filter(Boolean);
+          const ruleIdArray = ruleIds
+            .split(',')
+            .map((id) => id.trim())
+            .filter(Boolean);
           if (ruleIdArray.length === 0) {
             onError?.('At least one rule ID is required');
             return;
@@ -540,7 +542,10 @@ export const AdvancedRuleExecutor: React.FC<AdvancedRuleExecutorProps> = ({
           break;
 
         case 'tags':
-          const tagArray = tags.split(',').map(tag => tag.trim()).filter(Boolean);
+          const tagArray = tags
+            .split(',')
+            .map((tag) => tag.trim())
+            .filter(Boolean);
           if (tagArray.length === 0) {
             onError?.('At least one tag is required');
             return;
@@ -620,8 +625,8 @@ export const AdvancedRuleExecutor: React.FC<AdvancedRuleExecutorProps> = ({
             </div>
             <div>
               <label>Tag Execution Mode:</label>
-              <select 
-                value={executionMode} 
+              <select
+                value={executionMode}
                 onChange={(e) => setExecutionMode(e.target.value as 'parallel' | 'sequential')}
               >
                 <option value="parallel">Parallel</option>
@@ -646,11 +651,7 @@ export const AdvancedRuleExecutor: React.FC<AdvancedRuleExecutorProps> = ({
       </div>
 
       {/* Execute Button */}
-      <button 
-        onClick={handleExecute} 
-        disabled={loading}
-        className="execute-button"
-      >
+      <button onClick={handleExecute} disabled={loading} className="execute-button">
         {loading ? 'Executing...' : 'Execute'}
       </button>
 
@@ -669,7 +670,9 @@ export const AdvancedRuleExecutor: React.FC<AdvancedRuleExecutorProps> = ({
             <pre>{JSON.stringify(result, null, 2)}</pre>
           ) : (
             <div>
-              <p><strong>Execution Time:</strong> {result.executionTime}ms</p>
+              <p>
+                <strong>Execution Time:</strong> {result.executionTime}ms
+              </p>
               <h5>Results:</h5>
               <pre>{JSON.stringify(Object.fromEntries(result.results), null, 2)}</pre>
               {result.errors && result.errors.size > 0 && (
@@ -699,7 +702,7 @@ interface EngineStatusDashboardProps {
 }
 
 export const EngineStatusDashboard: React.FC<EngineStatusDashboardProps> = ({
-  refreshInterval = 30000 // 30 seconds
+  refreshInterval = 30000, // 30 seconds
 }) => {
   const { status, loading, error, refresh } = useEngineStatus(refreshInterval);
 
@@ -796,20 +799,12 @@ interface RuleMetadataViewerProps {
   initialRuleId?: string;
 }
 
-export const RuleMetadataViewer: React.FC<RuleMetadataViewerProps> = ({
-  initialRuleId = ''
-}) => {
+export const RuleMetadataViewer: React.FC<RuleMetadataViewerProps> = ({ initialRuleId = '' }) => {
   const [ruleId, setRuleId] = useState(initialRuleId);
   const [viewMode, setViewMode] = useState<'single' | 'all'>('single');
-  
-  const { 
-    metadata, 
-    allMetadata, 
-    loading, 
-    error, 
-    fetchMetadata, 
-    fetchAllMetadata 
-  } = useRuleMetadata(viewMode === 'single' ? ruleId : undefined);
+
+  const { metadata, allMetadata, loading, error, fetchMetadata, fetchAllMetadata } =
+    useRuleMetadata(viewMode === 'single' ? ruleId : undefined);
 
   const handleFetchSingle = () => {
     if (ruleId.trim()) {
@@ -940,7 +935,7 @@ interface GoRulesState {
   error: string | null;
 }
 
-type GoRulesAction = 
+type GoRulesAction =
   | { type: 'SET_STATUS'; payload: GoRulesReact.EngineStatus }
   | { type: 'SET_EXECUTION_RESULT'; payload: any }
   | { type: 'ADD_EXECUTION_HISTORY'; payload: any }
@@ -951,7 +946,7 @@ const initialState: GoRulesState = {
   status: null,
   lastExecutionResult: null,
   executionHistory: [],
-  error: null
+  error: null,
 };
 
 function goRulesReducer(state: GoRulesState, action: GoRulesAction): GoRulesState {
@@ -963,7 +958,7 @@ function goRulesReducer(state: GoRulesState, action: GoRulesAction): GoRulesStat
     case 'ADD_EXECUTION_HISTORY':
       return {
         ...state,
-        executionHistory: [action.payload, ...state.executionHistory.slice(0, 49)] // Keep last 50
+        executionHistory: [action.payload, ...state.executionHistory.slice(0, 49)], // Keep last 50
       };
     case 'SET_ERROR':
       return { ...state, error: action.payload };
@@ -982,11 +977,7 @@ const GoRulesContext = createContext<{
 export const GoRulesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(goRulesReducer, initialState);
 
-  return (
-    <GoRulesContext.Provider value={{ state, dispatch }}>
-      {children}
-    </GoRulesContext.Provider>
-  );
+  return <GoRulesContext.Provider value={{ state, dispatch }}>{children}</GoRulesContext.Provider>;
 };
 
 export const useGoRulesContext = () => {
@@ -1011,37 +1002,40 @@ export function useGoRulesWithContext() {
   const { state, dispatch } = useGoRulesContext();
   const { executeRule: baseExecuteRule, loading, error } = useRuleExecution();
 
-  const executeRule = useCallback(async <T = unknown>(
-    ruleId: string,
-    input: Record<string, unknown>
-  ): Promise<T | null> => {
-    const startTime = Date.now();
-    const result = await baseExecuteRule<T>(ruleId, input);
-    
-    if (result) {
-      dispatch({ type: 'SET_EXECUTION_RESULT', payload: result });
-      dispatch({
-        type: 'ADD_EXECUTION_HISTORY',
-        payload: {
-          id: `${ruleId}-${startTime}`,
-          ruleId,
-          input,
-          result,
-          timestamp: startTime,
-          executionTime: Date.now() - startTime
-        }
-      });
-    }
-    
-    return result;
-  }, [baseExecuteRule, dispatch]);
+  const executeRule = useCallback(
+    async <T = unknown>(ruleId: string, input: Record<string, unknown>): Promise<T | null> => {
+      const startTime = Date.now();
+      const result = await baseExecuteRule<T>(ruleId, input);
+
+      if (result) {
+        dispatch({ type: 'SET_EXECUTION_RESULT', payload: result });
+        dispatch({
+          type: 'ADD_EXECUTION_HISTORY',
+          payload: {
+            id: `${ruleId}-${startTime}`,
+            ruleId,
+            input,
+            result,
+            timestamp: startTime,
+            executionTime: Date.now() - startTime,
+          },
+        });
+      }
+
+      return result;
+    },
+    [baseExecuteRule, dispatch],
+  );
 
   const refreshStatus = useCallback(async () => {
     try {
       const status = await goRulesService.getStatus();
       dispatch({ type: 'SET_STATUS', payload: status });
     } catch (err) {
-      dispatch({ type: 'SET_ERROR', payload: err instanceof Error ? err.message : 'Unknown error' });
+      dispatch({
+        type: 'SET_ERROR',
+        payload: err instanceof Error ? err.message : 'Unknown error',
+      });
     }
   }, [dispatch]);
 
@@ -1055,7 +1049,7 @@ export function useGoRulesWithContext() {
     refreshStatus,
     clearHistory,
     loading,
-    error
+    error,
   };
 }
 ```
@@ -1086,7 +1080,7 @@ interface RuleBasedFormProps {
 export const RuleBasedForm: React.FC<RuleBasedFormProps> = ({
   validationRules,
   onSubmit,
-  children
+  children,
 }) => {
   const [formData, setFormData] = useState<FormData>({});
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -1094,29 +1088,29 @@ export const RuleBasedForm: React.FC<RuleBasedFormProps> = ({
   const { executeRule } = useRuleExecution();
 
   const validateField = async (field: string, value: any) => {
-    const rule = validationRules.find(r => r.field === field);
+    const rule = validationRules.find((r) => r.field === field);
     if (!rule) return;
 
     setIsValidating(true);
     try {
       const result = await executeRule(rule.ruleId, { [field]: value, ...formData });
-      
+
       if (result && !result.valid) {
-        setValidationErrors(prev => ({
+        setValidationErrors((prev) => ({
           ...prev,
-          [field]: rule.errorMessage || result.message || 'Validation failed'
+          [field]: rule.errorMessage || result.message || 'Validation failed',
         }));
       } else {
-        setValidationErrors(prev => {
+        setValidationErrors((prev) => {
           const newErrors = { ...prev };
           delete newErrors[field];
           return newErrors;
         });
       }
     } catch (error) {
-      setValidationErrors(prev => ({
+      setValidationErrors((prev) => ({
         ...prev,
-        [field]: 'Validation error occurred'
+        [field]: 'Validation error occurred',
       }));
     } finally {
       setIsValidating(false);
@@ -1124,8 +1118,8 @@ export const RuleBasedForm: React.FC<RuleBasedFormProps> = ({
   };
 
   const handleFieldChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
     // Debounced validation
     const timeoutId = setTimeout(() => {
       validateField(field, value);
@@ -1136,13 +1130,13 @@ export const RuleBasedForm: React.FC<RuleBasedFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate all fields before submit
     setIsValidating(true);
-    const validationPromises = validationRules.map(rule => 
-      validateField(rule.field, formData[rule.field])
+    const validationPromises = validationRules.map((rule) =>
+      validateField(rule.field, formData[rule.field]),
     );
-    
+
     await Promise.all(validationPromises);
     setIsValidating(false);
 
@@ -1153,7 +1147,7 @@ export const RuleBasedForm: React.FC<RuleBasedFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="rule-based-form">
-      {React.Children.map(children, child => {
+      {React.Children.map(children, (child) => {
         if (React.isValidElement(child) && child.props.name) {
           const fieldName = child.props.name;
           return React.cloneElement(child, {
@@ -1162,12 +1156,12 @@ export const RuleBasedForm: React.FC<RuleBasedFormProps> = ({
               handleFieldChange(fieldName, e.target.value);
             },
             error: validationErrors[fieldName],
-            ...child.props
+            ...child.props,
           });
         }
         return child;
       })}
-      
+
       <button type="submit" disabled={isValidating || Object.keys(validationErrors).length > 0}>
         {isValidating ? 'Validating...' : 'Submit'}
       </button>
@@ -1191,7 +1185,8 @@ interface CacheEntry<T> {
   ttl: number;
 }
 
-export function useRuleExecutionWithCache(defaultTtl: number = 300000) { // 5 minutes
+export function useRuleExecutionWithCache(defaultTtl: number = 300000) {
+  // 5 minutes
   const [cache, setCache] = useState<Map<string, CacheEntry<any>>>(new Map());
   const { executeRule: baseExecuteRule, loading, error } = useRuleExecution();
 
@@ -1203,39 +1198,44 @@ export function useRuleExecutionWithCache(defaultTtl: number = 300000) { // 5 mi
     return Date.now() - entry.timestamp > entry.ttl;
   }, []);
 
-  const executeRule = useCallback(async <T = unknown>(
-    ruleId: string,
-    input: Record<string, unknown>,
-    ttl: number = defaultTtl
-  ): Promise<T | null> => {
-    const cacheKey = createCacheKey(ruleId, input);
-    const cachedEntry = cache.get(cacheKey);
+  const executeRule = useCallback(
+    async <T = unknown>(
+      ruleId: string,
+      input: Record<string, unknown>,
+      ttl: number = defaultTtl,
+    ): Promise<T | null> => {
+      const cacheKey = createCacheKey(ruleId, input);
+      const cachedEntry = cache.get(cacheKey);
 
-    // Return cached result if valid
-    if (cachedEntry && !isExpired(cachedEntry)) {
-      return cachedEntry.result;
-    }
+      // Return cached result if valid
+      if (cachedEntry && !isExpired(cachedEntry)) {
+        return cachedEntry.result;
+      }
 
-    // Execute rule and cache result
-    const result = await baseExecuteRule<T>(ruleId, input);
-    
-    if (result !== null) {
-      setCache(prev => new Map(prev).set(cacheKey, {
-        result,
-        timestamp: Date.now(),
-        ttl
-      }));
-    }
+      // Execute rule and cache result
+      const result = await baseExecuteRule<T>(ruleId, input);
 
-    return result;
-  }, [baseExecuteRule, cache, createCacheKey, isExpired, defaultTtl]);
+      if (result !== null) {
+        setCache((prev) =>
+          new Map(prev).set(cacheKey, {
+            result,
+            timestamp: Date.now(),
+            ttl,
+          }),
+        );
+      }
+
+      return result;
+    },
+    [baseExecuteRule, cache, createCacheKey, isExpired, defaultTtl],
+  );
 
   const clearCache = useCallback(() => {
     setCache(new Map());
   }, []);
 
   const clearExpiredCache = useCallback(() => {
-    setCache(prev => {
+    setCache((prev) => {
       const newCache = new Map();
       for (const [key, entry] of prev) {
         if (!isExpired(entry)) {
@@ -1246,14 +1246,17 @@ export function useRuleExecutionWithCache(defaultTtl: number = 300000) { // 5 mi
     });
   }, [isExpired]);
 
-  const cacheStats = useMemo(() => ({
-    size: cache.size,
-    entries: Array.from(cache.entries()).map(([key, entry]) => ({
-      key,
-      timestamp: entry.timestamp,
-      expired: isExpired(entry)
-    }))
-  }), [cache, isExpired]);
+  const cacheStats = useMemo(
+    () => ({
+      size: cache.size,
+      entries: Array.from(cache.entries()).map(([key, entry]) => ({
+        key,
+        timestamp: entry.timestamp,
+        expired: isExpired(entry),
+      })),
+    }),
+    [cache, isExpired],
+  );
 
   return {
     executeRule,
@@ -1261,7 +1264,7 @@ export function useRuleExecutionWithCache(defaultTtl: number = 300000) { // 5 mi
     error,
     clearCache,
     clearExpiredCache,
-    cacheStats
+    cacheStats,
   };
 }
 ```
@@ -1289,36 +1292,37 @@ export function useBatchRuleExecution() {
   const [batchLoading, setBatchLoading] = useState(false);
   const { executeRule } = useRuleExecution();
 
-  const executeBatch = useCallback(async <T = unknown>(
-    requests: BatchRequest[]
-  ): Promise<BatchResult<T>[]> => {
-    setBatchLoading(true);
-    
-    try {
-      const promises = requests.map(async (request): Promise<BatchResult<T>> => {
-        try {
-          const result = await executeRule<T>(request.ruleId, request.input);
-          return {
-            id: request.id,
-            result: result || undefined
-          };
-        } catch (error) {
-          return {
-            id: request.id,
-            error: error instanceof Error ? error.message : 'Unknown error'
-          };
-        }
-      });
+  const executeBatch = useCallback(
+    async <T = unknown>(requests: BatchRequest[]): Promise<BatchResult<T>[]> => {
+      setBatchLoading(true);
 
-      return await Promise.all(promises);
-    } finally {
-      setBatchLoading(false);
-    }
-  }, [executeRule]);
+      try {
+        const promises = requests.map(async (request): Promise<BatchResult<T>> => {
+          try {
+            const result = await executeRule<T>(request.ruleId, request.input);
+            return {
+              id: request.id,
+              result: result || undefined,
+            };
+          } catch (error) {
+            return {
+              id: request.id,
+              error: error instanceof Error ? error.message : 'Unknown error',
+            };
+          }
+        });
+
+        return await Promise.all(promises);
+      } finally {
+        setBatchLoading(false);
+      }
+    },
+    [executeRule],
+  );
 
   return {
     executeBatch,
-    batchLoading
+    batchLoading,
   };
 }
 ```
@@ -1341,7 +1345,7 @@ const mockUseRuleExecution = useRuleExecution as jest.MockedFunction<typeof useR
 
 describe('RuleExecutor', () => {
   const mockExecuteRule = jest.fn();
-  
+
   beforeEach(() => {
     mockUseRuleExecution.mockReturnValue({
       executeRule: mockExecuteRule,
@@ -1350,7 +1354,7 @@ describe('RuleExecutor', () => {
       loading: false,
       error: null,
       lastResult: null,
-      clearError: jest.fn()
+      clearError: jest.fn(),
     });
   });
 
@@ -1360,7 +1364,7 @@ describe('RuleExecutor', () => {
 
   it('renders rule executor with rule ID', () => {
     render(<RuleExecutor ruleId="test-rule" />);
-    
+
     expect(screen.getByText('Execute Rule: test-rule')).toBeInTheDocument();
     expect(screen.getByLabelText('Input Data (JSON):')).toBeInTheDocument();
     expect(screen.getByText('Execute Rule')).toBeInTheDocument();
@@ -1371,7 +1375,7 @@ describe('RuleExecutor', () => {
     mockExecuteRule.mockResolvedValue(mockResult);
 
     render(<RuleExecutor ruleId="test-rule" />);
-    
+
     const input = screen.getByLabelText('Input Data (JSON):');
     const executeButton = screen.getByText('Execute Rule');
 
@@ -1389,7 +1393,7 @@ describe('RuleExecutor', () => {
   it('shows error for invalid JSON input', async () => {
     const onError = jest.fn();
     render(<RuleExecutor ruleId="test-rule" onError={onError} />);
-    
+
     const input = screen.getByLabelText('Input Data (JSON):');
     const executeButton = screen.getByText('Execute Rule');
 
@@ -1409,11 +1413,11 @@ describe('RuleExecutor', () => {
       loading: true,
       error: null,
       lastResult: null,
-      clearError: jest.fn()
+      clearError: jest.fn(),
     });
 
     render(<RuleExecutor ruleId="test-rule" />);
-    
+
     expect(screen.getByText('Executing...')).toBeInTheDocument();
     expect(screen.getByText('Executing...')).toBeDisabled();
   });
@@ -1473,7 +1477,7 @@ describe('useRuleExecution', () => {
 
   it('sets loading state during execution', async () => {
     let resolvePromise: (value: any) => void;
-    const promise = new Promise(resolve => {
+    const promise = new Promise((resolve) => {
       resolvePromise = resolve;
     });
     mockGoRulesService.executeRule.mockReturnValue(promise);

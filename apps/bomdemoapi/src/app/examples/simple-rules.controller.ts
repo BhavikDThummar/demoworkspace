@@ -11,14 +11,7 @@ import {
   ValidationPipe,
   UsePipes,
 } from '@nestjs/common';
-import {
-  IsNumber,
-  IsString,
-  IsOptional,
-  IsObject,
-  Min,
-  IsNotEmpty,
-} from 'class-validator';
+import { IsNumber, IsString, IsOptional, IsObject, Min, IsNotEmpty } from 'class-validator';
 import { SimpleRulesService } from './simple-rules.service';
 import { GoRulesException } from '@org/gorules';
 
@@ -93,7 +86,7 @@ export class SimpleRulesController {
     }
   }
 
-    /**
+  /**
    * Execute a test Shiping fees
    */
   @Post('execute-shipping-fees')
@@ -143,10 +136,7 @@ export class SimpleRulesController {
    * Validate and execute a specific rule
    */
   @Post('validate-and-execute/:ruleId')
-  async validateAndExecuteRule(
-    @Param('ruleId') ruleId: string,
-    @Body() dto: SimpleRuleInputDto
-  ) {
+  async validateAndExecuteRule(@Param('ruleId') ruleId: string, @Body() dto: SimpleRuleInputDto) {
     try {
       this.logger.log('Validate and execute rule request', {
         ruleId,
@@ -174,12 +164,12 @@ export class SimpleRulesController {
     try {
       this.logger.log('Sequential rules execution request', {
         ruleCount: dto.rules.length,
-        ruleIds: dto.rules.map(r => r.ruleId),
+        ruleIds: dto.rules.map((r) => r.ruleId),
       });
 
       const results = await this.simpleRulesService.executeRulesSequentially(dto.rules);
 
-      const successCount = results.filter(r => r.success).length;
+      const successCount = results.filter((r) => r.success).length;
       const errorCount = results.length - successCount;
 
       return {
@@ -205,7 +195,7 @@ export class SimpleRulesController {
   @Post('execute-with-timeout/:ruleId')
   async executeRuleWithCustomTimeout(
     @Param('ruleId') ruleId: string,
-    @Body() dto: RuleWithTimeoutDto
+    @Body() dto: RuleWithTimeoutDto,
   ) {
     try {
       this.logger.log('Rule execution with custom timeout request', {
@@ -218,7 +208,7 @@ export class SimpleRulesController {
       const result = await this.simpleRulesService.executeRuleWithCustomTimeout(
         ruleId,
         dto,
-        dto.timeoutMs
+        dto.timeoutMs,
       );
 
       return {
@@ -255,10 +245,7 @@ export class SimpleRulesController {
    * Demonstrate error handling patterns
    */
   @Post('demo-error-handling/:ruleId')
-  async demonstrateErrorHandling(
-    @Param('ruleId') ruleId: string,
-    @Body() dto: SimpleRuleInputDto
-  ) {
+  async demonstrateErrorHandling(@Param('ruleId') ruleId: string, @Body() dto: SimpleRuleInputDto) {
     try {
       this.logger.log('Error handling demonstration request', {
         ruleId,
@@ -461,7 +448,7 @@ export class SimpleRulesController {
           },
           timestamp: new Date().toISOString(),
         },
-        statusCode
+        statusCode,
       );
     }
 
@@ -475,7 +462,7 @@ export class SimpleRulesController {
         },
         timestamp: new Date().toISOString(),
       },
-      HttpStatus.INTERNAL_SERVER_ERROR
+      HttpStatus.INTERNAL_SERVER_ERROR,
     );
   }
 

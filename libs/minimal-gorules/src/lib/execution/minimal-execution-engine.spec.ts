@@ -11,8 +11,8 @@ import { MinimalGoRulesError } from '../errors/minimal-errors.js';
 // Mock ZenEngine
 jest.mock('@gorules/zen-engine', () => ({
   ZenEngine: jest.fn().mockImplementation(() => ({
-    evaluate: jest.fn()
-  }))
+    evaluate: jest.fn(),
+  })),
 }));
 
 describe('MinimalExecutionEngine', () => {
@@ -33,7 +33,7 @@ describe('MinimalExecutionEngine', () => {
       isVersionCurrent: jest.fn(),
       invalidate: jest.fn(),
       clear: jest.fn(),
-      getAllMetadata: jest.fn()
+      getAllMetadata: jest.fn(),
     };
 
     // Create mock tag manager
@@ -43,13 +43,13 @@ describe('MinimalExecutionEngine', () => {
       getRulesByTags: jest.fn(),
       analyzeDependencies: jest.fn(),
       createExecutionOrder: jest.fn(),
-      validateSelector: jest.fn()
+      validateSelector: jest.fn(),
     };
 
     // Mock ZenEngine
     const { ZenEngine } = require('@gorules/zen-engine');
     mockZenEngine = {
-      evaluate: jest.fn()
+      evaluate: jest.fn(),
     };
     ZenEngine.mockImplementation(() => mockZenEngine);
 
@@ -73,12 +73,12 @@ describe('MinimalExecutionEngine', () => {
       const customConfig = {
         maxConcurrency: 5,
         executionTimeout: 3000,
-        includePerformanceMetrics: true
+        includePerformanceMetrics: true,
       };
-      
+
       const engine = new MinimalExecutionEngine(mockCacheManager, mockTagManager, customConfig);
       const config = engine.getConfig();
-      
+
       expect(config.maxConcurrency).toBe(5);
       expect(config.executionTimeout).toBe(3000);
       expect(config.includePerformanceMetrics).toBe(true);
@@ -87,7 +87,7 @@ describe('MinimalExecutionEngine', () => {
     it('should create ZenEngine with loader function', () => {
       const { ZenEngine } = require('@gorules/zen-engine');
       expect(ZenEngine).toHaveBeenCalledWith({
-        loader: expect.any(Function)
+        loader: expect.any(Function),
       });
     });
   });
@@ -114,10 +114,10 @@ describe('MinimalExecutionEngine', () => {
 
       mockCacheManager.get.mockResolvedValue(null);
 
-      await expect(executionEngine.executeRule(ruleId, input))
-        .rejects.toThrow(MinimalGoRulesError);
-      await expect(executionEngine.executeRule(ruleId, input))
-        .rejects.toThrow('Rule not found: missing-rule');
+      await expect(executionEngine.executeRule(ruleId, input)).rejects.toThrow(MinimalGoRulesError);
+      await expect(executionEngine.executeRule(ruleId, input)).rejects.toThrow(
+        'Rule not found: missing-rule',
+      );
     });
 
     it('should handle ZenEngine execution errors', async () => {
@@ -127,10 +127,10 @@ describe('MinimalExecutionEngine', () => {
       mockCacheManager.get.mockResolvedValue(Buffer.from('{"rule": "data"}'));
       mockZenEngine.evaluate.mockRejectedValue(new Error('ZenEngine error'));
 
-      await expect(executionEngine.executeRule(ruleId, input))
-        .rejects.toThrow(MinimalGoRulesError);
-      await expect(executionEngine.executeRule(ruleId, input))
-        .rejects.toThrow('Rule execution failed: ZenEngine error');
+      await expect(executionEngine.executeRule(ruleId, input)).rejects.toThrow(MinimalGoRulesError);
+      await expect(executionEngine.executeRule(ruleId, input)).rejects.toThrow(
+        'Rule execution failed: ZenEngine error',
+      );
     });
 
     it('should handle execution timeout', async () => {
@@ -138,17 +138,18 @@ describe('MinimalExecutionEngine', () => {
       const input = { value: 42 };
 
       mockCacheManager.get.mockResolvedValue(Buffer.from('{"rule": "data"}'));
-      
+
       // Mock a slow execution
-      mockZenEngine.evaluate.mockImplementation(() => 
-        new Promise(resolve => setTimeout(() => resolve({ result: {} }), 10000))
+      mockZenEngine.evaluate.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve({ result: {} }), 10000)),
       );
 
       // Set short timeout
       executionEngine.updateConfig({ executionTimeout: 100 });
 
-      await expect(executionEngine.executeRule(ruleId, input))
-        .rejects.toThrow('Execution timed out after 100ms');
+      await expect(executionEngine.executeRule(ruleId, input)).rejects.toThrow(
+        'Execution timed out after 100ms',
+      );
     }, 1000);
   });
 
@@ -189,7 +190,7 @@ describe('MinimalExecutionEngine', () => {
   describe('execute', () => {
     const mockMetadata = new Map([
       ['rule1', { id: 'rule1', version: '1.0', tags: ['tag1'], lastModified: Date.now() }],
-      ['rule2', { id: 'rule2', version: '1.0', tags: ['tag2'], lastModified: Date.now() }]
+      ['rule2', { id: 'rule2', version: '1.0', tags: ['tag2'], lastModified: Date.now() }],
     ]);
 
     beforeEach(() => {
@@ -200,14 +201,14 @@ describe('MinimalExecutionEngine', () => {
       it('should execute rules in parallel mode', async () => {
         const selector: RuleSelector = {
           ids: ['rule1', 'rule2'],
-          mode: { type: 'parallel' }
+          mode: { type: 'parallel' },
         };
         const input = { value: 42 };
 
         const mockRulePlan: ResolvedRulePlan = {
           ruleIds: ['rule1', 'rule2'],
           executionOrder: [['rule1', 'rule2']],
-          dependencies: new Map()
+          dependencies: new Map(),
         };
 
         mockTagManager.resolveRules.mockResolvedValue(mockRulePlan);
@@ -227,14 +228,14 @@ describe('MinimalExecutionEngine', () => {
       it('should handle errors in parallel execution', async () => {
         const selector: RuleSelector = {
           ids: ['rule1', 'rule2'],
-          mode: { type: 'parallel' }
+          mode: { type: 'parallel' },
         };
         const input = { value: 42 };
 
         const mockRulePlan: ResolvedRulePlan = {
           ruleIds: ['rule1', 'rule2'],
           executionOrder: [['rule1', 'rule2']],
-          dependencies: new Map()
+          dependencies: new Map(),
         };
 
         mockTagManager.resolveRules.mockResolvedValue(mockRulePlan);
@@ -253,31 +254,31 @@ describe('MinimalExecutionEngine', () => {
       it('should respect concurrency limits', async () => {
         const selector: RuleSelector = {
           ids: ['rule1', 'rule2', 'rule3', 'rule4'],
-          mode: { type: 'parallel' }
+          mode: { type: 'parallel' },
         };
         const input = { value: 42 };
 
         const mockRulePlan: ResolvedRulePlan = {
           ruleIds: ['rule1', 'rule2', 'rule3', 'rule4'],
           executionOrder: [['rule1', 'rule2', 'rule3', 'rule4']],
-          dependencies: new Map()
+          dependencies: new Map(),
         };
 
         // Set low concurrency limit
         executionEngine.updateConfig({ maxConcurrency: 2 });
 
         mockTagManager.resolveRules.mockResolvedValue(mockRulePlan);
-        
+
         let concurrentCalls = 0;
         let maxConcurrentCalls = 0;
-        
+
         mockZenEngine.evaluate.mockImplementation(async () => {
           concurrentCalls++;
           maxConcurrentCalls = Math.max(maxConcurrentCalls, concurrentCalls);
-          
+
           // Simulate some work
-          await new Promise(resolve => setTimeout(resolve, 10));
-          
+          await new Promise((resolve) => setTimeout(resolve, 10));
+
           concurrentCalls--;
           return { result: { output: 'result' } };
         });
@@ -293,18 +294,18 @@ describe('MinimalExecutionEngine', () => {
       it('should execute rules in sequential mode', async () => {
         const selector: RuleSelector = {
           ids: ['rule1', 'rule2'],
-          mode: { type: 'sequential' }
+          mode: { type: 'sequential' },
         };
         const input = { value: 42 };
 
         const mockRulePlan: ResolvedRulePlan = {
           ruleIds: ['rule1', 'rule2'],
           executionOrder: [['rule1'], ['rule2']],
-          dependencies: new Map()
+          dependencies: new Map(),
         };
 
         mockTagManager.resolveRules.mockResolvedValue(mockRulePlan);
-        
+
         const executionOrder: string[] = [];
         mockZenEngine.evaluate.mockImplementation(async (ruleId: string, input: unknown) => {
           executionOrder.push(ruleId);
@@ -315,25 +316,27 @@ describe('MinimalExecutionEngine', () => {
 
         expect(executionOrder).toEqual(['rule1', 'rule2']);
         expect(result.results.size).toBe(2);
-        
+
         // Check that input was passed through (pipeline mode)
         expect(mockZenEngine.evaluate).toHaveBeenNthCalledWith(1, 'rule1', input);
-        expect(mockZenEngine.evaluate).toHaveBeenNthCalledWith(2, 'rule2', 
-          expect.objectContaining({ value: 42, output_rule1: 'result_rule1' })
+        expect(mockZenEngine.evaluate).toHaveBeenNthCalledWith(
+          2,
+          'rule2',
+          expect.objectContaining({ value: 42, output_rule1: 'result_rule1' }),
         );
       });
 
       it('should continue execution after error in sequential mode', async () => {
         const selector: RuleSelector = {
           ids: ['rule1', 'rule2'],
-          mode: { type: 'sequential' }
+          mode: { type: 'sequential' },
         };
         const input = { value: 42 };
 
         const mockRulePlan: ResolvedRulePlan = {
           ruleIds: ['rule1', 'rule2'],
           executionOrder: [['rule1'], ['rule2']],
-          dependencies: new Map()
+          dependencies: new Map(),
         };
 
         mockTagManager.resolveRules.mockResolvedValue(mockRulePlan);
@@ -353,34 +356,36 @@ describe('MinimalExecutionEngine', () => {
     describe('mixed execution', () => {
       beforeEach(() => {
         // Ensure cache has the required rules for mixed execution tests
-        mockCacheManager.getAllMetadata.mockResolvedValue(new Map([
-          ['rule1', { id: 'rule1', version: '1.0', tags: ['tag1'], lastModified: Date.now() }],
-          ['rule2', { id: 'rule2', version: '1.0', tags: ['tag2'], lastModified: Date.now() }],
-          ['rule3', { id: 'rule3', version: '1.0', tags: ['tag3'], lastModified: Date.now() }]
-        ]));
+        mockCacheManager.getAllMetadata.mockResolvedValue(
+          new Map([
+            ['rule1', { id: 'rule1', version: '1.0', tags: ['tag1'], lastModified: Date.now() }],
+            ['rule2', { id: 'rule2', version: '1.0', tags: ['tag2'], lastModified: Date.now() }],
+            ['rule3', { id: 'rule3', version: '1.0', tags: ['tag3'], lastModified: Date.now() }],
+          ]),
+        );
       });
 
       it('should execute rules in mixed mode', async () => {
         const selector: RuleSelector = {
           ids: ['rule1', 'rule2', 'rule3'],
-          mode: { 
+          mode: {
             type: 'mixed',
             groups: [
               { rules: ['rule1'], mode: 'sequential' },
-              { rules: ['rule2', 'rule3'], mode: 'parallel' }
-            ]
-          }
+              { rules: ['rule2', 'rule3'], mode: 'parallel' },
+            ],
+          },
         };
         const input = { value: 42 };
 
         const mockRulePlan: ResolvedRulePlan = {
           ruleIds: ['rule1', 'rule2', 'rule3'],
           executionOrder: [['rule1'], ['rule2', 'rule3']], // Sequential then parallel
-          dependencies: new Map()
+          dependencies: new Map(),
         };
 
         mockTagManager.resolveRules.mockResolvedValue(mockRulePlan);
-        
+
         const executionOrder: string[] = [];
         mockZenEngine.evaluate.mockImplementation(async (ruleId: string) => {
           executionOrder.push(ruleId);
@@ -390,7 +395,7 @@ describe('MinimalExecutionEngine', () => {
         const result = await executionEngine.execute(selector, input);
 
         expect(result.results.size).toBe(3);
-        
+
         // rule1 should execute first, then rule2 and rule3 in parallel
         expect(executionOrder[0]).toBe('rule1');
         expect(executionOrder.slice(1).sort()).toEqual(['rule2', 'rule3']);
@@ -400,14 +405,14 @@ describe('MinimalExecutionEngine', () => {
     it('should return empty result for no matching rules', async () => {
       const selector: RuleSelector = {
         ids: ['nonexistent'],
-        mode: { type: 'parallel' }
+        mode: { type: 'parallel' },
       };
       const input = { value: 42 };
 
       const mockRulePlan: ResolvedRulePlan = {
         ruleIds: [],
         executionOrder: [],
-        dependencies: new Map()
+        dependencies: new Map(),
       };
 
       mockTagManager.resolveRules.mockResolvedValue(mockRulePlan);
@@ -421,20 +426,21 @@ describe('MinimalExecutionEngine', () => {
     it('should throw error for unsupported execution mode', async () => {
       const selector: RuleSelector = {
         ids: ['rule1'],
-        mode: { type: 'unsupported' as unknown }
+        mode: { type: 'unsupported' as unknown },
       };
       const input = { value: 42 };
 
       const mockRulePlan: ResolvedRulePlan = {
         ruleIds: ['rule1'],
         executionOrder: [['rule1']],
-        dependencies: new Map()
+        dependencies: new Map(),
       };
 
       mockTagManager.resolveRules.mockResolvedValue(mockRulePlan);
 
-      await expect(executionEngine.execute(selector, input))
-        .rejects.toThrow('Unsupported execution mode: unsupported');
+      await expect(executionEngine.execute(selector, input)).rejects.toThrow(
+        'Unsupported execution mode: unsupported',
+      );
     });
   });
 
@@ -444,14 +450,14 @@ describe('MinimalExecutionEngine', () => {
       expect(config).toEqual({
         maxConcurrency: 10,
         executionTimeout: 5000,
-        includePerformanceMetrics: false
+        includePerformanceMetrics: false,
       });
     });
 
     it('should update configuration', () => {
       const newConfig = {
         maxConcurrency: 5,
-        executionTimeout: 3000
+        executionTimeout: 3000,
       };
 
       executionEngine.updateConfig(newConfig);
@@ -502,7 +508,7 @@ describe('MinimalExecutionEngine', () => {
 
       const result = await executionEngine.executeParallelWithMetrics(ruleIds, input, {
         includeMetrics: true,
-        maxConcurrency: 2
+        maxConcurrency: 2,
       });
 
       expect(result.results.size).toBe(3);
@@ -521,10 +527,12 @@ describe('MinimalExecutionEngine', () => {
         .mockRejectedValueOnce(new Error('Rule2 failed'))
         .mockResolvedValueOnce({ result: { output3: 'result3' } });
 
-      await expect(executionEngine.executeParallelWithMetrics(ruleIds, input, {
-        failFast: true,
-        maxConcurrency: 1 // Sequential to ensure order
-      })).rejects.toThrow('Rule2 failed');
+      await expect(
+        executionEngine.executeParallelWithMetrics(ruleIds, input, {
+          failFast: true,
+          maxConcurrency: 1, // Sequential to ensure order
+        }),
+      ).rejects.toThrow('Rule2 failed');
     });
 
     it('should collect all errors when fail-fast is disabled', async () => {
@@ -538,7 +546,7 @@ describe('MinimalExecutionEngine', () => {
 
       const result = await executionEngine.executeParallelWithMetrics(ruleIds, input, {
         failFast: false,
-        includeMetrics: true
+        includeMetrics: true,
       });
 
       expect(result.results.size).toBe(1);
@@ -552,13 +560,13 @@ describe('MinimalExecutionEngine', () => {
       const input = { value: 42 };
 
       // Mock a slow execution
-      mockZenEngine.evaluate.mockImplementation(() => 
-        new Promise(resolve => setTimeout(() => resolve({ result: {} }), 200))
+      mockZenEngine.evaluate.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve({ result: {} }), 200)),
       );
 
       const result = await executionEngine.executeParallelWithMetrics(ruleIds, input, {
         ruleTimeout: 50, // Very short timeout
-        failFast: false // Don't fail fast, collect the timeout error
+        failFast: false, // Don't fail fast, collect the timeout error
       });
 
       expect(result.errors?.size).toBe(1);
@@ -576,17 +584,17 @@ describe('MinimalExecutionEngine', () => {
       mockZenEngine.evaluate.mockImplementation(async () => {
         concurrentCalls++;
         maxConcurrentCalls = Math.max(maxConcurrentCalls, concurrentCalls);
-        
+
         // Simulate some work
-        await new Promise(resolve => setTimeout(resolve, 10));
-        
+        await new Promise((resolve) => setTimeout(resolve, 10));
+
         concurrentCalls--;
         return { result: { output: 'result' } };
       });
 
       await executionEngine.executeParallelWithMetrics(ruleIds, input, {
         maxConcurrency: 2,
-        includeMetrics: true
+        includeMetrics: true,
       });
 
       expect(maxConcurrentCalls).toBeLessThanOrEqual(2);
@@ -598,16 +606,16 @@ describe('MinimalExecutionEngine', () => {
 
       mockZenEngine.evaluate
         .mockImplementationOnce(async () => {
-          await new Promise(resolve => setTimeout(resolve, 5));
+          await new Promise((resolve) => setTimeout(resolve, 5));
           return { result: { output: 'fast' } };
         })
         .mockImplementationOnce(async () => {
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
           return { result: { output: 'slow' } };
         });
 
       const result = await executionEngine.executeParallelWithMetrics(ruleIds, input, {
-        includeMetrics: true
+        includeMetrics: true,
       });
 
       expect(result.performanceAnalysis).toBeDefined();
@@ -624,7 +632,7 @@ describe('MinimalExecutionEngine', () => {
       mockZenEngine.evaluate.mockResolvedValue({ result: { output: 'result' } });
 
       await executionEngine.executeParallelWithMetrics(ruleIds, input, {
-        includeMetrics: true
+        includeMetrics: true,
       });
 
       const lastMetrics = executionEngine.getLastExecutionMetrics();
@@ -646,13 +654,13 @@ describe('MinimalExecutionEngine', () => {
       const input = { value: 42 };
 
       mockZenEngine.evaluate.mockImplementation(async () => {
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         return { result: { output: 'result' } };
       });
 
       const result = await executionEngine.executeParallelWithMetrics(ruleIds, input, {
         maxConcurrency: 2,
-        includeMetrics: true
+        includeMetrics: true,
       });
 
       expect(result.performanceMetrics!.batchTimings.length).toBeGreaterThan(0);
@@ -669,50 +677,58 @@ describe('MinimalExecutionEngine', () => {
       const executionOrder: string[] = [];
       const inputHistory: Record<string, unknown>[] = [];
 
-      mockZenEngine.evaluate.mockImplementation(async (ruleId: string, input: Record<string, unknown>) => {
-        executionOrder.push(ruleId);
-        inputHistory.push({ ...input });
-        
-        return { 
-          result: { 
-            [`output_${ruleId}`]: `result_${ruleId}`,
-            [`processed_by_${ruleId}`]: true
-          } 
-        };
-      });
+      mockZenEngine.evaluate.mockImplementation(
+        async (ruleId: string, input: Record<string, unknown>) => {
+          executionOrder.push(ruleId);
+          inputHistory.push({ ...input });
+
+          return {
+            result: {
+              [`output_${ruleId}`]: `result_${ruleId}`,
+              [`processed_by_${ruleId}`]: true,
+            },
+          };
+        },
+      );
 
       const result = await executionEngine.executeSequentialWithMetrics(ruleIds, input, {
         pipelineMode: true,
-        includeMetrics: true
+        includeMetrics: true,
       });
 
       expect(executionOrder).toEqual(['rule1', 'rule2', 'rule3']);
       expect(result.results.size).toBe(3);
-      
+
       // Verify pipeline mode - each rule gets output from previous rules
       expect(inputHistory[0]).toEqual({ value: 42 });
-      expect(inputHistory[1]).toEqual(expect.objectContaining({
-        value: 42,
-        output_rule1: 'result_rule1',
-        processed_by_rule1: true
-      }));
-      expect(inputHistory[2]).toEqual(expect.objectContaining({
-        value: 42,
-        output_rule1: 'result_rule1',
-        processed_by_rule1: true,
-        output_rule2: 'result_rule2',
-        processed_by_rule2: true
-      }));
+      expect(inputHistory[1]).toEqual(
+        expect.objectContaining({
+          value: 42,
+          output_rule1: 'result_rule1',
+          processed_by_rule1: true,
+        }),
+      );
+      expect(inputHistory[2]).toEqual(
+        expect.objectContaining({
+          value: 42,
+          output_rule1: 'result_rule1',
+          processed_by_rule1: true,
+          output_rule2: 'result_rule2',
+          processed_by_rule2: true,
+        }),
+      );
 
-      expect(result.finalInput).toEqual(expect.objectContaining({
-        value: 42,
-        output_rule1: 'result_rule1',
-        processed_by_rule1: true,
-        output_rule2: 'result_rule2',
-        processed_by_rule2: true,
-        output_rule3: 'result_rule3',
-        processed_by_rule3: true
-      }));
+      expect(result.finalInput).toEqual(
+        expect.objectContaining({
+          value: 42,
+          output_rule1: 'result_rule1',
+          processed_by_rule1: true,
+          output_rule2: 'result_rule2',
+          processed_by_rule2: true,
+          output_rule3: 'result_rule3',
+          processed_by_rule3: true,
+        }),
+      );
     });
 
     it('should execute rules with pipeline mode disabled', async () => {
@@ -721,17 +737,19 @@ describe('MinimalExecutionEngine', () => {
 
       const inputHistory: Record<string, unknown>[] = [];
 
-      mockZenEngine.evaluate.mockImplementation(async (ruleId: string, input: Record<string, unknown>) => {
-        inputHistory.push({ ...input });
-        return { result: { [`output_${ruleId}`]: `result_${ruleId}` } };
-      });
+      mockZenEngine.evaluate.mockImplementation(
+        async (ruleId: string, input: Record<string, unknown>) => {
+          inputHistory.push({ ...input });
+          return { result: { [`output_${ruleId}`]: `result_${ruleId}` } };
+        },
+      );
 
       const result = await executionEngine.executeSequentialWithMetrics(ruleIds, input, {
-        pipelineMode: false
+        pipelineMode: false,
       });
 
       expect(result.results.size).toBe(2);
-      
+
       // Verify non-pipeline mode - each rule gets original input
       expect(inputHistory[0]).toEqual({ value: 42 });
       expect(inputHistory[1]).toEqual({ value: 42 });
@@ -753,7 +771,7 @@ describe('MinimalExecutionEngine', () => {
       });
 
       const result = await executionEngine.executeSequentialWithMetrics(ruleIds, input, {
-        stopOnError: true
+        stopOnError: true,
       });
 
       expect(executionOrder).toEqual(['rule1', 'rule2']); // Should stop after rule2 fails
@@ -778,7 +796,7 @@ describe('MinimalExecutionEngine', () => {
       });
 
       const result = await executionEngine.executeSequentialWithMetrics(ruleIds, input, {
-        stopOnError: false
+        stopOnError: false,
       });
 
       expect(executionOrder).toEqual(['rule1', 'rule2', 'rule3']); // Should continue after rule2 fails
@@ -795,17 +813,17 @@ describe('MinimalExecutionEngine', () => {
 
       mockZenEngine.evaluate
         .mockImplementationOnce(async () => {
-          await new Promise(resolve => setTimeout(resolve, 10));
+          await new Promise((resolve) => setTimeout(resolve, 10));
           return { result: { output1: 'result1' } };
         })
         .mockImplementationOnce(async () => {
-          await new Promise(resolve => setTimeout(resolve, 5));
+          await new Promise((resolve) => setTimeout(resolve, 5));
           return { result: { output2: 'result2' } };
         });
 
       const result = await executionEngine.executeSequentialWithMetrics(ruleIds, input, {
         includeStateTracking: true,
-        pipelineMode: true
+        pipelineMode: true,
       });
 
       expect(result.executionState).toBeDefined();
@@ -813,37 +831,47 @@ describe('MinimalExecutionEngine', () => {
       expect(result.executionState?.failedRules).toEqual([]);
       expect(result.executionState?.currentRule).toBeUndefined(); // Should be cleared after completion
       expect(result.executionState?.timeline).toHaveLength(4); // 2 started + 2 completed events
-      
+
       const timeline = result.executionState?.timeline || [];
-      expect(timeline[0]).toEqual(expect.objectContaining({
-        ruleId: 'rule1',
-        event: 'started',
-        timestamp: expect.any(Number)
-      }));
-      expect(timeline[1]).toEqual(expect.objectContaining({
-        ruleId: 'rule1',
-        event: 'completed',
-        timestamp: expect.any(Number),
-        duration: expect.any(Number)
-      }));
-      expect(timeline[2]).toEqual(expect.objectContaining({
-        ruleId: 'rule2',
-        event: 'started',
-        timestamp: expect.any(Number)
-      }));
-      expect(timeline[3]).toEqual(expect.objectContaining({
-        ruleId: 'rule2',
-        event: 'completed',
-        timestamp: expect.any(Number),
-        duration: expect.any(Number)
-      }));
+      expect(timeline[0]).toEqual(
+        expect.objectContaining({
+          ruleId: 'rule1',
+          event: 'started',
+          timestamp: expect.any(Number),
+        }),
+      );
+      expect(timeline[1]).toEqual(
+        expect.objectContaining({
+          ruleId: 'rule1',
+          event: 'completed',
+          timestamp: expect.any(Number),
+          duration: expect.any(Number),
+        }),
+      );
+      expect(timeline[2]).toEqual(
+        expect.objectContaining({
+          ruleId: 'rule2',
+          event: 'started',
+          timestamp: expect.any(Number),
+        }),
+      );
+      expect(timeline[3]).toEqual(
+        expect.objectContaining({
+          ruleId: 'rule2',
+          event: 'completed',
+          timestamp: expect.any(Number),
+          duration: expect.any(Number),
+        }),
+      );
 
       // Verify input state tracking in pipeline mode
-      expect(result.executionState?.currentInput).toEqual(expect.objectContaining({
-        value: 42,
-        output1: 'result1',
-        output2: 'result2'
-      }));
+      expect(result.executionState?.currentInput).toEqual(
+        expect.objectContaining({
+          value: 42,
+          output1: 'result1',
+          output2: 'result2',
+        }),
+      );
     });
 
     it('should track failed rules in execution state', async () => {
@@ -859,21 +887,23 @@ describe('MinimalExecutionEngine', () => {
 
       const result = await executionEngine.executeSequentialWithMetrics(ruleIds, input, {
         includeStateTracking: true,
-        stopOnError: false
+        stopOnError: false,
       });
 
       expect(result.executionState?.completedRules).toEqual(['rule1', 'rule3']);
       expect(result.executionState?.failedRules).toEqual(['rule2']);
-      
+
       const timeline = result.executionState?.timeline || [];
-      const failedEvent = timeline.find(event => event.event === 'failed');
-      expect(failedEvent).toEqual(expect.objectContaining({
-        ruleId: 'rule2',
-        event: 'failed',
-        timestamp: expect.any(Number),
-        duration: expect.any(Number),
-        error: 'Rule2 execution failed'
-      }));
+      const failedEvent = timeline.find((event) => event.event === 'failed');
+      expect(failedEvent).toEqual(
+        expect.objectContaining({
+          ruleId: 'rule2',
+          event: 'failed',
+          timestamp: expect.any(Number),
+          duration: expect.any(Number),
+          error: 'Rule2 execution failed',
+        }),
+      );
     });
 
     it('should respect custom timeout for individual rules', async () => {
@@ -882,7 +912,7 @@ describe('MinimalExecutionEngine', () => {
 
       mockZenEngine.evaluate.mockImplementation(async (ruleId: string) => {
         if (ruleId === 'slow-rule') {
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await new Promise((resolve) => setTimeout(resolve, 200));
         }
         return { result: { [`output_${ruleId}`]: `result_${ruleId}` } };
       });
@@ -890,14 +920,14 @@ describe('MinimalExecutionEngine', () => {
       const result = await executionEngine.executeSequentialWithMetrics(ruleIds, input, {
         ruleTimeout: 50,
         stopOnError: false,
-        includeStateTracking: true
+        includeStateTracking: true,
       });
 
       expect(result.results.size).toBe(1);
       expect(result.results.get('fast-rule')).toEqual({ 'output_fast-rule': 'result_fast-rule' });
       expect(result.errors?.size).toBe(1);
       expect(result.errors?.get('slow-rule')?.message).toContain('Execution timed out after 50ms');
-      
+
       expect(result.executionState?.completedRules).toEqual(['fast-rule']);
       expect(result.executionState?.failedRules).toEqual(['slow-rule']);
     }, 1000);
@@ -907,12 +937,12 @@ describe('MinimalExecutionEngine', () => {
       const input = { value: 42 };
 
       mockZenEngine.evaluate.mockImplementation(async (ruleId: string) => {
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         return { result: { [`output_${ruleId}`]: `result_${ruleId}` } };
       });
 
       const result = await executionEngine.executeSequentialWithMetrics(ruleIds, input, {
-        includeMetrics: true
+        includeMetrics: true,
       });
 
       expect(result.performanceMetrics).toBeDefined();
@@ -938,23 +968,25 @@ describe('MinimalExecutionEngine', () => {
 
       const inputHistory: Record<string, unknown>[] = [];
 
-      mockZenEngine.evaluate.mockImplementation(async (ruleId: string, input: Record<string, unknown>) => {
-        inputHistory.push({ ...input });
-        
-        if (ruleId === 'rule1') {
-          return { result: 'string-result' }; // Non-object result
-        }
-        return { result: { output2: 'result2' } };
-      });
+      mockZenEngine.evaluate.mockImplementation(
+        async (ruleId: string, input: Record<string, unknown>) => {
+          inputHistory.push({ ...input });
+
+          if (ruleId === 'rule1') {
+            return { result: 'string-result' }; // Non-object result
+          }
+          return { result: { output2: 'result2' } };
+        },
+      );
 
       const result = await executionEngine.executeSequentialWithMetrics(ruleIds, input, {
-        pipelineMode: true
+        pipelineMode: true,
       });
 
       expect(result.results.size).toBe(2);
       expect(result.results.get('rule1')).toBe('string-result');
       expect(result.results.get('rule2')).toEqual({ output2: 'result2' });
-      
+
       // Second rule should get original input since first result wasn't an object
       expect(inputHistory[0]).toEqual({ value: 42 });
       expect(inputHistory[1]).toEqual({ value: 42 });
@@ -967,7 +999,7 @@ describe('MinimalExecutionEngine', () => {
       mockZenEngine.evaluate.mockResolvedValue({ result: { output: 'result' } });
 
       await executionEngine.executeSequentialWithMetrics(ruleIds, input, {
-        includeMetrics: true
+        includeMetrics: true,
       });
 
       const lastMetrics = executionEngine.getLastExecutionMetrics();
@@ -984,7 +1016,7 @@ describe('MinimalExecutionEngine', () => {
       mockCacheManager.get.mockRejectedValue(new Error('Cache error'));
 
       const result = await executionEngine.executeSequentialWithMetrics(ruleIds, input, {
-        stopOnError: false
+        stopOnError: false,
       });
 
       // Should handle the cache error as a rule execution error
@@ -1003,33 +1035,33 @@ describe('MinimalExecutionEngine', () => {
       mockZenEngine.evaluate.mockImplementation(async (ruleId: string) => {
         const startTime = performance.now();
         executionOrder.push(ruleId);
-        
+
         // Simulate variable execution times
         const delay = Math.random() * 20;
-        await new Promise(resolve => setTimeout(resolve, delay));
-        
+        await new Promise((resolve) => setTimeout(resolve, delay));
+
         executionTimes[ruleId] = performance.now() - startTime;
-        
+
         if (ruleId === 'rule3') {
           throw new Error('Rule3 failed');
         }
-        
+
         return { result: { [`output_${ruleId}`]: `result_${ruleId}` } };
       });
 
       const result = await executionEngine.executeSequentialWithMetrics(ruleIds, input, {
         stopOnError: false,
-        includeStateTracking: true
+        includeStateTracking: true,
       });
 
       // Verify strict sequential execution order
       expect(executionOrder).toEqual(['rule1', 'rule2', 'rule3', 'rule4', 'rule5']);
-      
+
       // Verify results and errors
       expect(result.results.size).toBe(4); // All except rule3
       expect(result.errors?.size).toBe(1);
       expect(result.errors?.get('rule3')?.message).toBe('Rule3 failed');
-      
+
       // Verify execution state
       expect(result.executionState?.completedRules).toEqual(['rule1', 'rule2', 'rule4', 'rule5']);
       expect(result.executionState?.failedRules).toEqual(['rule3']);
@@ -1040,14 +1072,14 @@ describe('MinimalExecutionEngine', () => {
     it('should complete execution within reasonable time', async () => {
       const selector: RuleSelector = {
         ids: ['rule1'],
-        mode: { type: 'parallel' }
+        mode: { type: 'parallel' },
       };
       const input = { value: 42 };
 
       const mockRulePlan: ResolvedRulePlan = {
         ruleIds: ['rule1'],
         executionOrder: [['rule1']],
-        dependencies: new Map()
+        dependencies: new Map(),
       };
 
       mockTagManager.resolveRules.mockResolvedValue(mockRulePlan);
@@ -1068,14 +1100,14 @@ describe('MinimalExecutionEngine', () => {
 
       mockZenEngine.evaluate.mockImplementation(async () => {
         // Simulate very fast rule execution
-        await new Promise(resolve => setTimeout(resolve, 1));
+        await new Promise((resolve) => setTimeout(resolve, 1));
         return { result: { output: 'result' } };
       });
 
       const startTime = performance.now();
       const result = await executionEngine.executeParallelWithMetrics(ruleIds, input, {
         maxConcurrency: 10,
-        includeMetrics: true
+        includeMetrics: true,
       });
       const duration = performance.now() - startTime;
 
@@ -1088,13 +1120,15 @@ describe('MinimalExecutionEngine', () => {
   describe('mixed execution mode', () => {
     beforeEach(() => {
       // Mock cache to have rules available
-      mockCacheManager.getAllMetadata.mockResolvedValue(new Map([
-        ['rule1', { id: 'rule1', version: '1.0', tags: ['tag1'], lastModified: Date.now() }],
-        ['rule2', { id: 'rule2', version: '1.0', tags: ['tag2'], lastModified: Date.now() }],
-        ['rule3', { id: 'rule3', version: '1.0', tags: ['tag3'], lastModified: Date.now() }],
-        ['rule4', { id: 'rule4', version: '1.0', tags: ['tag4'], lastModified: Date.now() }],
-        ['rule5', { id: 'rule5', version: '1.0', tags: ['tag5'], lastModified: Date.now() }]
-      ]));
+      mockCacheManager.getAllMetadata.mockResolvedValue(
+        new Map([
+          ['rule1', { id: 'rule1', version: '1.0', tags: ['tag1'], lastModified: Date.now() }],
+          ['rule2', { id: 'rule2', version: '1.0', tags: ['tag2'], lastModified: Date.now() }],
+          ['rule3', { id: 'rule3', version: '1.0', tags: ['tag3'], lastModified: Date.now() }],
+          ['rule4', { id: 'rule4', version: '1.0', tags: ['tag4'], lastModified: Date.now() }],
+          ['rule5', { id: 'rule5', version: '1.0', tags: ['tag5'], lastModified: Date.now() }],
+        ]),
+      );
     });
 
     describe('validateExecutionGroups', () => {
@@ -1102,7 +1136,7 @@ describe('MinimalExecutionEngine', () => {
         const groups = [
           { rules: ['rule1', 'rule2'], mode: 'parallel' as const },
           { rules: ['rule3'], mode: 'sequential' as const },
-          { rules: ['rule4', 'rule5'], mode: 'sequential' as const }
+          { rules: ['rule4', 'rule5'], mode: 'sequential' as const },
         ];
 
         const plan = await executionEngine.validateExecutionGroups(groups);
@@ -1118,78 +1152,84 @@ describe('MinimalExecutionEngine', () => {
       });
 
       it('should throw error for empty groups array', async () => {
-        await expect(executionEngine.validateExecutionGroups([]))
-          .rejects.toThrow('Execution groups cannot be empty');
+        await expect(executionEngine.validateExecutionGroups([])).rejects.toThrow(
+          'Execution groups cannot be empty',
+        );
       });
 
       it('should throw error for group with empty rules', async () => {
-        const groups = [
-          { rules: [], mode: 'parallel' as const }
-        ];
+        const groups = [{ rules: [], mode: 'parallel' as const }];
 
-        await expect(executionEngine.validateExecutionGroups(groups))
-          .rejects.toThrow('Execution group 0 cannot have empty rules array');
+        await expect(executionEngine.validateExecutionGroups(groups)).rejects.toThrow(
+          'Execution group 0 cannot have empty rules array',
+        );
       });
 
       it('should throw error for invalid execution mode', async () => {
-        const groups = [
-          { rules: ['rule1'], mode: 'invalid' as any }
-        ];
+        const groups = [{ rules: ['rule1'], mode: 'invalid' as any }];
 
-        await expect(executionEngine.validateExecutionGroups(groups))
-          .rejects.toThrow("Invalid execution mode 'invalid' in group 0");
+        await expect(executionEngine.validateExecutionGroups(groups)).rejects.toThrow(
+          "Invalid execution mode 'invalid' in group 0",
+        );
       });
 
       it('should throw error for non-existent rule', async () => {
-        const groups = [
-          { rules: ['nonexistent'], mode: 'parallel' as const }
-        ];
+        const groups = [{ rules: ['nonexistent'], mode: 'parallel' as const }];
 
-        await expect(executionEngine.validateExecutionGroups(groups))
-          .rejects.toThrow("Rule 'nonexistent' in group 0 not found in cache");
+        await expect(executionEngine.validateExecutionGroups(groups)).rejects.toThrow(
+          "Rule 'nonexistent' in group 0 not found in cache",
+        );
       });
 
       it('should throw error for duplicate rules across groups', async () => {
         const groups = [
           { rules: ['rule1'], mode: 'parallel' as const },
-          { rules: ['rule1'], mode: 'sequential' as const }
+          { rules: ['rule1'], mode: 'sequential' as const },
         ];
 
-        await expect(executionEngine.validateExecutionGroups(groups))
-          .rejects.toThrow("Rule 'rule1' appears in multiple execution groups");
+        await expect(executionEngine.validateExecutionGroups(groups)).rejects.toThrow(
+          "Rule 'rule1' appears in multiple execution groups",
+        );
       });
 
       it('should provide optimization recommendations', async () => {
         const groups = [
           { rules: ['rule1'], mode: 'parallel' as const }, // Single rule in parallel
-          { rules: ['rule2', 'rule3', 'rule4', 'rule5', 'rule1'].slice(0, 4), mode: 'sequential' as const } // Large sequential group
+          {
+            rules: ['rule2', 'rule3', 'rule4', 'rule5', 'rule1'].slice(0, 4),
+            mode: 'sequential' as const,
+          }, // Large sequential group
         ];
 
         // Add more rules to cache for the large group test
-        mockCacheManager.getAllMetadata.mockResolvedValue(new Map([
-          ['rule1', { id: 'rule1', version: '1.0', tags: ['tag1'], lastModified: Date.now() }],
-          ['rule2', { id: 'rule2', version: '1.0', tags: ['tag2'], lastModified: Date.now() }],
-          ['rule3', { id: 'rule3', version: '1.0', tags: ['tag3'], lastModified: Date.now() }],
-          ['rule4', { id: 'rule4', version: '1.0', tags: ['tag4'], lastModified: Date.now() }],
-          ['rule5', { id: 'rule5', version: '1.0', tags: ['tag5'], lastModified: Date.now() }],
-          ['rule6', { id: 'rule6', version: '1.0', tags: ['tag6'], lastModified: Date.now() }]
-        ]));
+        mockCacheManager.getAllMetadata.mockResolvedValue(
+          new Map([
+            ['rule1', { id: 'rule1', version: '1.0', tags: ['tag1'], lastModified: Date.now() }],
+            ['rule2', { id: 'rule2', version: '1.0', tags: ['tag2'], lastModified: Date.now() }],
+            ['rule3', { id: 'rule3', version: '1.0', tags: ['tag3'], lastModified: Date.now() }],
+            ['rule4', { id: 'rule4', version: '1.0', tags: ['tag4'], lastModified: Date.now() }],
+            ['rule5', { id: 'rule5', version: '1.0', tags: ['tag5'], lastModified: Date.now() }],
+            ['rule6', { id: 'rule6', version: '1.0', tags: ['tag6'], lastModified: Date.now() }],
+          ]),
+        );
 
         const largeGroups = [
           { rules: ['rule1'], mode: 'parallel' as const },
-          { rules: ['rule2', 'rule3', 'rule4', 'rule5', 'rule6'], mode: 'sequential' as const }
+          { rules: ['rule2', 'rule3', 'rule4', 'rule5', 'rule6'], mode: 'sequential' as const },
         ];
 
         const plan = await executionEngine.validateExecutionGroups(largeGroups);
 
         expect(plan.optimizations).toBeDefined();
-        expect(plan.optimizations!.some(opt => opt.includes('Single rule in parallel mode'))).toBe(true);
+        expect(
+          plan.optimizations!.some((opt) => opt.includes('Single rule in parallel mode')),
+        ).toBe(true);
       });
 
       it('should estimate execution times', async () => {
         const groups = [
           { rules: ['rule1', 'rule2'], mode: 'parallel' as const },
-          { rules: ['rule3'], mode: 'sequential' as const }
+          { rules: ['rule3'], mode: 'sequential' as const },
         ];
 
         const plan = await executionEngine.validateExecutionGroups(groups);
@@ -1197,7 +1237,7 @@ describe('MinimalExecutionEngine', () => {
         expect(plan.estimatedTime).toBeGreaterThan(0);
         expect(plan.groups[0].estimatedTime).toBeGreaterThan(0);
         expect(plan.groups[1].estimatedTime).toBeGreaterThan(0);
-        
+
         // Parallel should be faster than sequential for same number of rules
         const parallelTime = plan.groups[0].estimatedTime!;
         const sequentialTimeForTwo = 50 * 2; // 2 rules * 50ms each
@@ -1210,7 +1250,7 @@ describe('MinimalExecutionEngine', () => {
         const groups = [
           { rules: ['rule1', 'rule2'], mode: 'parallel' as const },
           { rules: ['rule3'], mode: 'sequential' as const },
-          { rules: ['rule4', 'rule5'], mode: 'parallel' as const }
+          { rules: ['rule4', 'rule5'], mode: 'parallel' as const },
         ];
         const input = { value: 42 };
 
@@ -1221,12 +1261,12 @@ describe('MinimalExecutionEngine', () => {
         });
 
         const result = await executionEngine.executeMixedWithMetrics(groups, input, {
-          includeMetrics: true
+          includeMetrics: true,
         });
 
         expect(result.results.size).toBe(5);
         expect(result.groupResults).toHaveLength(3);
-        
+
         // Check group results structure
         expect(result.groupResults![0].mode).toBe('parallel');
         expect(result.groupResults![0].ruleIds).toEqual(['rule1', 'rule2']);
@@ -1243,59 +1283,67 @@ describe('MinimalExecutionEngine', () => {
       it('should handle pipeline mode between groups', async () => {
         const groups = [
           { rules: ['rule1'], mode: 'sequential' as const },
-          { rules: ['rule2'], mode: 'sequential' as const }
+          { rules: ['rule2'], mode: 'sequential' as const },
         ];
         const input = { value: 42 };
 
         const inputHistory: Record<string, unknown>[] = [];
-        mockZenEngine.evaluate.mockImplementation(async (ruleId: string, input: Record<string, unknown>) => {
-          inputHistory.push({ ...input });
-          return { result: { [`output_${ruleId}`]: `result_${ruleId}`, processed: true } };
-        });
+        mockZenEngine.evaluate.mockImplementation(
+          async (ruleId: string, input: Record<string, unknown>) => {
+            inputHistory.push({ ...input });
+            return { result: { [`output_${ruleId}`]: `result_${ruleId}`, processed: true } };
+          },
+        );
 
         const result = await executionEngine.executeMixedWithMetrics(groups, input, {
-          pipelineMode: true
+          pipelineMode: true,
         });
 
         expect(result.results.size).toBe(2);
         expect(result.finalInput).toBeDefined();
-        
+
         // Verify pipeline mode - second rule should get output from first rule
         expect(inputHistory[0]).toEqual({ value: 42 });
-        expect(inputHistory[1]).toEqual(expect.objectContaining({
-          value: 42,
-          output_rule1: 'result_rule1',
-          processed: true
-        }));
+        expect(inputHistory[1]).toEqual(
+          expect.objectContaining({
+            value: 42,
+            output_rule1: 'result_rule1',
+            processed: true,
+          }),
+        );
 
-        expect(result.finalInput).toEqual(expect.objectContaining({
-          value: 42,
-          output_rule1: 'result_rule1',
-          output_rule2: 'result_rule2',
-          processed: true
-        }));
+        expect(result.finalInput).toEqual(
+          expect.objectContaining({
+            value: 42,
+            output_rule1: 'result_rule1',
+            output_rule2: 'result_rule2',
+            processed: true,
+          }),
+        );
       });
 
       it('should handle pipeline mode disabled', async () => {
         const groups = [
           { rules: ['rule1'], mode: 'sequential' as const },
-          { rules: ['rule2'], mode: 'sequential' as const }
+          { rules: ['rule2'], mode: 'sequential' as const },
         ];
         const input = { value: 42 };
 
         const inputHistory: Record<string, unknown>[] = [];
-        mockZenEngine.evaluate.mockImplementation(async (ruleId: string, input: Record<string, unknown>) => {
-          inputHistory.push({ ...input });
-          return { result: { [`output_${ruleId}`]: `result_${ruleId}` } };
-        });
+        mockZenEngine.evaluate.mockImplementation(
+          async (ruleId: string, input: Record<string, unknown>) => {
+            inputHistory.push({ ...input });
+            return { result: { [`output_${ruleId}`]: `result_${ruleId}` } };
+          },
+        );
 
         const result = await executionEngine.executeMixedWithMetrics(groups, input, {
-          pipelineMode: false
+          pipelineMode: false,
         });
 
         expect(result.results.size).toBe(2);
         expect(result.finalInput).toBeUndefined();
-        
+
         // Both rules should get original input
         expect(inputHistory[0]).toEqual({ value: 42 });
         expect(inputHistory[1]).toEqual({ value: 42 });
@@ -1305,7 +1353,7 @@ describe('MinimalExecutionEngine', () => {
         const groups = [
           { rules: ['rule1'], mode: 'sequential' as const },
           { rules: ['rule2'], mode: 'sequential' as const },
-          { rules: ['rule3'], mode: 'sequential' as const }
+          { rules: ['rule3'], mode: 'sequential' as const },
         ];
         const input = { value: 42 };
 
@@ -1319,7 +1367,7 @@ describe('MinimalExecutionEngine', () => {
         });
 
         const result = await executionEngine.executeMixedWithMetrics(groups, input, {
-          stopOnError: true
+          stopOnError: true,
         });
 
         expect(executionOrder).toEqual(['rule1', 'rule2']); // Should stop after rule2 fails
@@ -1332,7 +1380,7 @@ describe('MinimalExecutionEngine', () => {
         const groups = [
           { rules: ['rule1'], mode: 'sequential' as const },
           { rules: ['rule2'], mode: 'sequential' as const },
-          { rules: ['rule3'], mode: 'sequential' as const }
+          { rules: ['rule3'], mode: 'sequential' as const },
         ];
         const input = { value: 42 };
 
@@ -1346,7 +1394,7 @@ describe('MinimalExecutionEngine', () => {
         });
 
         const result = await executionEngine.executeMixedWithMetrics(groups, input, {
-          stopOnError: false
+          stopOnError: false,
         });
 
         expect(executionOrder).toEqual(['rule1', 'rule2', 'rule3']); // Should continue after rule2 fails
@@ -1357,49 +1405,54 @@ describe('MinimalExecutionEngine', () => {
 
       it('should respect custom timeout', async () => {
         // Add slow-rule to the mocked cache
-        mockCacheManager.getAllMetadata.mockResolvedValue(new Map([
-          ['rule1', { id: 'rule1', version: '1.0', tags: ['tag1'], lastModified: Date.now() }],
-          ['rule2', { id: 'rule2', version: '1.0', tags: ['tag2'], lastModified: Date.now() }],
-          ['rule3', { id: 'rule3', version: '1.0', tags: ['tag3'], lastModified: Date.now() }],
-          ['rule4', { id: 'rule4', version: '1.0', tags: ['tag4'], lastModified: Date.now() }],
-          ['rule5', { id: 'rule5', version: '1.0', tags: ['tag5'], lastModified: Date.now() }],
-          ['slow-rule', { id: 'slow-rule', version: '1.0', tags: ['slow'], lastModified: Date.now() }]
-        ]));
+        mockCacheManager.getAllMetadata.mockResolvedValue(
+          new Map([
+            ['rule1', { id: 'rule1', version: '1.0', tags: ['tag1'], lastModified: Date.now() }],
+            ['rule2', { id: 'rule2', version: '1.0', tags: ['tag2'], lastModified: Date.now() }],
+            ['rule3', { id: 'rule3', version: '1.0', tags: ['tag3'], lastModified: Date.now() }],
+            ['rule4', { id: 'rule4', version: '1.0', tags: ['tag4'], lastModified: Date.now() }],
+            ['rule5', { id: 'rule5', version: '1.0', tags: ['tag5'], lastModified: Date.now() }],
+            [
+              'slow-rule',
+              { id: 'slow-rule', version: '1.0', tags: ['slow'], lastModified: Date.now() },
+            ],
+          ]),
+        );
 
-        const groups = [
-          { rules: ['slow-rule'], mode: 'sequential' as const }
-        ];
+        const groups = [{ rules: ['slow-rule'], mode: 'sequential' as const }];
         const input = { value: 42 };
 
         // Mock a slow execution
-        mockZenEngine.evaluate.mockImplementation(() => 
-          new Promise(resolve => setTimeout(() => resolve({ result: {} }), 200))
+        mockZenEngine.evaluate.mockImplementation(
+          () => new Promise((resolve) => setTimeout(() => resolve({ result: {} }), 200)),
         );
 
         const result = await executionEngine.executeMixedWithMetrics(groups, input, {
           ruleTimeout: 50, // Very short timeout
-          stopOnError: false
+          stopOnError: false,
         });
 
         expect(result.errors?.size).toBe(1);
-        expect(result.errors?.get('slow-rule')?.message).toContain('Execution timed out after 50ms');
+        expect(result.errors?.get('slow-rule')?.message).toContain(
+          'Execution timed out after 50ms',
+        );
         expect(result.results.size).toBe(0);
       }, 1000);
 
       it('should provide detailed performance metrics', async () => {
         const groups = [
           { rules: ['rule1', 'rule2'], mode: 'parallel' as const },
-          { rules: ['rule3'], mode: 'sequential' as const }
+          { rules: ['rule3'], mode: 'sequential' as const },
         ];
         const input = { value: 42 };
 
         mockZenEngine.evaluate.mockImplementation(async (ruleId: string) => {
-          await new Promise(resolve => setTimeout(resolve, 10));
+          await new Promise((resolve) => setTimeout(resolve, 10));
           return { result: { [`output_${ruleId}`]: `result_${ruleId}` } };
         });
 
         const result = await executionEngine.executeMixedWithMetrics(groups, input, {
-          includeMetrics: true
+          includeMetrics: true,
         });
 
         expect(result.performanceMetrics).toBeDefined();
@@ -1410,37 +1463,38 @@ describe('MinimalExecutionEngine', () => {
       });
 
       it('should handle empty groups gracefully', async () => {
-        await expect(executionEngine.executeMixedWithMetrics([], { value: 42 }))
-          .rejects.toThrow('Execution groups cannot be empty');
+        await expect(executionEngine.executeMixedWithMetrics([], { value: 42 })).rejects.toThrow(
+          'Execution groups cannot be empty',
+        );
       });
 
       it('should handle complex mixed execution patterns', async () => {
         const groups = [
-          { rules: ['rule1'], mode: 'sequential' as const },      // Single sequential
+          { rules: ['rule1'], mode: 'sequential' as const }, // Single sequential
           { rules: ['rule2', 'rule3'], mode: 'parallel' as const }, // Parallel pair
-          { rules: ['rule4'], mode: 'sequential' as const },      // Single sequential
-          { rules: ['rule5'], mode: 'parallel' as const }         // Single parallel (should work like sequential)
+          { rules: ['rule4'], mode: 'sequential' as const }, // Single sequential
+          { rules: ['rule5'], mode: 'parallel' as const }, // Single parallel (should work like sequential)
         ];
         const input = { value: 42 };
 
         const executionOrder: string[] = [];
         const groupTimestamps: number[] = [];
-        
+
         mockZenEngine.evaluate.mockImplementation(async (ruleId: string) => {
           executionOrder.push(ruleId);
           groupTimestamps.push(performance.now());
-          await new Promise(resolve => setTimeout(resolve, 5));
+          await new Promise((resolve) => setTimeout(resolve, 5));
           return { result: { [`output_${ruleId}`]: `result_${ruleId}` } };
         });
 
         const result = await executionEngine.executeMixedWithMetrics(groups, input, {
           includeMetrics: true,
-          pipelineMode: true
+          pipelineMode: true,
         });
 
         expect(result.results.size).toBe(5);
         expect(result.groupResults).toHaveLength(4);
-        
+
         // Verify execution order: rule1 first, then rule2&rule3 in parallel, then rule4, then rule5
         expect(executionOrder[0]).toBe('rule1');
         expect(executionOrder.slice(1, 3).sort()).toEqual(['rule2', 'rule3']);
@@ -1455,15 +1509,13 @@ describe('MinimalExecutionEngine', () => {
       });
 
       it('should store last execution metrics', async () => {
-        const groups = [
-          { rules: ['rule1'], mode: 'sequential' as const }
-        ];
+        const groups = [{ rules: ['rule1'], mode: 'sequential' as const }];
         const input = { value: 42 };
 
         mockZenEngine.evaluate.mockResolvedValue({ result: { output: 'result' } });
 
         await executionEngine.executeMixedWithMetrics(groups, input, {
-          includeMetrics: true
+          includeMetrics: true,
         });
 
         const lastMetrics = executionEngine.getLastExecutionMetrics();
@@ -1476,20 +1528,20 @@ describe('MinimalExecutionEngine', () => {
       it('should work with basic execute method for mixed mode', async () => {
         const selector: RuleSelector = {
           ids: ['rule1', 'rule2'],
-          mode: { 
+          mode: {
             type: 'mixed',
             groups: [
               { rules: ['rule1'], mode: 'sequential' },
-              { rules: ['rule2'], mode: 'parallel' }
-            ]
-          }
+              { rules: ['rule2'], mode: 'parallel' },
+            ],
+          },
         };
         const input = { value: 42 };
 
         const mockRulePlan = {
           ruleIds: ['rule1', 'rule2'],
           executionOrder: [['rule1'], ['rule2']],
-          dependencies: new Map()
+          dependencies: new Map(),
         };
 
         mockTagManager.resolveRules.mockResolvedValue(mockRulePlan);
@@ -1507,20 +1559,21 @@ describe('MinimalExecutionEngine', () => {
       it('should throw error for mixed mode without groups', async () => {
         const selector: RuleSelector = {
           ids: ['rule1'],
-          mode: { type: 'mixed' } // No groups specified
+          mode: { type: 'mixed' }, // No groups specified
         };
         const input = { value: 42 };
 
         const mockRulePlan = {
           ruleIds: ['rule1'],
           executionOrder: [['rule1']],
-          dependencies: new Map()
+          dependencies: new Map(),
         };
 
         mockTagManager.resolveRules.mockResolvedValue(mockRulePlan);
 
-        await expect(executionEngine.execute(selector, input))
-          .rejects.toThrow('Mixed execution mode requires execution groups to be specified');
+        await expect(executionEngine.execute(selector, input)).rejects.toThrow(
+          'Mixed execution mode requires execution groups to be specified',
+        );
       });
     });
   });

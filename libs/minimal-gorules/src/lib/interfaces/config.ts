@@ -10,15 +10,15 @@ export interface MinimalGoRulesConfig {
   apiUrl: string;
   apiKey: string;
   projectId: string;
-  
+
   // Optional performance settings
   cacheMaxSize?: number; // default: 1000
   httpTimeout?: number; // default: 5000ms
   batchSize?: number; // default: 50
-  
+
   // Cross-platform settings
   platform?: 'node' | 'browser';
-  
+
   // Performance optimization settings
   enablePerformanceOptimizations?: boolean; // default: false
   enablePerformanceMetrics?: boolean; // default: false

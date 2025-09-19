@@ -2,7 +2,12 @@
  * Unit tests for ConfigFactory
  */
 
-import { ConfigFactory, ENV_VARS, DEFAULT_CONFIG, ConfigValidationError } from './config-factory.js';
+import {
+  ConfigFactory,
+  ENV_VARS,
+  DEFAULT_CONFIG,
+  ConfigValidationError,
+} from './config-factory.js';
 import { MinimalGoRulesConfig } from '../interfaces/config.js';
 
 describe('ConfigFactory', () => {
@@ -13,9 +18,9 @@ describe('ConfigFactory', () => {
     // Reset environment variables before each test
     jest.resetModules();
     process.env = { ...originalEnv };
-    
+
     // Clear all GoRules environment variables
-    Object.values(ENV_VARS).forEach(envVar => {
+    Object.values(ENV_VARS).forEach((envVar) => {
       delete process.env[envVar];
     });
   });
@@ -76,7 +81,9 @@ describe('ConfigFactory', () => {
       expect(config.httpTimeout).toBe(DEFAULT_CONFIG.httpTimeout);
       expect(config.batchSize).toBe(DEFAULT_CONFIG.batchSize);
       expect(config.platform).toBe(DEFAULT_CONFIG.platform);
-      expect(config.enablePerformanceOptimizations).toBe(DEFAULT_CONFIG.enablePerformanceOptimizations);
+      expect(config.enablePerformanceOptimizations).toBe(
+        DEFAULT_CONFIG.enablePerformanceOptimizations,
+      );
       expect(config.enablePerformanceMetrics).toBe(DEFAULT_CONFIG.enablePerformanceMetrics);
     });
 
@@ -88,7 +95,7 @@ describe('ConfigFactory', () => {
 
       const config = ConfigFactory.fromEnvironment({
         cacheMaxSize: 5000,
-        httpTimeout: 15000
+        httpTimeout: 15000,
       });
 
       expect(config.cacheMaxSize).toBe(5000); // Override value
@@ -163,7 +170,7 @@ describe('ConfigFactory', () => {
 
       const config = ConfigFactory.forDevelopment({
         cacheMaxSize: 200,
-        enablePerformanceOptimizations: true
+        enablePerformanceOptimizations: true,
       });
 
       expect(config.cacheMaxSize).toBe(200);
@@ -211,7 +218,7 @@ describe('ConfigFactory', () => {
     it('should apply overrides to testing configuration', () => {
       const config = ConfigFactory.forTesting({
         cacheMaxSize: 25,
-        httpTimeout: 500
+        httpTimeout: 500,
       });
 
       expect(config.cacheMaxSize).toBe(25);
@@ -227,7 +234,7 @@ describe('ConfigFactory', () => {
         projectId: 'test-project-id',
         cacheMaxSize: 1000,
         httpTimeout: 5000,
-        batchSize: 50
+        batchSize: 50,
       };
 
       const result = ConfigFactory.validate(config);
@@ -258,7 +265,7 @@ describe('ConfigFactory', () => {
       const config: MinimalGoRulesConfig = {
         apiUrl: 'invalid-url',
         apiKey: 'test-api-key',
-        projectId: 'test-project-id'
+        projectId: 'test-project-id',
       };
 
       const result = ConfigFactory.validate(config);
@@ -271,7 +278,7 @@ describe('ConfigFactory', () => {
       const config: MinimalGoRulesConfig = {
         apiUrl: 'https://api.gorules.io',
         apiKey: '   ',
-        projectId: ''
+        projectId: '',
       };
 
       const result = ConfigFactory.validate(config);
@@ -288,7 +295,7 @@ describe('ConfigFactory', () => {
         projectId: 'test-project-id',
         cacheMaxSize: -1,
         httpTimeout: 0,
-        batchSize: 1.5
+        batchSize: 1.5,
       };
 
       const result = ConfigFactory.validate(config);
@@ -304,7 +311,7 @@ describe('ConfigFactory', () => {
         apiUrl: 'https://api.gorules.io',
         apiKey: 'test-api-key',
         projectId: 'test-project-id',
-        platform: 'invalid' as any
+        platform: 'invalid' as any,
       };
 
       const result = ConfigFactory.validate(config);
@@ -319,7 +326,7 @@ describe('ConfigFactory', () => {
         apiKey: 'test-api-key',
         projectId: 'test-project-id',
         memoryWarningThreshold: 1.5,
-        memoryCriticalThreshold: -0.1
+        memoryCriticalThreshold: -0.1,
       };
 
       const result = ConfigFactory.validate(config);
@@ -335,13 +342,15 @@ describe('ConfigFactory', () => {
         apiKey: 'test-api-key',
         projectId: 'test-project-id',
         memoryWarningThreshold: 0.9,
-        memoryCriticalThreshold: 0.8
+        memoryCriticalThreshold: 0.8,
       };
 
       const result = ConfigFactory.validate(config);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Memory critical threshold must be higher than warning threshold');
+      expect(result.errors).toContain(
+        'Memory critical threshold must be higher than warning threshold',
+      );
     });
 
     it('should validate compression algorithm', () => {
@@ -349,7 +358,7 @@ describe('ConfigFactory', () => {
         apiUrl: 'https://api.gorules.io',
         apiKey: 'test-api-key',
         projectId: 'test-project-id',
-        compressionAlgorithm: 'invalid' as unknown
+        compressionAlgorithm: 'invalid' as unknown,
       };
 
       const result = ConfigFactory.validate(config);
@@ -363,7 +372,7 @@ describe('ConfigFactory', () => {
         apiUrl: 'https://api.gorules.io',
         apiKey: 'test-api-key',
         projectId: 'test-project-id',
-        memoryCleanupInterval: -1000
+        memoryCleanupInterval: -1000,
       };
 
       const result = ConfigFactory.validate(config);
@@ -407,8 +416,6 @@ describe('ConfigFactory', () => {
       process.env[ENV_VARS.ENABLE_COMPRESSION] = 'yes'; // Should use default
 
       const config = ConfigFactory.fromEnvironment();
-
-
 
       expect(config.enablePerformanceOptimizations).toBe(true); // 'TRUE' should be parsed as true (case-insensitive)
       expect(config.enablePerformanceMetrics).toBe(false); // 'False' should be parsed as false

@@ -37,7 +37,7 @@ export GORULES_PROJECT_ID="your-project-id"
 ```typescript
 const config = ConfigFactory.forDevelopment({
   apiKey: 'your-dev-api-key',
-  projectId: 'your-dev-project-id'
+  projectId: 'your-dev-project-id',
 });
 ```
 

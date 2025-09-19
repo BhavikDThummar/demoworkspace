@@ -1,5 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ZenEngine, ZenEngineOptions, ZenEvaluateOptions, ZenEngineResponse } from '@gorules/zen-engine';
+import {
+  ZenEngine,
+  ZenEngineOptions,
+  ZenEvaluateOptions,
+  ZenEngineResponse,
+} from '@gorules/zen-engine';
 import { GoRulesConfigService } from '../config/gorules.config.js';
 import {
   RuleExecutionOptions,
@@ -35,7 +40,7 @@ export class GoRulesZenService {
     }
 
     const config = this.configService.getConfig();
-    
+
     const engineOptions: ZenEngineOptions = {
       loader: async (key: string) => {
         // This will be implemented to load rules from GoRules API
@@ -44,14 +49,14 @@ export class GoRulesZenService {
           GoRulesErrorCode.RULE_NOT_FOUND,
           `Rule loader not implemented for key: ${key}`,
           { key },
-          false
+          false,
         );
       },
     };
 
     this.zenEngine = new ZenEngine(engineOptions);
     this.isInitialized = true;
-    
+
     if (config.enableLogging) {
       this.logger.log('GoRules Zen Engine initialized successfully');
     }
@@ -63,7 +68,7 @@ export class GoRulesZenService {
   async executeRule<T = any, R = any>(
     ruleId: string,
     input: T,
-    options?: RuleExecutionOptions
+    options?: RuleExecutionOptions,
   ): Promise<RuleExecutionResult<R>> {
     this.initializeZenEngine();
     const config = this.configService.getConfig();
@@ -82,7 +87,7 @@ export class GoRulesZenService {
       const response: ZenEngineResponse = await this.zenEngine.evaluate(
         ruleId,
         input,
-        evaluateOptions
+        evaluateOptions,
       );
 
       const endTime = Date.now();
@@ -111,7 +116,7 @@ export class GoRulesZenService {
 
       if (options?.trace && response.trace) {
         result.trace = {
-          steps: Object.values(response.trace).map(trace => ({
+          steps: Object.values(response.trace).map((trace) => ({
             id: trace.id,
             name: trace.name,
             duration: parseInt(trace.performance || '0', 10),
@@ -150,7 +155,7 @@ export class GoRulesZenService {
         GoRulesErrorCode.INTERNAL_ERROR,
         `Rule execution failed: ${error instanceof Error ? error.message : String(error)}`,
         { ruleId, originalError: error },
-        false
+        false,
       );
     }
   }
@@ -159,10 +164,10 @@ export class GoRulesZenService {
    * Execute multiple rules in batch
    */
   async executeBatch<T extends RuleInputData = RuleInputData, R = unknown>(
-    executions: BatchRuleExecution<T>[]
+    executions: BatchRuleExecution<T>[],
   ): Promise<BatchRuleExecutionResult<R>[]> {
     const config = this.configService.getConfig();
-    
+
     if (config.enableLogging) {
       this.logger.debug(`Executing batch of ${executions.length} rules`);
     }
@@ -173,12 +178,12 @@ export class GoRulesZenService {
     // In the future, this could be optimized for parallel execution
     for (const execution of executions) {
       const executionId = execution.executionId || `batch-${Date.now()}-${Math.random()}`;
-      
+
       try {
         const result = await this.executeRule<T, R>(
           execution.ruleId,
           execution.input,
-          execution.options
+          execution.options,
         );
 
         results.push({
@@ -210,7 +215,7 @@ export class GoRulesZenService {
     }
 
     if (config.enableLogging) {
-      const successCount = results.filter(r => !r.error).length;
+      const successCount = results.filter((r) => !r.error).length;
       const errorCount = results.length - successCount;
       this.logger.log(`Batch execution completed: ${successCount} success, ${errorCount} errors`);
     }
@@ -228,7 +233,11 @@ export class GoRulesZenService {
       await this.zenEngine.getDecision(ruleId);
       return true;
     } catch (error) {
-      this.logger.debug(`Rule validation failed for ${ruleId}: ${error instanceof Error ? error.message : String(error)}`);
+      this.logger.debug(
+        `Rule validation failed for ${ruleId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
       return false;
     }
   }
@@ -253,7 +262,7 @@ export class GoRulesZenService {
         GoRulesErrorCode.RULE_NOT_FOUND,
         `Failed to get metadata for rule: ${ruleId}`,
         { ruleId, originalError: error },
-        false
+        false,
       );
     }
   }

@@ -32,7 +32,7 @@ import {
   GoRulesApiEndpoints,
   ApiClientConfig,
   RateLimitInfo,
-  HealthCheckResponse
+  HealthCheckResponse,
 } from './index.js';
 
 describe('Type Definitions', () => {
@@ -41,7 +41,7 @@ describe('Type Definitions', () => {
       const options: RuleExecutionOptions = {
         timeout: 5000,
         trace: true,
-        context: { userId: '123', sessionId: 'abc' }
+        context: { userId: '123', sessionId: 'abc' },
       };
 
       expect(options.timeout).toBe(5000);
@@ -55,8 +55,8 @@ describe('Type Definitions', () => {
         currency: 'USD',
         customer: {
           id: '123',
-          tier: 'premium'
-        }
+          tier: 'premium',
+        },
       };
 
       expect(input.amount).toBe(1000);
@@ -69,7 +69,7 @@ describe('Type Definitions', () => {
         ruleId: 'pricing-rule',
         input: { amount: 100 },
         executionId: 'exec-123',
-        options: { timeout: 3000 }
+        options: { timeout: 3000 },
       };
 
       expect(batchExecution.ruleId).toBe('pricing-rule');
@@ -85,14 +85,14 @@ describe('Type Definitions', () => {
         performance: {
           executionTime: 150,
           networkTime: 50,
-          totalTime: 200
+          totalTime: 200,
         },
         metadata: {
           id: 'rule-123',
           name: 'Approval Rule',
           version: '1.0.0',
-          lastModified: new Date()
-        }
+          lastModified: new Date(),
+        },
       };
 
       expect(result.result.approved).toBe(true);
@@ -107,8 +107,8 @@ describe('Type Definitions', () => {
         result: {
           decision: { score: 85 },
           appliedRules: ['scoring-rule'],
-          warnings: []
-        }
+          warnings: [],
+        },
       };
 
       expect(batchResult.executionId).toBe('batch-123');
@@ -122,7 +122,7 @@ describe('Type Definitions', () => {
         GoRulesErrorCode.RULE_NOT_FOUND,
         'Rule not found',
         { ruleId: 'missing-rule' },
-        false
+        false,
       );
 
       expect(exception.code).toBe(GoRulesErrorCode.RULE_NOT_FOUND);
@@ -137,7 +137,7 @@ describe('Type Definitions', () => {
         code: 'VALIDATION_ERROR',
         message: 'Invalid input data',
         details: { field: 'amount', value: -100 },
-        retryable: false
+        retryable: false,
       };
 
       expect(error.code).toBe('VALIDATION_ERROR');
@@ -154,8 +154,8 @@ describe('Type Definitions', () => {
         metadata: {
           timestamp: new Date(),
           initiator: 'user-service',
-          correlationId: 'corr-123'
-        }
+          correlationId: 'corr-123',
+        },
       };
 
       expect(context.input.amount).toBe(1000);
@@ -170,14 +170,14 @@ describe('Type Definitions', () => {
         input: { data: 'test' },
         timestamps: {
           created: new Date(),
-          started: new Date()
+          started: new Date(),
         },
         progress: {
           currentStep: 2,
           totalSteps: 5,
           percentage: 40,
-          description: 'Processing data validation'
-        }
+          description: 'Processing data validation',
+        },
       };
 
       expect(state.status).toBe(RuleExecutionStatus.RUNNING);
@@ -187,19 +187,23 @@ describe('Type Definitions', () => {
     it('should create valid RuleValidationResult', () => {
       const validation: RuleValidationResult = {
         isValid: false,
-        errors: [{
-          code: 'MISSING_FIELD',
-          message: 'Required field is missing',
-          path: 'input.amount'
-        }],
-        warnings: [{
-          code: 'DEPRECATED_FIELD',
-          message: 'Field is deprecated',
-          path: 'input.oldField'
-        }],
+        errors: [
+          {
+            code: 'MISSING_FIELD',
+            message: 'Required field is missing',
+            path: 'input.amount',
+          },
+        ],
+        warnings: [
+          {
+            code: 'DEPRECATED_FIELD',
+            message: 'Field is deprecated',
+            path: 'input.oldField',
+          },
+        ],
         schema: {
-          input: { amount: 'number', currency: 'string' }
-        }
+          input: { amount: 'number', currency: 'string' },
+        },
       };
 
       expect(validation.isValid).toBe(false);
@@ -219,8 +223,8 @@ describe('Type Definitions', () => {
         successRate: 0.95,
         timeRange: {
           from: new Date('2024-01-01'),
-          to: new Date('2024-01-31')
-        }
+          to: new Date('2024-01-31'),
+        },
       };
 
       expect(stats.successRate).toBe(0.95);
@@ -236,7 +240,7 @@ describe('Type Definitions', () => {
         headers: { 'Content-Type': 'application/json' },
         body: { ruleId: 'test-rule', input: {} },
         timeout: 5000,
-        retries: 3
+        retries: 3,
       };
 
       expect(config.method).toBe('POST');
@@ -252,8 +256,8 @@ describe('Type Definitions', () => {
         metadata: {
           duration: 150,
           timestamp: new Date(),
-          requestId: 'req-123'
-        }
+          requestId: 'req-123',
+        },
       };
 
       expect(response.status).toBe(200);
@@ -264,7 +268,7 @@ describe('Type Definitions', () => {
       const paginated: PaginatedResponse<{ id: string; name: string }> = {
         items: [
           { id: '1', name: 'Rule 1' },
-          { id: '2', name: 'Rule 2' }
+          { id: '2', name: 'Rule 2' },
         ],
         pagination: {
           page: 1,
@@ -272,8 +276,8 @@ describe('Type Definitions', () => {
           totalItems: 25,
           totalPages: 3,
           hasNext: true,
-          hasPrevious: false
-        }
+          hasPrevious: false,
+        },
       };
 
       expect(paginated.items).toHaveLength(2);
@@ -289,14 +293,14 @@ describe('Type Definitions', () => {
           database: 'connected',
           dependencies: {
             'auth-service': 'available',
-            'cache-service': 'available'
+            'cache-service': 'available',
           },
           metrics: {
             cpu: 45.2,
             memory: 67.8,
-            disk: 23.1
-          }
-        }
+            disk: 23.1,
+          },
+        },
       };
 
       expect(health.status).toBe('healthy');
@@ -308,12 +312,12 @@ describe('Type Definitions', () => {
     it('should create valid SafeResult', () => {
       const successResult: SafeResult<string> = {
         success: true,
-        result: 'Operation completed'
+        result: 'Operation completed',
       };
 
       const errorResult: SafeResult<string> = {
         success: false,
-        error: 'Operation failed'
+        error: 'Operation failed',
       };
 
       expect(successResult.success).toBe(true);
@@ -328,7 +332,7 @@ describe('Type Definitions', () => {
         numberField: 42,
         booleanField: true,
         objectField: { nested: 'value' },
-        arrayField: [1, 2, 3]
+        arrayField: [1, 2, 3],
       };
 
       expect(typeof inputData.stringField).toBe('string');

@@ -11,7 +11,7 @@ describe('CompressionManager', () => {
     compressionManager = new CompressionManager({
       algorithm: 'gzip',
       level: 6,
-      threshold: 100
+      threshold: 100,
     });
   });
 
@@ -30,7 +30,7 @@ describe('CompressionManager', () => {
       const manager = new CompressionManager({
         algorithm: 'deflate',
         level: 9,
-        threshold: 500
+        threshold: 500,
       });
       expect(manager).toBeDefined();
     });
@@ -38,7 +38,8 @@ describe('CompressionManager', () => {
 
   describe('compress', () => {
     it('should compress data using gzip', async () => {
-      const testData = 'This is a test string that should be compressed because it is long enough to meet the threshold requirements.';
+      const testData =
+        'This is a test string that should be compressed because it is long enough to meet the threshold requirements.';
       const result = await compressionManager.compress(testData);
 
       expect(result.compressed).toBe(true);
@@ -50,7 +51,8 @@ describe('CompressionManager', () => {
 
     it('should compress data using deflate', async () => {
       const manager = new CompressionManager({ algorithm: 'deflate' });
-      const testData = 'This is a test string that should be compressed because it is long enough to meet the threshold requirements.';
+      const testData =
+        'This is a test string that should be compressed because it is long enough to meet the threshold requirements.';
       const result = await manager.compress(testData);
 
       expect(result.compressed).toBe(true);
@@ -79,7 +81,9 @@ describe('CompressionManager', () => {
     });
 
     it('should handle Buffer input', async () => {
-      const testData = Buffer.from('This is a test buffer that should be compressed because it is long enough.');
+      const testData = Buffer.from(
+        'This is a test buffer that should be compressed because it is long enough.',
+      );
       const result = await compressionManager.compress(testData);
 
       expect(result.compressed).toBe(true);
@@ -105,7 +109,9 @@ describe('CompressionManager', () => {
 
     it('should not compress if compression ratio is poor', async () => {
       // Use data that doesn't compress well (random data)
-      const testData = Buffer.from(Array.from({ length: 200 }, () => Math.floor(Math.random() * 256)));
+      const testData = Buffer.from(
+        Array.from({ length: 200 }, () => Math.floor(Math.random() * 256)),
+      );
       const result = await compressionManager.compress(testData);
 
       // Should either not compress or fallback to none if compression ratio > 0.95
@@ -119,9 +125,12 @@ describe('CompressionManager', () => {
     it('should decompress gzip data', async () => {
       const testData = 'This is a test string that should be compressed and then decompressed.';
       const compressed = await compressionManager.compress(testData);
-      
+
       if (compressed.compressed) {
-        const decompressed = await compressionManager.decompress(compressed.data, compressed.algorithm);
+        const decompressed = await compressionManager.decompress(
+          compressed.data,
+          compressed.algorithm,
+        );
         expect(decompressed.toString()).toBe(testData);
       }
     });
@@ -130,7 +139,7 @@ describe('CompressionManager', () => {
       const manager = new CompressionManager({ algorithm: 'deflate' });
       const testData = 'This is a test string that should be compressed and then decompressed.';
       const compressed = await manager.compress(testData);
-      
+
       if (compressed.compressed) {
         const decompressed = await manager.decompress(compressed.data, compressed.algorithm);
         expect(decompressed.toString()).toBe(testData);
@@ -140,37 +149,41 @@ describe('CompressionManager', () => {
     it('should handle uncompressed data', async () => {
       const testData = Buffer.from('This is uncompressed data');
       const decompressed = await compressionManager.decompress(testData, 'none');
-      
+
       expect(decompressed).toBe(testData);
     });
 
     it('should handle decompression errors', async () => {
       const invalidData = Buffer.from('This is not compressed data');
-      
-      await expect(compressionManager.decompress(invalidData, 'gzip'))
-        .rejects.toThrow('Decompression failed');
+
+      await expect(compressionManager.decompress(invalidData, 'gzip')).rejects.toThrow(
+        'Decompression failed',
+      );
     });
 
     it('should throw error for unsupported algorithm', async () => {
       const testData = Buffer.from('test');
-      
-      await expect(compressionManager.decompress(testData, 'unsupported' as any))
-        .rejects.toThrow('Unsupported decompression algorithm');
+
+      await expect(compressionManager.decompress(testData, 'unsupported' as any)).rejects.toThrow(
+        'Unsupported decompression algorithm',
+      );
     });
   });
 
   describe('compressRuleData', () => {
     it('should compress rule data and metadata separately', async () => {
-      const ruleData = Buffer.from(JSON.stringify({
-        conditions: [{ field: 'age', operator: 'gt', value: 18 }],
-        actions: [{ type: 'approve' }]
-      }));
-      
+      const ruleData = Buffer.from(
+        JSON.stringify({
+          conditions: [{ field: 'age', operator: 'gt', value: 18 }],
+          actions: [{ type: 'approve' }],
+        }),
+      );
+
       const metadata = {
         id: 'rule1',
         version: '1.0.0',
         tags: ['validation'],
-        lastModified: Date.now()
+        lastModified: Date.now(),
       };
 
       const result = await compressionManager.compressRuleData(ruleData, metadata);
@@ -185,24 +198,29 @@ describe('CompressionManager', () => {
 
   describe('decompressRuleData', () => {
     it('should decompress rule data and metadata', async () => {
-      const originalRuleData = Buffer.from(JSON.stringify({
-        conditions: [{ field: 'age', operator: 'gt', value: 18 }],
-        actions: [{ type: 'approve' }]
-      }));
-      
+      const originalRuleData = Buffer.from(
+        JSON.stringify({
+          conditions: [{ field: 'age', operator: 'gt', value: 18 }],
+          actions: [{ type: 'approve' }],
+        }),
+      );
+
       const originalMetadata = {
         id: 'rule1',
         version: '1.0.0',
         tags: ['validation'],
-        lastModified: Date.now()
+        lastModified: Date.now(),
       };
 
-      const compressed = await compressionManager.compressRuleData(originalRuleData, originalMetadata);
+      const compressed = await compressionManager.compressRuleData(
+        originalRuleData,
+        originalMetadata,
+      );
       const decompressed = await compressionManager.decompressRuleData(
         compressed.compressedData,
         compressed.compressedMetadata,
         compressed.compressionInfo.dataCompression.algorithm,
-        compressed.compressionInfo.metadataCompression.algorithm
+        compressed.compressionInfo.metadataCompression.algorithm,
       );
 
       expect(decompressed.ruleData.toString()).toBe(originalRuleData.toString());
@@ -229,7 +247,7 @@ describe('CompressionManager', () => {
     it('should reset statistics', () => {
       compressionManager.resetStats();
       const stats = compressionManager.getStats();
-      
+
       expect(stats.totalOperations).toBe(0);
       expect(stats.totalOriginalBytes).toBe(0);
       expect(stats.totalCompressedBytes).toBe(0);
@@ -238,7 +256,7 @@ describe('CompressionManager', () => {
 
     it('should track algorithm usage', async () => {
       await compressionManager.compress('Test data for gzip compression that is long enough.');
-      
+
       const stats = compressionManager.getStats();
       expect(stats.algorithmsUsed.has('gzip')).toBe(true);
     });
@@ -249,7 +267,7 @@ describe('CompressionManager', () => {
       const sampleData = [
         Buffer.from('This is sample data for compression analysis that should compress well.'),
         Buffer.from('Another sample with different content for comprehensive analysis.'),
-        Buffer.from('Third sample to ensure we have enough data for statistical analysis.')
+        Buffer.from('Third sample to ensure we have enough data for statistical analysis.'),
       ];
 
       const analysis = await compressionManager.analyzeCompressionEffectiveness(sampleData);
@@ -262,7 +280,7 @@ describe('CompressionManager', () => {
 
     it('should handle empty sample data', async () => {
       const analysis = await compressionManager.analyzeCompressionEffectiveness([]);
-      
+
       expect(analysis.recommendations.bestAlgorithm).toBe('gzip'); // Default fallback
       expect(analysis.results.size).toBe(3); // gzip, deflate, none
     });
@@ -276,17 +294,17 @@ describe('CompressedCache', () => {
     cache = new CompressedCache(
       (value) => Buffer.from(JSON.stringify(value)),
       (buffer) => JSON.parse(buffer.toString()),
-      { algorithm: 'gzip', threshold: 50 }
+      { algorithm: 'gzip', threshold: 50 },
     );
   });
 
   describe('set and get', () => {
     it('should store and retrieve compressed data', async () => {
       const testData = { data: 'This is test data that should be compressed in the cache.' };
-      
+
       await cache.set('key1', testData);
       const retrieved = await cache.get('key1');
-      
+
       expect(retrieved).toEqual(testData);
     });
 
@@ -300,14 +318,14 @@ describe('CompressedCache', () => {
         data: 'Complex test data',
         nested: {
           array: [1, 2, 3],
-          object: { prop: 'value' }
+          object: { prop: 'value' },
         },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
-      
+
       await cache.set('complex', complexData);
       const retrieved = await cache.get('complex');
-      
+
       expect(retrieved).toEqual(complexData);
     });
   });
@@ -315,7 +333,7 @@ describe('CompressedCache', () => {
   describe('cache operations', () => {
     it('should check if key exists', async () => {
       await cache.set('exists', { data: 'test' });
-      
+
       expect(cache.has('exists')).toBe(true);
       expect(cache.has('not-exists')).toBe(false);
     });
@@ -323,7 +341,7 @@ describe('CompressedCache', () => {
     it('should delete entries', async () => {
       await cache.set('delete-me', { data: 'test' });
       expect(cache.has('delete-me')).toBe(true);
-      
+
       const deleted = cache.delete('delete-me');
       expect(deleted).toBe(true);
       expect(cache.has('delete-me')).toBe(false);
@@ -332,19 +350,19 @@ describe('CompressedCache', () => {
     it('should clear all entries', async () => {
       await cache.set('key1', { data: 'test1' });
       await cache.set('key2', { data: 'test2' });
-      
+
       expect(cache.size).toBe(2);
-      
+
       cache.clear();
       expect(cache.size).toBe(0);
     });
 
     it('should report correct size', async () => {
       expect(cache.size).toBe(0);
-      
+
       await cache.set('key1', { data: 'test1' });
       expect(cache.size).toBe(1);
-      
+
       await cache.set('key2', { data: 'test2' });
       expect(cache.size).toBe(2);
     });
@@ -353,12 +371,12 @@ describe('CompressedCache', () => {
   describe('memory usage', () => {
     it('should report memory usage statistics', async () => {
       const largeData = { data: 'Large data '.repeat(100) };
-      
+
       await cache.set('large1', largeData);
       await cache.set('large2', largeData);
-      
+
       const usage = cache.getMemoryUsage();
-      
+
       expect(usage.totalEntries).toBe(2);
       expect(usage.totalOriginalSize).toBeGreaterThan(0);
       expect(usage.totalCompressedSize).toBeGreaterThan(0);
@@ -368,11 +386,11 @@ describe('CompressedCache', () => {
 
     it('should show memory savings from compression', async () => {
       const repetitiveData = { data: 'Repetitive '.repeat(50) };
-      
+
       await cache.set('repetitive', repetitiveData);
-      
+
       const usage = cache.getMemoryUsage();
-      
+
       // Repetitive data should compress well
       expect(usage.totalMemorySaved).toBeGreaterThan(0);
       expect(usage.averageCompressionRatio).toBeLessThan(1);
@@ -383,9 +401,9 @@ describe('CompressedCache', () => {
     it('should provide compression statistics', async () => {
       await cache.set('test1', { data: 'Test data 1' });
       await cache.set('test2', { data: 'Test data 2' });
-      
+
       const stats = cache.getCompressionStats();
-      
+
       expect(stats.totalOperations).toBeGreaterThan(0);
       expect(stats.compressionTime).toBeGreaterThan(0);
     });
@@ -395,7 +413,7 @@ describe('CompressedCache', () => {
     it('should handle serialization errors gracefully', async () => {
       const circularData = { data: 'test' };
       (circularData as any).circular = circularData; // Create circular reference
-      
+
       // This should not throw, but the behavior depends on the serializer
       // In a real implementation, you might want to handle this case
       try {
@@ -412,11 +430,11 @@ describe('CompressedCache', () => {
         compressionAlgorithm: 'gzip' as const,
         originalSize: 100,
         compressedSize: 50,
-        compressionRatio: 0.5
+        compressionRatio: 0.5,
       };
-      
+
       cache['cache'].set('invalid', invalidEntry);
-      
+
       await expect(cache.get('invalid')).rejects.toThrow();
     });
   });

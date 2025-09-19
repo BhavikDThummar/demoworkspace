@@ -265,12 +265,12 @@ export class BusinessRulesController {
     try {
       this.logger.log('Batch rules execution request received', {
         requestCount: dto.requests.length,
-        types: dto.requests.map(r => r.type),
+        types: dto.requests.map((r) => r.type),
       });
 
       const results = await this.businessRulesService.executeBatchRules(dto.requests);
 
-      const successCount = results.filter(r => r.success).length;
+      const successCount = results.filter((r) => r.success).length;
       const errorCount = results.length - successCount;
 
       this.logger.log('Batch rules execution completed', {
@@ -423,7 +423,7 @@ export class BusinessRulesController {
 
     if (error instanceof GoRulesException) {
       const statusCode = this.mapGoRulesErrorToHttpStatus(error.code);
-      
+
       throw new HttpException(
         {
           success: false,
@@ -434,7 +434,7 @@ export class BusinessRulesController {
           },
           timestamp: new Date().toISOString(),
         },
-        statusCode
+        statusCode,
       );
     }
 
@@ -448,7 +448,7 @@ export class BusinessRulesController {
         },
         timestamp: new Date().toISOString(),
       },
-      HttpStatus.INTERNAL_SERVER_ERROR
+      HttpStatus.INTERNAL_SERVER_ERROR,
     );
   }
 

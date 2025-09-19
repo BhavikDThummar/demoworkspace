@@ -18,10 +18,12 @@ This guide helps you diagnose and resolve common issues when using the GoRules N
 ### Error: "GORULES_API_KEY is required"
 
 **Symptoms:**
+
 - Application fails to start
 - Error message about missing API key
 
 **Causes:**
+
 - Environment variable not set
 - Incorrect environment file loading
 - Configuration service not properly configured
@@ -29,6 +31,7 @@ This guide helps you diagnose and resolve common issues when using the GoRules N
 **Solutions:**
 
 1. **Check environment variables:**
+
    ```bash
    echo $GORULES_API_KEY
    echo $GORULES_PROJECT_ID
@@ -36,6 +39,7 @@ This guide helps you diagnose and resolve common issues when using the GoRules N
    ```
 
 2. **Verify .env file:**
+
    ```env
    GORULES_API_URL=https://triveni.gorules.io
    GORULES_API_KEY=your-actual-api-key
@@ -43,6 +47,7 @@ This guide helps you diagnose and resolve common issues when using the GoRules N
    ```
 
 3. **Check ConfigModule setup:**
+
    ```typescript
    @Module({
      imports: [
@@ -69,12 +74,14 @@ This guide helps you diagnose and resolve common issues when using the GoRules N
 ### Error: "Invalid configuration"
 
 **Symptoms:**
+
 - Configuration validation fails
 - Module initialization errors
 
 **Solutions:**
 
 1. **Use configuration validation:**
+
    ```typescript
    GoRulesModule.forRootAsync({
      useFactory: (configService: ConfigService) => {
@@ -83,16 +90,16 @@ This guide helps you diagnose and resolve common issues when using the GoRules N
          apiKey: configService.get('GORULES_API_KEY'),
          projectId: configService.get('GORULES_PROJECT_ID'),
        };
-       
+
        // Validate required fields
        if (!config.apiKey || !config.projectId || !config.apiUrl) {
          throw new Error('Missing required GoRules configuration');
        }
-       
+
        return config;
      },
      inject: [ConfigService],
-   })
+   });
    ```
 
 2. **Check configuration format:**
@@ -112,11 +119,13 @@ This guide helps you diagnose and resolve common issues when using the GoRules N
 ### Error: "Network timeout after 30000ms"
 
 **Symptoms:**
+
 - Rule execution times out
 - Network-related error messages
 - Slow response times
 
 **Diagnosis:**
+
 ```typescript
 // Test connectivity
 async testConnection() {
@@ -132,12 +141,13 @@ async testConnection() {
 **Solutions:**
 
 1. **Increase timeout values:**
+
    ```typescript
    GoRulesModule.forRoot({
      // ... other config
      timeout: 60000, // Increase to 60 seconds
-   })
-   
+   });
+
    // Or per-request
    await this.goRulesService.executeRule('my-rule', input, {
      timeout: 45000,
@@ -145,18 +155,20 @@ async testConnection() {
    ```
 
 2. **Check network connectivity:**
+
    ```bash
    # Test API endpoint
    curl -I https://triveni.gorules.io
-   
+
    # Check DNS resolution
    nslookup triveni.gorules.io
-   
+
    # Test with specific timeout
    curl --max-time 30 https://triveni.gorules.io
    ```
 
 3. **Configure proxy if needed:**
+
    ```typescript
    // If behind corporate proxy
    process.env.HTTP_PROXY = 'http://proxy.company.com:8080';
@@ -170,29 +182,29 @@ async testConnection() {
 ### Error: "ENOTFOUND" or "ECONNREFUSED"
 
 **Symptoms:**
+
 - DNS resolution failures
 - Connection refused errors
 
 **Solutions:**
 
 1. **Verify API URL:**
+
    ```typescript
    // Correct URLs
-   const validUrls = [
-     'https://triveni.gorules.io',
-     'https://api.gorules.io',
-   ];
-   
+   const validUrls = ['https://triveni.gorules.io', 'https://api.gorules.io'];
+
    // Check current configuration
    console.log('API URL:', configService.get('GORULES_API_URL'));
    ```
 
 2. **Test DNS resolution:**
+
    ```bash
    # Test DNS
    dig triveni.gorules.io
    nslookup triveni.gorules.io
-   
+
    # Try alternative DNS
    nslookup triveni.gorules.io 8.8.8.8
    ```
@@ -209,10 +221,12 @@ async testConnection() {
 ### Error: "Rule 'my-rule' not found"
 
 **Symptoms:**
+
 - Rule execution fails with "not found" error
 - GoRulesErrorCode.RULE_NOT_FOUND
 
 **Diagnosis:**
+
 ```typescript
 // Check if rule exists
 const exists = await this.goRulesService.validateRuleExists('my-rule');
@@ -230,11 +244,13 @@ try {
 **Solutions:**
 
 1. **Verify rule ID:**
+
    - Check spelling and case sensitivity
    - Ensure rule is published in GoRules platform
    - Verify project ID is correct
 
 2. **Check rule status in GoRules platform:**
+
    - Log into GoRules dashboard
    - Verify rule is published and active
    - Check rule permissions
@@ -253,12 +269,14 @@ try {
 ### Error: "Invalid input data"
 
 **Symptoms:**
+
 - GoRulesErrorCode.INVALID_INPUT
 - Validation errors
 
 **Solutions:**
 
 1. **Validate input structure:**
+
    ```typescript
    // Check input matches rule schema
    const input = {
@@ -266,19 +284,20 @@ try {
      numericField: 123,
      booleanField: true,
    };
-   
+
    // Log input for debugging
    console.log('Rule input:', JSON.stringify(input, null, 2));
    ```
 
 2. **Use TypeScript interfaces:**
+
    ```typescript
    interface RuleInput {
      requiredField: string;
      numericField: number;
      booleanField: boolean;
    }
-   
+
    const input: RuleInput = {
      requiredField: 'value',
      numericField: 123,
@@ -287,6 +306,7 @@ try {
    ```
 
 3. **Add input validation:**
+
    ```typescript
    function validateInput(input: any): boolean {
      if (!input || typeof input !== 'object') return false;
@@ -294,7 +314,7 @@ try {
      if (typeof input.numericField !== 'number') return false;
      return true;
    }
-   
+
    if (!validateInput(input)) {
      throw new Error('Invalid input structure');
    }
@@ -305,11 +325,13 @@ try {
 ### Slow Rule Execution
 
 **Symptoms:**
+
 - High response times
 - Timeout errors
 - Poor application performance
 
 **Diagnosis:**
+
 ```typescript
 // Monitor execution times
 const startTime = Date.now();
@@ -325,6 +347,7 @@ console.log('Execution statistics:', stats);
 **Solutions:**
 
 1. **Use batch processing:**
+
    ```typescript
    // Instead of multiple individual calls
    const results = await Promise.all([
@@ -332,7 +355,7 @@ console.log('Execution statistics:', stats);
      this.goRulesService.executeRule('rule2', input2),
      this.goRulesService.executeRule('rule3', input3),
    ]);
-   
+
    // Use batch execution
    const batchResults = await this.goRulesService.executeBatch([
      { ruleId: 'rule1', input: input1 },
@@ -342,26 +365,28 @@ console.log('Execution statistics:', stats);
    ```
 
 2. **Optimize rule complexity:**
+
    - Review rule logic in GoRules platform
    - Simplify complex decision trees
    - Consider breaking large rules into smaller ones
 
 3. **Implement caching:**
+
    ```typescript
    private cache = new Map<string, { result: any; timestamp: number }>();
    private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-   
+
    async executeWithCache(ruleId: string, input: any) {
      const cacheKey = `${ruleId}-${JSON.stringify(input)}`;
      const cached = this.cache.get(cacheKey);
-     
+
      if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
        return cached.result;
      }
-     
+
      const result = await this.goRulesService.executeRule(ruleId, input);
      this.cache.set(cacheKey, { result: result.result, timestamp: Date.now() });
-     
+
      return result.result;
    }
    ```
@@ -377,6 +402,7 @@ console.log('Execution statistics:', stats);
 ### High Memory Usage
 
 **Symptoms:**
+
 - Memory leaks
 - Out of memory errors
 - Degraded performance over time
@@ -384,6 +410,7 @@ console.log('Execution statistics:', stats);
 **Solutions:**
 
 1. **Monitor memory usage:**
+
    ```typescript
    // Check memory usage
    const memUsage = process.memoryUsage();
@@ -395,6 +422,7 @@ console.log('Execution statistics:', stats);
    ```
 
 2. **Clean up old data:**
+
    ```typescript
    // Regular cleanup
    setInterval(() => {
@@ -404,14 +432,15 @@ console.log('Execution statistics:', stats);
    ```
 
 3. **Limit cache size:**
+
    ```typescript
    private readonly MAX_CACHE_SIZE = 1000;
-   
+
    private cleanupCache() {
      if (this.cache.size > this.MAX_CACHE_SIZE) {
        const entries = Array.from(this.cache.entries());
        entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-       
+
        // Remove oldest entries
        const toRemove = entries.slice(0, entries.length - this.MAX_CACHE_SIZE);
        toRemove.forEach(([key]) => this.cache.delete(key));
@@ -424,11 +453,13 @@ console.log('Execution statistics:', stats);
 ### Circuit Breaker Stuck Open
 
 **Symptoms:**
+
 - All requests fail immediately
 - "Circuit breaker is OPEN" errors
 - No rule execution attempts
 
 **Diagnosis:**
+
 ```typescript
 // Check circuit breaker status
 const cbStats = this.goRulesService.getCircuitBreakerStatistics();
@@ -442,20 +473,23 @@ console.log('Rule circuit breaker:', ruleStats);
 **Solutions:**
 
 1. **Manual reset:**
+
    ```typescript
    // Reset specific rule circuit breaker
    this.goRulesService.resetRuleCircuitBreaker('my-rule');
-   
+
    // Reset all circuit breakers
    this.goRulesService.resetAllCircuitBreakers();
    ```
 
 2. **Wait for automatic recovery:**
+
    - Circuit breakers automatically reset after timeout period
    - Default timeout is usually 60 seconds
    - Monitor logs for recovery messages
 
 3. **Investigate root cause:**
+
    ```typescript
    // Check error patterns
    const stats = this.goRulesService.getExecutionStatistics();
@@ -472,11 +506,11 @@ console.log('Rule circuit breaker:', ruleStats);
    GoRulesModule.forRoot({
      // ... other config
      circuitBreakerOptions: {
-       failureThreshold: 10,    // Allow more failures
-       resetTimeout: 30000,     // Shorter reset time
-       successThreshold: 2,     // Fewer successes needed
+       failureThreshold: 10, // Allow more failures
+       resetTimeout: 30000, // Shorter reset time
+       successThreshold: 2, // Fewer successes needed
      },
-   })
+   });
    ```
 
 ## Logging and Monitoring
@@ -484,6 +518,7 @@ console.log('Rule circuit breaker:', ruleStats);
 ### Missing Logs
 
 **Symptoms:**
+
 - No log output
 - Missing execution traces
 - Debugging difficulties
@@ -491,15 +526,17 @@ console.log('Rule circuit breaker:', ruleStats);
 **Solutions:**
 
 1. **Enable logging:**
+
    ```typescript
    GoRulesModule.forRoot({
      // ... other config
      enableLogging: true,
      logLevel: 'debug',
-   })
+   });
    ```
 
 2. **Check log configuration:**
+
    ```typescript
    // Verify logging is enabled
    const config = this.configService.getConfig();
@@ -508,21 +545,23 @@ console.log('Rule circuit breaker:', ruleStats);
    ```
 
 3. **Use structured logging:**
+
    ```typescript
    // Enable tracing for specific executions
    const result = await this.goRulesService.executeRule('my-rule', input, {
      trace: true,
    });
-   
+
    console.log('Execution trace:', result.trace);
    ```
 
 4. **Access log entries:**
+
    ```typescript
    // Get recent logs
    const recentLogs = this.loggerService.getRecentLogEntries(50);
    console.log('Recent logs:', recentLogs);
-   
+
    // Get logs for specific rule
    const ruleLogs = this.loggerService.getLogEntriesByRule('my-rule');
    console.log('Rule logs:', ruleLogs);
@@ -533,19 +572,21 @@ console.log('Rule circuit breaker:', ruleStats);
 **Solutions:**
 
 1. **Enable metrics collection:**
+
    ```typescript
    GoRulesModule.forRoot({
      // ... other config
      enableMetrics: true,
-   })
+   });
    ```
 
 2. **Check metrics service:**
+
    ```typescript
    // Verify metrics are being collected
    const systemMetrics = this.metricsService.getSystemMetrics();
    console.log('System metrics:', systemMetrics);
-   
+
    const ruleMetrics = this.metricsService.getAllRuleMetrics();
    console.log('Rule metrics:', ruleMetrics);
    ```
@@ -555,6 +596,7 @@ console.log('Rule circuit breaker:', ruleStats);
 ### Mock Service Not Working
 
 **Symptoms:**
+
 - Tests fail with real API calls
 - Mocking not effective
 - Test environment issues
@@ -562,9 +604,10 @@ console.log('Rule circuit breaker:', ruleStats);
 **Solutions:**
 
 1. **Use testing module:**
+
    ```typescript
    import { GoRulesTestingModule } from '@org/gorules';
-   
+
    const module = await Test.createTestingModule({
      imports: [
        GoRulesTestingModule.forTesting({
@@ -577,6 +620,7 @@ console.log('Rule circuit breaker:', ruleStats);
    ```
 
 2. **Proper mocking:**
+
    ```typescript
    const mockGoRulesService = {
      executeRule: jest.fn(),
@@ -584,12 +628,9 @@ console.log('Rule circuit breaker:', ruleStats);
      validateRuleExists: jest.fn(),
      getRuleMetadata: jest.fn(),
    };
-   
+
    const module = await Test.createTestingModule({
-     providers: [
-       YourService,
-       { provide: GoRulesService, useValue: mockGoRulesService },
-     ],
+     providers: [YourService, { provide: GoRulesService, useValue: mockGoRulesService }],
    }).compile();
    ```
 
@@ -606,11 +647,13 @@ console.log('Rule circuit breaker:', ruleStats);
 ### "Cannot resolve dependency"
 
 **Error:**
+
 ```
 Nest can't resolve dependencies of the GoRulesService (?). Please make sure that the argument dependency at index [0] is available in the current context.
 ```
 
 **Solution:**
+
 - Ensure GoRulesModule is properly imported
 - Check module configuration
 - Verify all dependencies are provided
@@ -618,13 +661,14 @@ Nest can't resolve dependencies of the GoRulesService (?). Please make sure that
 ### "Circular dependency detected"
 
 **Solution:**
+
 ```typescript
 // Use forwardRef to resolve circular dependencies
 @Injectable()
 export class MyService {
   constructor(
     @Inject(forwardRef(() => GoRulesService))
-    private readonly goRulesService: GoRulesService
+    private readonly goRulesService: GoRulesService,
   ) {}
 }
 ```
@@ -632,6 +676,7 @@ export class MyService {
 ### "Module not found"
 
 **Solution:**
+
 - Check import paths
 - Verify library installation: `npm install @org/gorules`
 - Ensure proper TypeScript configuration
@@ -656,7 +701,7 @@ GoRulesModule.forRoot({
     errorRate: 0.01,
     memoryUsage: 50,
   },
-})
+});
 ```
 
 ## Getting Help
@@ -664,26 +709,31 @@ GoRulesModule.forRoot({
 If you're still experiencing issues:
 
 1. **Check the logs:**
+
    - Enable debug logging
    - Review error messages carefully
    - Look for patterns in failures
 
 2. **Test with minimal configuration:**
+
    - Start with basic setup
    - Add complexity gradually
    - Isolate the problem
 
 3. **Verify environment:**
+
    - Check network connectivity
    - Verify API credentials
    - Test with curl or Postman
 
 4. **Create minimal reproduction:**
+
    - Create simple test case
    - Remove unnecessary complexity
    - Document exact steps to reproduce
 
 5. **Check documentation:**
+
    - Review API documentation
    - Check example implementations
    - Verify configuration options

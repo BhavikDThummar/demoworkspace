@@ -3,17 +3,21 @@
  * Includes connection pooling, request batching, and compression
  */
 
-import { IRuleLoaderService, MinimalRuleMetadata, MinimalGoRulesConfig } from '../interfaces/index.js';
+import {
+  IRuleLoaderService,
+  MinimalRuleMetadata,
+  MinimalGoRulesConfig,
+} from '../interfaces/index.js';
 import { MinimalGoRulesError } from '../errors/index.js';
 import { ConnectionPool, PooledRequestOptions } from './connection-pool.js';
-import { 
-  RuleLoadBatcher, 
-  VersionCheckBatcher, 
-  RuleLoadRequest, 
-  RuleLoadResponse, 
-  VersionCheckRequest, 
+import {
+  RuleLoadBatcher,
+  VersionCheckBatcher,
+  RuleLoadRequest,
+  RuleLoadResponse,
+  VersionCheckRequest,
   VersionCheckResponse,
-  BatchResult 
+  BatchResult,
 } from './request-batcher.js';
 import { CompressionManager, CompressionAlgorithm } from './compression.js';
 import { MemoryManager, getGlobalMemoryManager } from './memory-manager.js';
@@ -102,9 +106,9 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
       enableRequestBatching: true,
       enableCompression: true,
       compressionAlgorithm: 'gzip',
-      ...config
+      ...config,
     };
-    
+
     this.projectId = config.projectId;
     this.initializeOptimizations();
   }
@@ -112,14 +116,16 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
   /**
    * Load all rules from GoRules Cloud project with optimizations
    */
-  async loadAllRules(projectId?: string): Promise<Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>> {
+  async loadAllRules(
+    projectId?: string,
+  ): Promise<Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>> {
     const targetProjectId = projectId || this.projectId;
-    
+
     try {
       const response = await this.makeRequest<GoRulesProjectResponse>({
         method: 'GET',
         path: `/api/v1/projects/${targetProjectId}/rules`,
-        headers: this.getCompressionHeaders()
+        headers: this.getCompressionHeaders(),
       });
 
       const rules = new Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>();
@@ -145,7 +151,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
       }
       throw MinimalGoRulesError.networkError(
         `Failed to load all rules for project ${targetProjectId}`,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -159,7 +165,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
       const response = await this.ruleLoadBatcher.loadRule(ruleId, this.projectId);
       return {
         data: response.data,
-        metadata: response.metadata
+        metadata: response.metadata,
       };
     }
 
@@ -175,11 +181,11 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
       // Use batching for better performance
       const responses = await this.versionCheckBatcher.checkVersions(rules);
       const results = new Map<string, boolean>();
-      
+
       for (const [ruleId, response] of responses) {
         results.set(ruleId, response.needsUpdate);
       }
-      
+
       return results;
     }
 
@@ -210,10 +216,10 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
       connectionPool: this.connectionPool?.getStats(),
       batching: {
         ruleLoad: this.ruleLoadBatcher?.getStats(),
-        versionCheck: this.versionCheckBatcher?.getStats()
+        versionCheck: this.versionCheckBatcher?.getStats(),
       },
       compression: this.compressionManager?.getStats(),
-      memory: this.memoryManager?.getMemoryReport()
+      memory: this.memoryManager?.getMemoryReport(),
     };
   }
 
@@ -244,12 +250,14 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
   private initializeOptimizations(): void {
     // Initialize connection pooling
     if (this.config.enableConnectionPooling) {
-      const baseUrl = this.config.apiUrl.endsWith('/') ? this.config.apiUrl.slice(0, -1) : this.config.apiUrl;
+      const baseUrl = this.config.apiUrl.endsWith('/')
+        ? this.config.apiUrl.slice(0, -1)
+        : this.config.apiUrl;
       const defaultHeaders = {
-        'Authorization': `Bearer ${this.config.apiKey}`,
+        Authorization: `Bearer ${this.config.apiKey}`,
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'User-Agent': 'minimal-gorules-engine/1.0.0'
+        Accept: 'application/json',
+        'User-Agent': 'minimal-gorules-engine/1.0.0',
       };
 
       this.connectionPool = new ConnectionPool(baseUrl, defaultHeaders, {
@@ -263,8 +271,8 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
         retry: {
           maxRetries: 3,
           retryDelay: 1000,
-          retryOnTimeout: true
-        }
+          retryOnTimeout: true,
+        },
       });
     }
 
@@ -277,8 +285,8 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
           maxBatchSize: this.config.batching?.maxBatchSize || 20,
           maxWaitTime: this.config.batching?.maxWaitTime || 50,
           maxConcurrentBatches: this.config.batching?.maxConcurrentBatches || 3,
-          enableAutoBatching: true
-        }
+          enableAutoBatching: true,
+        },
       );
 
       // Version check batcher
@@ -288,8 +296,8 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
           maxBatchSize: this.config.batching?.maxBatchSize || 100,
           maxWaitTime: this.config.batching?.maxWaitTime || 200,
           maxConcurrentBatches: this.config.batching?.maxConcurrentBatches || 2,
-          enableAutoBatching: true
-        }
+          enableAutoBatching: true,
+        },
       );
     }
 
@@ -298,7 +306,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
       this.compressionManager = new CompressionManager({
         algorithm: this.config.compressionAlgorithm || 'gzip',
         level: 6,
-        threshold: 1024
+        threshold: 1024,
       });
     }
 
@@ -307,7 +315,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
       this.memoryManager = getGlobalMemoryManager({
         warningThreshold: this.config.memoryManagement.warningThreshold || 0.7,
         criticalThreshold: this.config.memoryManagement.criticalThreshold || 0.85,
-        cleanupInterval: this.config.memoryManagement.cleanupInterval || 30000
+        cleanupInterval: this.config.memoryManagement.cleanupInterval || 30000,
       });
 
       this.memoryManager.startMonitoring(5000);
@@ -320,7 +328,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
   private async makeRequest<T>(options: PooledRequestOptions): Promise<T> {
     if (this.connectionPool) {
       const response = await this.connectionPool.request(options);
-      
+
       if (response.status >= 400) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
@@ -328,11 +336,13 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
       // Handle compressed responses
       let responseBody = response.body;
       if (this.compressionManager && response.headers['content-encoding']) {
-        const algorithm = this.getCompressionAlgorithmFromHeader(response.headers['content-encoding']);
+        const algorithm = this.getCompressionAlgorithmFromHeader(
+          response.headers['content-encoding'],
+        );
         if (algorithm !== 'none') {
           const decompressed = await this.compressionManager.decompress(
             Buffer.from(responseBody),
-            algorithm
+            algorithm,
           );
           responseBody = decompressed.toString();
         }
@@ -351,23 +361,23 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
   private async makeDirectRequest<T>(options: PooledRequestOptions): Promise<T> {
     const url = `${this.config.apiUrl}${options.path}`;
     const timeout = options.timeout || this.config.httpTimeout || 10000;
-    
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
       const headers = {
-        'Authorization': `Bearer ${this.config.apiKey}`,
+        Authorization: `Bearer ${this.config.apiKey}`,
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'User-Agent': 'minimal-gorules-engine/1.0.0',
-        ...options.headers
+        ...options.headers,
       };
 
       const requestOptions: RequestInit = {
         method: options.method,
         headers,
-        signal: controller.signal
+        signal: controller.signal,
       };
 
       if (options.body) {
@@ -381,18 +391,17 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      return await response.json() as T;
-
+      return (await response.json()) as T;
     } catch (error) {
       clearTimeout(timeoutId);
-      
+
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
           throw MinimalGoRulesError.timeout(`request to ${options.path}`);
         }
         throw MinimalGoRulesError.networkError(`Failed to fetch ${options.path}`, error);
       }
-      
+
       throw MinimalGoRulesError.networkError(`Unknown error fetching ${options.path}`);
     }
   }
@@ -400,11 +409,13 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
   /**
    * Load rule directly without batching
    */
-  private async loadRuleDirect(ruleId: string): Promise<{ data: Buffer; metadata: MinimalRuleMetadata }> {
+  private async loadRuleDirect(
+    ruleId: string,
+  ): Promise<{ data: Buffer; metadata: MinimalRuleMetadata }> {
     const response = await this.makeRequest<GoRulesRuleResponse>({
       method: 'GET',
       path: `/api/v1/projects/${this.projectId}/rules/${ruleId}`,
-      headers: this.getCompressionHeaders()
+      headers: this.getCompressionHeaders(),
     });
 
     return this.parseRuleResponse(response);
@@ -416,7 +427,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
   private async checkVersionsDirect(rules: Map<string, string>): Promise<Map<string, boolean>> {
     const allRules = await this.loadAllRules();
     const results = new Map<string, boolean>();
-    
+
     for (const [ruleId, currentVersion] of rules) {
       const ruleData = allRules.get(ruleId);
       if (ruleData) {
@@ -425,7 +436,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
         results.set(ruleId, true); // Rule not found, needs update
       }
     }
-    
+
     return results;
   }
 
@@ -433,9 +444,9 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
    * Execute batch rule loading
    */
   private async executeBatchRuleLoad(
-    requests: Map<string, RuleLoadRequest>
+    requests: Map<string, RuleLoadRequest>,
   ): Promise<BatchResult<RuleLoadResponse>> {
-    const ruleIds = Array.from(requests.values()).map(req => req.ruleId);
+    const ruleIds = Array.from(requests.values()).map((req) => req.ruleId);
     const projectId = Array.from(requests.values())[0]?.projectId || this.projectId;
 
     try {
@@ -443,7 +454,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
         method: 'POST',
         path: `/api/v1/projects/${projectId}/rules/batch`,
         headers: this.getCompressionHeaders(),
-        body: JSON.stringify({ ruleIds })
+        body: JSON.stringify({ ruleIds }),
       });
 
       const results = new Map<string, RuleLoadResponse>();
@@ -470,9 +481,8 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
         results,
         errors,
         batchSize: ruleIds.length,
-        executionTime: 0 // Will be measured by the batcher
+        executionTime: 0, // Will be measured by the batcher
       };
-
     } catch (error) {
       // If batch request fails, return errors for all rules
       const errors = new Map<string, Error>();
@@ -484,7 +494,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
         results: new Map(),
         errors,
         batchSize: ruleIds.length,
-        executionTime: 0
+        executionTime: 0,
       };
     }
   }
@@ -493,7 +503,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
    * Execute batch version checking
    */
   private async executeBatchVersionCheck(
-    requests: Map<string, VersionCheckRequest>
+    requests: Map<string, VersionCheckRequest>,
   ): Promise<BatchResult<VersionCheckResponse>> {
     const versionMap = new Map<string, string>();
     for (const [, request] of requests) {
@@ -512,21 +522,21 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
         method: 'POST',
         path: `/api/v1/projects/${this.projectId}/rules/versions/check`,
         headers: this.getCompressionHeaders(),
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           rules: Array.from(versionMap.entries()).map(([ruleId, version]) => ({
             ruleId,
-            currentVersion: version
-          }))
-        })
+            currentVersion: version,
+          })),
+        }),
       });
 
       const results = new Map<string, VersionCheckResponse>();
-      
+
       for (const rule of response.rules) {
         results.set(rule.ruleId, {
           ruleId: rule.ruleId,
           needsUpdate: rule.needsUpdate,
-          latestVersion: rule.latestVersion
+          latestVersion: rule.latestVersion,
         });
       }
 
@@ -534,9 +544,8 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
         results,
         errors: new Map(),
         batchSize: requests.size,
-        executionTime: 0
+        executionTime: 0,
       };
-
     } catch (error) {
       // Fallback to individual checks or return errors
       const errors = new Map<string, Error>();
@@ -548,7 +557,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
         results: new Map(),
         errors,
         batchSize: requests.size,
-        executionTime: 0
+        executionTime: 0,
       };
     }
   }
@@ -557,12 +566,12 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
    * Parse GoRules API response with compression support
    */
   private async parseRuleResponse(
-    rule: GoRulesRuleResponse
+    rule: GoRulesRuleResponse,
   ): Promise<{ data: Buffer; metadata: MinimalRuleMetadata }> {
     try {
       // Decode Base64 content to Buffer
       let data = Buffer.from(rule.content, 'base64');
-      
+
       // Decompress if needed
       if (this.compressionManager && rule.compression) {
         const algorithm = this.getCompressionAlgorithmFromString(rule.compression.algorithm);
@@ -571,7 +580,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
           data = decompressedData as any;
         }
       }
-      
+
       // Validate that the content is valid JSON
       try {
         JSON.parse(data.toString('utf-8'));
@@ -591,7 +600,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
     } catch (error) {
       throw MinimalGoRulesError.networkError(
         `Failed to parse rule response for ${rule.id}`,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -605,7 +614,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
     }
 
     const headers: Record<string, string> = {};
-    
+
     // Accept compressed responses
     switch (this.config.compressionAlgorithm) {
       case 'gzip':

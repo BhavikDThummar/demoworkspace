@@ -101,9 +101,7 @@ export class BusinessRulesService {
   /**
    * Evaluate purchase approval using business rules
    */
-  async evaluatePurchaseApproval(
-    input: PurchaseApprovalInput
-  ): Promise<PurchaseApprovalOutput> {
+  async evaluatePurchaseApproval(input: PurchaseApprovalInput): Promise<PurchaseApprovalOutput> {
     try {
       this.logger.log('Evaluating purchase approval', {
         amount: input.amount,
@@ -132,7 +130,7 @@ export class BusinessRulesService {
       return result.result;
     } catch (error) {
       this.logger.error('Purchase approval evaluation failed', error);
-      
+
       if (error instanceof GoRulesException) {
         throw error;
       }
@@ -140,7 +138,7 @@ export class BusinessRulesService {
       throw new GoRulesException(
         GoRulesErrorCode.INTERNAL_ERROR,
         'Failed to evaluate purchase approval',
-        { input, originalError: error }
+        { input, originalError: error },
       );
     }
   }
@@ -160,13 +158,14 @@ export class BusinessRulesService {
       this.validateSupplierRiskInput(input);
 
       // Execute the supplier risk assessment rule
-      const result = await this.goRulesService.executeRule<
-        SupplierRiskInput,
-        SupplierRiskOutput
-      >('supplier-risk-assessment', input, {
-        timeout: 15000,
-        trace: true,
-      });
+      const result = await this.goRulesService.executeRule<SupplierRiskInput, SupplierRiskOutput>(
+        'supplier-risk-assessment',
+        input,
+        {
+          timeout: 15000,
+          trace: true,
+        },
+      );
 
       this.logger.log('Supplier risk assessment completed', {
         riskLevel: result.result.riskLevel,
@@ -178,7 +177,7 @@ export class BusinessRulesService {
       return result.result;
     } catch (error) {
       this.logger.error('Supplier risk assessment failed', error);
-      
+
       if (error instanceof GoRulesException) {
         throw error;
       }
@@ -186,7 +185,7 @@ export class BusinessRulesService {
       throw new GoRulesException(
         GoRulesErrorCode.INTERNAL_ERROR,
         'Failed to assess supplier risk',
-        { input, originalError: error }
+        { input, originalError: error },
       );
     }
   }
@@ -207,13 +206,14 @@ export class BusinessRulesService {
       this.validatePricingRulesInput(input);
 
       // Execute the pricing rules
-      const result = await this.goRulesService.executeRule<
-        PricingRulesInput,
-        PricingRulesOutput
-      >('pricing-rules', input, {
-        timeout: 8000,
-        trace: true,
-      });
+      const result = await this.goRulesService.executeRule<PricingRulesInput, PricingRulesOutput>(
+        'pricing-rules',
+        input,
+        {
+          timeout: 8000,
+          trace: true,
+        },
+      );
 
       this.logger.log('Pricing calculation completed', {
         finalPrice: result.result.finalPrice,
@@ -225,38 +225,41 @@ export class BusinessRulesService {
       return result.result;
     } catch (error) {
       this.logger.error('Pricing calculation failed', error);
-      
+
       if (error instanceof GoRulesException) {
         throw error;
       }
 
-      throw new GoRulesException(
-        GoRulesErrorCode.INTERNAL_ERROR,
-        'Failed to calculate pricing',
-        { input, originalError: error }
-      );
+      throw new GoRulesException(GoRulesErrorCode.INTERNAL_ERROR, 'Failed to calculate pricing', {
+        input,
+        originalError: error,
+      });
     }
   }
 
   /**
    * Execute multiple business rules in batch
    */
-  async executeBatchRules(requests: Array<{
-    type: 'purchase-approval' | 'supplier-risk' | 'pricing';
-    data: PurchaseApprovalInput | SupplierRiskInput | PricingRulesInput;
-    id?: string;
-  }>): Promise<Array<{
-    id: string;
-    type: string;
-    success: boolean;
-    result?: any;
-    error?: string;
-    executionTime?: number;
-  }>> {
+  async executeBatchRules(
+    requests: Array<{
+      type: 'purchase-approval' | 'supplier-risk' | 'pricing';
+      data: PurchaseApprovalInput | SupplierRiskInput | PricingRulesInput;
+      id?: string;
+    }>,
+  ): Promise<
+    Array<{
+      id: string;
+      type: string;
+      success: boolean;
+      result?: any;
+      error?: string;
+      executionTime?: number;
+    }>
+  > {
     try {
       this.logger.log('Executing batch business rules', {
         requestCount: requests.length,
-        types: requests.map(r => r.type),
+        types: requests.map((r) => r.type),
       });
 
       // Prepare batch executions
@@ -285,8 +288,8 @@ export class BusinessRulesService {
 
       this.logger.log('Batch business rules execution completed', {
         totalRequests: requests.length,
-        successCount: formattedResults.filter(r => r.success).length,
-        errorCount: formattedResults.filter(r => !r.success).length,
+        successCount: formattedResults.filter((r) => r.success).length,
+        errorCount: formattedResults.filter((r) => !r.success).length,
       });
 
       return formattedResults;
@@ -295,7 +298,7 @@ export class BusinessRulesService {
       throw new GoRulesException(
         GoRulesErrorCode.INTERNAL_ERROR,
         'Failed to execute batch business rules',
-        { requestCount: requests.length, originalError: error }
+        { requestCount: requests.length, originalError: error },
       );
     }
   }
@@ -315,7 +318,7 @@ export class BusinessRulesService {
       // Calculate recent executions (last hour)
       const recentExecutions = Object.values(executionStats).reduce(
         (total: number, stats: any) => total + (stats.count || 0),
-        0
+        0,
       );
 
       return {
@@ -328,7 +331,7 @@ export class BusinessRulesService {
       throw new GoRulesException(
         GoRulesErrorCode.INTERNAL_ERROR,
         'Failed to retrieve rule statistics',
-        { originalError: error }
+        { originalError: error },
       );
     }
   }
@@ -341,32 +344,26 @@ export class BusinessRulesService {
       throw new GoRulesException(
         GoRulesErrorCode.INVALID_INPUT,
         'Purchase amount must be greater than 0',
-        { amount: input.amount }
+        { amount: input.amount },
       );
     }
 
     if (!input.department || input.department.trim().length === 0) {
-      throw new GoRulesException(
-        GoRulesErrorCode.INVALID_INPUT,
-        'Department is required',
-        { department: input.department }
-      );
+      throw new GoRulesException(GoRulesErrorCode.INVALID_INPUT, 'Department is required', {
+        department: input.department,
+      });
     }
 
     if (!input.requestedBy || input.requestedBy.trim().length === 0) {
-      throw new GoRulesException(
-        GoRulesErrorCode.INVALID_INPUT,
-        'Requested by is required',
-        { requestedBy: input.requestedBy }
-      );
+      throw new GoRulesException(GoRulesErrorCode.INVALID_INPUT, 'Requested by is required', {
+        requestedBy: input.requestedBy,
+      });
     }
 
     if (!['low', 'medium', 'high', 'critical'].includes(input.urgency)) {
-      throw new GoRulesException(
-        GoRulesErrorCode.INVALID_INPUT,
-        'Invalid urgency level',
-        { urgency: input.urgency }
-      );
+      throw new GoRulesException(GoRulesErrorCode.INVALID_INPUT, 'Invalid urgency level', {
+        urgency: input.urgency,
+      });
     }
   }
 
@@ -375,26 +372,22 @@ export class BusinessRulesService {
    */
   private validateSupplierRiskInput(input: SupplierRiskInput): void {
     if (!input.supplierId || input.supplierId.trim().length === 0) {
-      throw new GoRulesException(
-        GoRulesErrorCode.INVALID_INPUT,
-        'Supplier ID is required',
-        { supplierId: input.supplierId }
-      );
+      throw new GoRulesException(GoRulesErrorCode.INVALID_INPUT, 'Supplier ID is required', {
+        supplierId: input.supplierId,
+      });
     }
 
     if (!input.supplierName || input.supplierName.trim().length === 0) {
-      throw new GoRulesException(
-        GoRulesErrorCode.INVALID_INPUT,
-        'Supplier name is required',
-        { supplierName: input.supplierName }
-      );
+      throw new GoRulesException(GoRulesErrorCode.INVALID_INPUT, 'Supplier name is required', {
+        supplierName: input.supplierName,
+      });
     }
 
     if (input.yearsInBusiness < 0) {
       throw new GoRulesException(
         GoRulesErrorCode.INVALID_INPUT,
         'Years in business cannot be negative',
-        { yearsInBusiness: input.yearsInBusiness }
+        { yearsInBusiness: input.yearsInBusiness },
       );
     }
 
@@ -402,7 +395,7 @@ export class BusinessRulesService {
       throw new GoRulesException(
         GoRulesErrorCode.INVALID_INPUT,
         'Quality score must be between 0 and 100',
-        { qualityScore: input.qualityScore }
+        { qualityScore: input.qualityScore },
       );
     }
   }
@@ -415,7 +408,7 @@ export class BusinessRulesService {
       throw new GoRulesException(
         GoRulesErrorCode.INVALID_INPUT,
         'Base price must be greater than 0',
-        { basePrice: input.basePrice }
+        { basePrice: input.basePrice },
       );
     }
 
@@ -423,23 +416,21 @@ export class BusinessRulesService {
       throw new GoRulesException(
         GoRulesErrorCode.INVALID_INPUT,
         'Quantity must be greater than 0',
-        { quantity: input.quantity }
+        { quantity: input.quantity },
       );
     }
 
     if (!['bronze', 'silver', 'gold', 'platinum'].includes(input.customerTier)) {
-      throw new GoRulesException(
-        GoRulesErrorCode.INVALID_INPUT,
-        'Invalid customer tier',
-        { customerTier: input.customerTier }
-      );
+      throw new GoRulesException(GoRulesErrorCode.INVALID_INPUT, 'Invalid customer tier', {
+        customerTier: input.customerTier,
+      });
     }
 
     if (input.seasonalFactor && (input.seasonalFactor < 0.1 || input.seasonalFactor > 3.0)) {
       throw new GoRulesException(
         GoRulesErrorCode.INVALID_INPUT,
         'Seasonal factor must be between 0.1 and 3.0',
-        { seasonalFactor: input.seasonalFactor }
+        { seasonalFactor: input.seasonalFactor },
       );
     }
   }
@@ -451,7 +442,7 @@ export class BusinessRulesService {
     const ruleMap = {
       'purchase-approval': 'purchase-approval',
       'supplier-risk': 'supplier-risk-assessment',
-      'pricing': 'pricing-rules',
+      pricing: 'pricing-rules',
     };
 
     return ruleMap[type as keyof typeof ruleMap] || type;

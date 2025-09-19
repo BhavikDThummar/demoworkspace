@@ -34,22 +34,22 @@ export interface MinimalGoRulesModuleAsyncOptions extends Pick<ModuleMetadata, '
    * Factory function to create configuration
    */
   useFactory?: (...args: any[]) => Promise<MinimalGoRulesConfig> | MinimalGoRulesConfig;
-  
+
   /**
    * Dependencies to inject into the factory function
    */
   inject?: any[];
-  
+
   /**
    * Class that implements MinimalGoRulesOptionsFactory
    */
   useClass?: Type<MinimalGoRulesOptionsFactory>;
-  
+
   /**
    * Existing provider that implements MinimalGoRulesOptionsFactory
    */
   useExisting?: Type<MinimalGoRulesOptionsFactory>;
-  
+
   /**
    * Whether to automatically initialize the engine on module init
    */

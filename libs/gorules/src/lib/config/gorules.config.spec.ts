@@ -17,7 +17,7 @@ describe('GoRulesConfigService', () => {
     it('should apply default values', () => {
       const service = new GoRulesConfigService(validConfig);
       const config = service.getConfig();
-      
+
       expect(config.timeout).toBe(30000);
       expect(config.retryAttempts).toBe(3);
       expect(config.enableLogging).toBe(false);
@@ -33,7 +33,7 @@ describe('GoRulesConfigService', () => {
 
       const service = new GoRulesConfigService(customConfig);
       const config = service.getConfig();
-      
+
       expect(config.timeout).toBe(5000);
       expect(config.retryAttempts).toBe(1);
       expect(config.enableLogging).toBe(true);
@@ -44,7 +44,7 @@ describe('GoRulesConfigService', () => {
       delete (invalidConfig as any).apiUrl;
 
       expect(() => new GoRulesConfigService(invalidConfig)).toThrow(
-        'GoRules configuration validation failed: apiUrl is required'
+        'GoRules configuration validation failed: apiUrl is required',
       );
     });
 
@@ -53,7 +53,7 @@ describe('GoRulesConfigService', () => {
       delete (invalidConfig as any).apiKey;
 
       expect(() => new GoRulesConfigService(invalidConfig)).toThrow(
-        'GoRules configuration validation failed: apiKey is required'
+        'GoRules configuration validation failed: apiKey is required',
       );
     });
 
@@ -62,7 +62,7 @@ describe('GoRulesConfigService', () => {
       delete (invalidConfig as any).projectId;
 
       expect(() => new GoRulesConfigService(invalidConfig)).toThrow(
-        'GoRules configuration validation failed: projectId is required'
+        'GoRules configuration validation failed: projectId is required',
       );
     });
 
@@ -73,7 +73,7 @@ describe('GoRulesConfigService', () => {
       };
 
       expect(() => new GoRulesConfigService(invalidConfig)).toThrow(
-        'timeout must be greater than 0'
+        'timeout must be greater than 0',
       );
     });
 
@@ -84,7 +84,7 @@ describe('GoRulesConfigService', () => {
       };
 
       expect(() => new GoRulesConfigService(invalidConfig)).toThrow(
-        'retryAttempts must be 0 or greater'
+        'retryAttempts must be 0 or greater',
       );
     });
   });
@@ -94,7 +94,7 @@ describe('GoRulesConfigService', () => {
       const service = new GoRulesConfigService(validConfig);
       const config1 = service.getConfig();
       const config2 = service.getConfig();
-      
+
       expect(config1).toEqual(config2);
       expect(config1).not.toBe(config2); // Should be different objects
     });

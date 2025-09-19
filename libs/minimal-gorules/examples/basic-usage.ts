@@ -1,6 +1,6 @@
 /**
  * Basic Usage Examples for Minimal GoRules Engine
- * 
+ *
  * This file demonstrates the most common usage patterns for the engine.
  */
 
@@ -10,7 +10,7 @@ import { MinimalGoRulesEngine, MinimalGoRulesConfig } from '../src/index.js';
 const config: MinimalGoRulesConfig = {
   apiUrl: 'https://api.gorules.io',
   apiKey: process.env.GORULES_API_KEY!,
-  projectId: 'your-project-id'
+  projectId: 'your-project-id',
 };
 
 async function basicUsageExamples() {
@@ -28,7 +28,7 @@ async function basicUsageExamples() {
     const result = await engine.executeRule('user-validation', {
       email: 'user@example.com',
       age: 25,
-      country: 'US'
+      country: 'US',
     });
     console.log('   Result:', JSON.stringify(result, null, 2));
   } catch (error) {
@@ -44,15 +44,15 @@ async function basicUsageExamples() {
       {
         userId: 12345,
         amount: 1000,
-        email: 'user@example.com'
-      }
+        email: 'user@example.com',
+      },
     );
-    
+
     console.log(`   Executed ${results.results.size} rules in ${results.executionTime}ms`);
     for (const [ruleId, result] of results.results) {
       console.log(`   ${ruleId}:`, JSON.stringify(result, null, 2));
     }
-    
+
     if (results.errors && results.errors.size > 0) {
       console.log('   Errors:');
       for (const [ruleId, error] of results.errors) {
@@ -72,12 +72,14 @@ async function basicUsageExamples() {
       {
         userId: 12345,
         action: 'login',
-        ipAddress: '192.168.1.1'
+        ipAddress: '192.168.1.1',
       },
-      'parallel'
+      'parallel',
     );
-    
-    console.log(`   Executed ${results.results.size} rules with tags in ${results.executionTime}ms`);
+
+    console.log(
+      `   Executed ${results.results.size} rules with tags in ${results.executionTime}ms`,
+    );
     for (const [ruleId, result] of results.results) {
       console.log(`   ${ruleId}:`, JSON.stringify(result, null, 2));
     }
@@ -95,7 +97,7 @@ async function basicUsageExamples() {
         id: metadata.id,
         version: metadata.version,
         tags: metadata.tags,
-        lastModified: new Date(metadata.lastModified).toISOString()
+        lastModified: new Date(metadata.lastModified).toISOString(),
       });
     } else {
       console.log('   Rule not found');
@@ -113,7 +115,7 @@ async function basicUsageExamples() {
       initialized: engineStatus.initialized,
       rulesLoaded: engineStatus.rulesLoaded,
       projectId: engineStatus.projectId,
-      memoryUsage: engineStatus.performance?.memoryUsage + 'MB'
+      memoryUsage: engineStatus.performance?.memoryUsage + 'MB',
     });
   } catch (error) {
     console.error('   Error:', error.message);

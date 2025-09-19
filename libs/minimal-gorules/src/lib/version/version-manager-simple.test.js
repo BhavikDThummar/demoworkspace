@@ -83,14 +83,14 @@ async function testVersionManager() {
   try {
     // Test 1: Version comparison
     console.log('Test 1: Version comparison');
-    
+
     // Setup local cache with v1.0.0
     const localData = Buffer.from('{"local": "data"}');
     const localMetadata = {
       id: 'rule1',
       version: '1.0.0',
       tags: ['test'],
-      lastModified: 1000
+      lastModified: 1000,
     };
     mockCache.setTestData('rule1', localData, localMetadata);
 
@@ -100,12 +100,12 @@ async function testVersionManager() {
       id: 'rule1',
       version: '1.1.0',
       tags: ['test'],
-      lastModified: 2000
+      lastModified: 2000,
     };
     mockLoader.setCloudRule('rule1', cloudData, cloudMetadata);
 
     const comparisons = await versionManager.compareVersions(['rule1']);
-    
+
     if (comparisons.length === 1 && comparisons[0].needsUpdate === true) {
       console.log('✓ Version comparison works correctly');
     } else {
@@ -115,10 +115,10 @@ async function testVersionManager() {
 
     // Test 2: Rollback snapshots
     console.log('Test 2: Rollback snapshots');
-    
+
     await versionManager.createRollbackSnapshot('rule1', 'test-snapshot');
     const snapshots = versionManager.getRollbackSnapshots('rule1');
-    
+
     if (snapshots.length === 1 && snapshots[0].reason === 'test-snapshot') {
       console.log('✓ Rollback snapshots work correctly');
     } else {
@@ -128,9 +128,9 @@ async function testVersionManager() {
 
     // Test 3: Version stats
     console.log('Test 3: Version stats');
-    
+
     const stats = versionManager.getVersionStats();
-    
+
     if (stats.totalSnapshots === 1 && stats.snapshotsByRule.get('rule1') === 1) {
       console.log('✓ Version stats work correctly');
     } else {
@@ -140,7 +140,6 @@ async function testVersionManager() {
 
     console.log('All tests passed! ✓');
     return true;
-
   } catch (error) {
     console.error('Test failed with error:', error);
     return false;
@@ -149,7 +148,7 @@ async function testVersionManager() {
 
 // Run the test if this file is executed directly
 if (require.main === module) {
-  testVersionManager().then(success => {
+  testVersionManager().then((success) => {
     process.exit(success ? 0 : 1);
   });
 }

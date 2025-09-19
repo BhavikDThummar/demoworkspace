@@ -1,6 +1,6 @@
 /**
  * React integration for Minimal GoRules Engine
- * 
+ *
  * This module provides React-specific components and services for integrating
  * with the Minimal GoRules Engine via API calls to a NestJS backend.
  */

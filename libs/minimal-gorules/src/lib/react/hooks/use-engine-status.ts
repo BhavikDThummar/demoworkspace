@@ -11,7 +11,7 @@ import { UseEngineStatusState } from '../interfaces.js';
  */
 export function useEngineStatus(
   service: ReactGoRulesService,
-  refreshInterval = 0
+  refreshInterval = 0,
 ): UseEngineStatusState & {
   refresh: () => Promise<void>;
   startAutoRefresh: (interval: number) => void;
@@ -21,41 +21,44 @@ export function useEngineStatus(
     loading: false,
     status: null,
     error: null,
-    lastUpdated: null
+    lastUpdated: null,
   });
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const refresh = useCallback(async () => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-    
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+
     try {
       const status = await service.getStatus();
       setState({
         loading: false,
         status,
         error: null,
-        lastUpdated: Date.now()
+        lastUpdated: Date.now(),
       });
     } catch (error) {
       setState({
         loading: false,
         status: null,
         error: error instanceof Error ? error.message : 'Unknown error',
-        lastUpdated: null
+        lastUpdated: null,
       });
     }
   }, [service]);
 
-  const startAutoRefresh = useCallback((interval: number) => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-    
-    if (interval > 0) {
-      intervalRef.current = setInterval(refresh, interval);
-    }
-  }, [refresh]);
+  const startAutoRefresh = useCallback(
+    (interval: number) => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+
+      if (interval > 0) {
+        intervalRef.current = setInterval(refresh, interval);
+      }
+    },
+    [refresh],
+  );
 
   const stopAutoRefresh = useCallback(() => {
     if (intervalRef.current) {
@@ -67,7 +70,7 @@ export function useEngineStatus(
   // Initial load and auto-refresh setup
   useEffect(() => {
     refresh();
-    
+
     if (refreshInterval > 0) {
       startAutoRefresh(refreshInterval);
     }
@@ -88,6 +91,6 @@ export function useEngineStatus(
     ...state,
     refresh,
     startAutoRefresh,
-    stopAutoRefresh
+    stopAutoRefresh,
   };
 }

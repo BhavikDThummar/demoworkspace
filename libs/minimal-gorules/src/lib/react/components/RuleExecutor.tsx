@@ -28,7 +28,11 @@ const DefaultErrorComponent: React.FC<{ error: string }> = ({ error }: { error: 
 /**
  * Default results component
  */
-const DefaultResultsComponent: React.FC<{ results: Record<string, unknown> | unknown }> = ({ results }: { results: Record<string, unknown> | unknown }) => (
+const DefaultResultsComponent: React.FC<{ results: Record<string, unknown> | unknown }> = ({
+  results,
+}: {
+  results: Record<string, unknown> | unknown;
+}) => (
   <div style={{ padding: '16px', border: '1px solid green', borderRadius: '4px' }}>
     <strong>Results:</strong>
     <pre style={{ marginTop: '8px', whiteSpace: 'pre-wrap' }}>
@@ -51,7 +55,7 @@ export function RuleExecutor({
   onError,
   loadingComponent: LoadingComponent = DefaultLoadingComponent as any,
   errorComponent: ErrorComponent = DefaultErrorComponent,
-  resultsComponent: ResultsComponent = DefaultResultsComponent
+  resultsComponent: ResultsComponent = DefaultResultsComponent,
 }: RuleExecutorProps) {
   const service = useGoRulesContext();
   const {
@@ -64,7 +68,7 @@ export function RuleExecutor({
     executeByIds,
     executeByTags,
     execute,
-    reset
+    reset,
   } = useRuleExecution(service);
 
   // Auto-execute on mount if enabled
@@ -89,7 +93,7 @@ export function RuleExecutor({
 
   const handleExecute = async () => {
     reset();
-    
+
     try {
       if (ruleId) {
         await executeRule(ruleId, input);
@@ -104,7 +108,7 @@ export function RuleExecutor({
           ruleIds,
           tags,
           mode,
-          input
+          input,
         });
       }
     } catch (err) {
@@ -126,12 +130,12 @@ export function RuleExecutor({
             color: 'white',
             border: 'none',
             borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer'
+            cursor: loading ? 'not-allowed' : 'pointer',
           }}
         >
           {loading ? 'Executing...' : 'Execute Rules'}
         </button>
-        
+
         {(results || error) && (
           <button
             onClick={reset}
@@ -142,7 +146,7 @@ export function RuleExecutor({
               color: 'white',
               border: 'none',
               borderRadius: '4px',
-              cursor: 'pointer'
+              cursor: 'pointer',
             }}
           >
             Reset
@@ -152,16 +156,28 @@ export function RuleExecutor({
 
       {/* Execution Info */}
       <div style={{ marginBottom: '16px', fontSize: '14px', color: '#666' }}>
-        <div><strong>Mode:</strong> {mode}</div>
-        {ruleId && <div><strong>Rule ID:</strong> {ruleId}</div>}
+        <div>
+          <strong>Mode:</strong> {mode}
+        </div>
+        {ruleId && (
+          <div>
+            <strong>Rule ID:</strong> {ruleId}
+          </div>
+        )}
         {ruleIds && ruleIds.length > 0 && (
-          <div><strong>Rule IDs:</strong> {ruleIds.join(', ')}</div>
+          <div>
+            <strong>Rule IDs:</strong> {ruleIds.join(', ')}
+          </div>
         )}
         {tags && tags.length > 0 && (
-          <div><strong>Tags:</strong> {tags.join(', ')}</div>
+          <div>
+            <strong>Tags:</strong> {tags.join(', ')}
+          </div>
         )}
         {executionTime !== null && (
-          <div><strong>Execution Time:</strong> {executionTime}ms</div>
+          <div>
+            <strong>Execution Time:</strong> {executionTime}ms
+          </div>
         )}
       </div>
 

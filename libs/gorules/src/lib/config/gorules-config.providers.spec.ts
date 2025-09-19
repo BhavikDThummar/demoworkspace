@@ -129,7 +129,9 @@ describe('GoRulesEnvConfigProvider', () => {
       delete process.env['GORULES_API_KEY'];
       delete process.env['GORULES_PROJECT_ID'];
 
-      await expect(provider.load()).rejects.toThrow('Environment variable GORULES_API_KEY is required');
+      await expect(provider.load()).rejects.toThrow(
+        'Environment variable GORULES_API_KEY is required',
+      );
     });
 
     it('should throw error for invalid number values', async () => {
@@ -150,7 +152,7 @@ describe('GoRulesEnvConfigProvider', () => {
       };
 
       await expect(provider.save(config)).rejects.toThrow(
-        'Saving configuration to environment variables is not supported'
+        'Saving configuration to environment variables is not supported',
       );
     });
   });
@@ -176,7 +178,7 @@ describe('GoRulesEnvConfigProvider', () => {
   describe('custom prefix', () => {
     it('should use custom environment variable prefix', async () => {
       const customProvider = new GoRulesEnvConfigProvider('CUSTOM_');
-      
+
       process.env['CUSTOM_API_KEY'] = 'custom-key';
       process.env['CUSTOM_PROJECT_ID'] = 'custom-project';
 
@@ -275,7 +277,7 @@ describe('GoRulesCompositeConfigProvider', () => {
     fileProvider = new GoRulesFileConfigProvider(tempFilePath);
     memoryProvider = new GoRulesMemoryConfigProvider();
     envProvider = new GoRulesEnvConfigProvider();
-    
+
     compositeProvider = new GoRulesCompositeConfigProvider([
       memoryProvider,
       fileProvider,
@@ -294,21 +296,21 @@ describe('GoRulesCompositeConfigProvider', () => {
   describe('load', () => {
     it('should load from first available provider', async () => {
       await memoryProvider.save(testConfig);
-      
+
       const config = await compositeProvider.load();
       expect(config).toEqual(testConfig);
     });
 
     it('should try next provider if first fails', async () => {
       await fileProvider.save(testConfig);
-      
+
       const config = await compositeProvider.load();
       expect(config).toEqual(testConfig);
     });
 
     it('should throw error if no provider can load', async () => {
       await expect(compositeProvider.load()).rejects.toThrow(
-        'No configuration provider was able to load configuration'
+        'No configuration provider was able to load configuration',
       );
     });
   });
@@ -316,7 +318,7 @@ describe('GoRulesCompositeConfigProvider', () => {
   describe('save', () => {
     it('should save using first available provider', async () => {
       await compositeProvider.save(testConfig);
-      
+
       // Should have saved to memory provider (first in list)
       const memoryExists = await memoryProvider.exists();
       expect(memoryExists).toBe(true);
@@ -326,7 +328,7 @@ describe('GoRulesCompositeConfigProvider', () => {
   describe('exists', () => {
     it('should return true if any provider has configuration', async () => {
       await fileProvider.save(testConfig);
-      
+
       const exists = await compositeProvider.exists();
       expect(exists).toBe(true);
     });

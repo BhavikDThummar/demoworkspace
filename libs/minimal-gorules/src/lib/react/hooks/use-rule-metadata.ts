@@ -12,7 +12,7 @@ import { MinimalRuleMetadata } from '../../interfaces/core.js';
  */
 export function useRuleMetadata(
   service: ReactGoRulesService,
-  autoLoad = true
+  autoLoad = true,
 ): UseRuleMetadataState & {
   loadMetadata: () => Promise<void>;
   loadRuleMetadata: (ruleId: string) => Promise<MinimalRuleMetadata | null>;
@@ -24,28 +24,28 @@ export function useRuleMetadata(
     loading: false,
     metadata: null,
     error: null,
-    lastUpdated: null
+    lastUpdated: null,
   });
 
   const loadMetadata = useCallback(async () => {
     setState((prev: UseRuleMetadataState) => ({ ...prev, loading: true, error: null }));
-    
+
     try {
       const response = await service.getAllRuleMetadata();
-      
+
       if (response.success && response.metadata) {
         setState({
           loading: false,
           metadata: response.metadata as Record<string, MinimalRuleMetadata>,
           error: null,
-          lastUpdated: Date.now()
+          lastUpdated: Date.now(),
         });
       } else {
         setState({
           loading: false,
           metadata: null,
           error: response.message || 'Failed to load metadata',
-          lastUpdated: null
+          lastUpdated: null,
         });
       }
     } catch (error) {
@@ -53,61 +53,74 @@ export function useRuleMetadata(
         loading: false,
         metadata: null,
         error: error instanceof Error ? error.message : 'Unknown error',
-        lastUpdated: null
+        lastUpdated: null,
       });
     }
   }, [service]);
 
-  const loadRuleMetadata = useCallback(async (ruleId: string): Promise<MinimalRuleMetadata | null> => {
-    try {
-      const response = await service.getRuleMetadata(ruleId);
-      
-      if (response.success && response.metadata) {
-        return response.metadata as MinimalRuleMetadata;
+  const loadRuleMetadata = useCallback(
+    async (ruleId: string): Promise<MinimalRuleMetadata | null> => {
+      try {
+        const response = await service.getRuleMetadata(ruleId);
+
+        if (response.success && response.metadata) {
+          return response.metadata as MinimalRuleMetadata;
+        }
+        return null;
+      } catch (error) {
+        console.error(`Failed to load metadata for rule ${ruleId}:`, error);
+        return null;
       }
-      return null;
-    } catch (error) {
-      console.error(`Failed to load metadata for rule ${ruleId}:`, error);
-      return null;
-    }
-  }, [service]);
+    },
+    [service],
+  );
 
-  const filterByTags = useCallback((tags: string[]): Record<string, MinimalRuleMetadata> => {
-    if (!state.metadata || tags.length === 0) {
-      return {};
-    }
-
-    const filtered: Record<string, MinimalRuleMetadata> = {};
-    
-    for (const [ruleId, metadata] of Object.entries(state.metadata)) {
-      const hasMatchingTag = tags.some(tag => (metadata as MinimalRuleMetadata).tags.includes(tag));
-      if (hasMatchingTag) {
-        filtered[ruleId] = metadata as MinimalRuleMetadata;
+  const filterByTags = useCallback(
+    (tags: string[]): Record<string, MinimalRuleMetadata> => {
+      if (!state.metadata || tags.length === 0) {
+        return {};
       }
-    }
 
-    return filtered;
-  }, [state.metadata]);
+      const filtered: Record<string, MinimalRuleMetadata> = {};
 
-  const searchRules = useCallback((query: string): Record<string, MinimalRuleMetadata> => {
-    if (!state.metadata || !query.trim()) {
-      return state.metadata || {};
-    }
-
-    const searchTerm = query.toLowerCase().trim();
-    const filtered: Record<string, MinimalRuleMetadata> = {};
-    
-    for (const [ruleId, metadata] of Object.entries(state.metadata)) {
-      const matchesId = ruleId.toLowerCase().includes(searchTerm);
-      const matchesTags = (metadata as MinimalRuleMetadata).tags.some((tag: string) => tag.toLowerCase().includes(searchTerm));
-      
-      if (matchesId || matchesTags) {
-        filtered[ruleId] = metadata as MinimalRuleMetadata;
+      for (const [ruleId, metadata] of Object.entries(state.metadata)) {
+        const hasMatchingTag = tags.some((tag) =>
+          (metadata as MinimalRuleMetadata).tags.includes(tag),
+        );
+        if (hasMatchingTag) {
+          filtered[ruleId] = metadata as MinimalRuleMetadata;
+        }
       }
-    }
 
-    return filtered;
-  }, [state.metadata]);
+      return filtered;
+    },
+    [state.metadata],
+  );
+
+  const searchRules = useCallback(
+    (query: string): Record<string, MinimalRuleMetadata> => {
+      if (!state.metadata || !query.trim()) {
+        return state.metadata || {};
+      }
+
+      const searchTerm = query.toLowerCase().trim();
+      const filtered: Record<string, MinimalRuleMetadata> = {};
+
+      for (const [ruleId, metadata] of Object.entries(state.metadata)) {
+        const matchesId = ruleId.toLowerCase().includes(searchTerm);
+        const matchesTags = (metadata as MinimalRuleMetadata).tags.some((tag: string) =>
+          tag.toLowerCase().includes(searchTerm),
+        );
+
+        if (matchesId || matchesTags) {
+          filtered[ruleId] = metadata as MinimalRuleMetadata;
+        }
+      }
+
+      return filtered;
+    },
+    [state.metadata],
+  );
 
   const refresh = useCallback(async () => {
     await loadMetadata();
@@ -126,6 +139,6 @@ export function useRuleMetadata(
     loadRuleMetadata,
     filterByTags,
     searchRules,
-    refresh
+    refresh,
   };
 }

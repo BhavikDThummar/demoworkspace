@@ -62,13 +62,13 @@ export class CompressionManager {
     averageCompressionRatio: 0,
     compressionTime: 0,
     decompressionTime: 0,
-    algorithmsUsed: new Map()
+    algorithmsUsed: new Map(),
   };
 
   private defaultOptions: CompressionOptions = {
     algorithm: 'gzip',
     level: 6,
-    threshold: 1024 // Don't compress data smaller than 1KB
+    threshold: 1024, // Don't compress data smaller than 1KB
   };
 
   constructor(defaultOptions: Partial<CompressionOptions> = {}) {
@@ -80,7 +80,7 @@ export class CompressionManager {
    */
   async compress(
     data: Buffer | string,
-    options: Partial<CompressionOptions> = {}
+    options: Partial<CompressionOptions> = {},
   ): Promise<CompressionResult> {
     const opts = { ...this.defaultOptions, ...options };
     const inputBuffer = Buffer.isBuffer(data) ? data : Buffer.from(data, 'utf8');
@@ -97,7 +97,7 @@ export class CompressionManager {
           compressedSize: originalSize,
           compressionRatio: 1.0,
           algorithm: 'none',
-          compressed: false
+          compressed: false,
         };
       }
 
@@ -138,9 +138,8 @@ export class CompressionManager {
         compressedSize: compressedData.length,
         compressionRatio: compressedData.length / originalSize,
         algorithm,
-        compressed: algorithm !== 'none'
+        compressed: algorithm !== 'none',
       };
-
     } catch (error) {
       // Fallback to uncompressed on error
       const compressionTime = performance.now() - startTime;
@@ -152,7 +151,7 @@ export class CompressionManager {
         compressedSize: originalSize,
         compressionRatio: 1.0,
         algorithm: 'none',
-        compressed: false
+        compressed: false,
       };
     }
   }
@@ -160,10 +159,7 @@ export class CompressionManager {
   /**
    * Decompress data using the specified algorithm
    */
-  async decompress(
-    compressedData: Buffer,
-    algorithm: CompressionAlgorithm
-  ): Promise<Buffer> {
+  async decompress(compressedData: Buffer, algorithm: CompressionAlgorithm): Promise<Buffer> {
     const startTime = performance.now();
 
     try {
@@ -187,9 +183,10 @@ export class CompressionManager {
       this.stats.decompressionTime += decompressionTime;
 
       return decompressedData;
-
     } catch (error) {
-      throw new Error(`Decompression failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Decompression failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -199,7 +196,7 @@ export class CompressionManager {
   async compressRuleData(
     ruleData: Buffer,
     metadata: Record<string, unknown>,
-    options: Partial<CompressionOptions> = {}
+    options: Partial<CompressionOptions> = {},
   ): Promise<{
     compressedData: Buffer;
     compressedMetadata: Buffer;
@@ -218,7 +215,7 @@ export class CompressionManager {
     const metadataJson = JSON.stringify(metadata);
     const metadataCompression = await this.compress(metadataJson, {
       ...options,
-      threshold: 256 // Lower threshold for metadata
+      threshold: 256, // Lower threshold for metadata
     });
 
     const totalOriginalSize = dataCompression.originalSize + metadataCompression.originalSize;
@@ -232,8 +229,8 @@ export class CompressionManager {
         metadataCompression,
         totalOriginalSize,
         totalCompressedSize,
-        totalCompressionRatio: totalCompressedSize / totalOriginalSize
-      }
+        totalCompressionRatio: totalCompressedSize / totalOriginalSize,
+      },
     };
   }
 
@@ -244,7 +241,7 @@ export class CompressionManager {
     compressedData: Buffer,
     compressedMetadata: Buffer,
     dataAlgorithm: CompressionAlgorithm,
-    metadataAlgorithm: CompressionAlgorithm
+    metadataAlgorithm: CompressionAlgorithm,
   ): Promise<{
     ruleData: Buffer;
     metadata: Record<string, unknown>;
@@ -258,7 +255,7 @@ export class CompressionManager {
 
     return {
       ruleData,
-      metadata
+      metadata,
     };
   }
 
@@ -266,9 +263,9 @@ export class CompressionManager {
    * Get compression statistics
    */
   getStats(): CompressionStats {
-    return { 
+    return {
       ...this.stats,
-      algorithmsUsed: new Map(this.stats.algorithmsUsed)
+      algorithmsUsed: new Map(this.stats.algorithmsUsed),
     };
   }
 
@@ -283,33 +280,37 @@ export class CompressionManager {
       averageCompressionRatio: 0,
       compressionTime: 0,
       decompressionTime: 0,
-      algorithmsUsed: new Map()
+      algorithmsUsed: new Map(),
     };
   }
 
   /**
    * Analyze compression effectiveness for different algorithms
    */
-  async analyzeCompressionEffectiveness(
-    sampleData: Buffer[]
-  ): Promise<{
+  async analyzeCompressionEffectiveness(sampleData: Buffer[]): Promise<{
     recommendations: {
       bestAlgorithm: CompressionAlgorithm;
       averageRatio: number;
       averageTime: number;
     };
-    results: Map<CompressionAlgorithm, {
-      averageRatio: number;
-      averageTime: number;
-      totalSavings: number;
-    }>;
+    results: Map<
+      CompressionAlgorithm,
+      {
+        averageRatio: number;
+        averageTime: number;
+        totalSavings: number;
+      }
+    >;
   }> {
     const algorithms: CompressionAlgorithm[] = ['gzip', 'deflate', 'none'];
-    const results = new Map<CompressionAlgorithm, {
-      averageRatio: number;
-      averageTime: number;
-      totalSavings: number;
-    }>();
+    const results = new Map<
+      CompressionAlgorithm,
+      {
+        averageRatio: number;
+        averageTime: number;
+        totalSavings: number;
+      }
+    >();
 
     for (const algorithm of algorithms) {
       const ratios: number[] = [];
@@ -335,7 +336,7 @@ export class CompressionManager {
       results.set(algorithm, {
         averageRatio,
         averageTime,
-        totalSavings
+        totalSavings,
       });
     }
 
@@ -358,9 +359,9 @@ export class CompressionManager {
       recommendations: {
         bestAlgorithm,
         averageRatio: bestStats.averageRatio,
-        averageTime: bestStats.averageTime
+        averageTime: bestStats.averageTime,
       },
-      results
+      results,
     };
   }
 
@@ -371,7 +372,7 @@ export class CompressionManager {
     originalSize: number,
     compressedSize: number,
     compressionTime: number,
-    algorithm: CompressionAlgorithm
+    algorithm: CompressionAlgorithm,
   ): void {
     this.stats.totalOperations++;
     this.stats.totalOriginalBytes += originalSize;
@@ -379,7 +380,7 @@ export class CompressionManager {
     this.stats.compressionTime += compressionTime;
 
     // Update average compression ratio
-    this.stats.averageCompressionRatio = 
+    this.stats.averageCompressionRatio =
       this.stats.totalCompressedBytes / this.stats.totalOriginalBytes;
 
     // Update algorithm usage
@@ -411,7 +412,7 @@ export class CompressedCache<T> {
   constructor(
     serializer: (value: T) => Buffer,
     deserializer: (buffer: Buffer) => T,
-    compressionOptions: Partial<CompressionOptions> = {}
+    compressionOptions: Partial<CompressionOptions> = {},
   ) {
     this.compressionManager = new CompressionManager(compressionOptions);
     this.serializer = serializer;
@@ -430,7 +431,7 @@ export class CompressedCache<T> {
       compressionAlgorithm: compressionResult.algorithm,
       originalSize: compressionResult.originalSize,
       compressedSize: compressionResult.compressedSize,
-      compressionRatio: compressionResult.compressionRatio
+      compressionRatio: compressionResult.compressionRatio,
     };
 
     this.cache.set(key, entry);
@@ -447,7 +448,7 @@ export class CompressedCache<T> {
 
     const decompressed = await this.compressionManager.decompress(
       entry.compressedData,
-      entry.compressionAlgorithm
+      entry.compressionAlgorithm,
     );
 
     return this.deserializer(decompressed);
@@ -504,7 +505,7 @@ export class CompressedCache<T> {
       totalOriginalSize,
       totalCompressedSize,
       totalMemorySaved: totalOriginalSize - totalCompressedSize,
-      averageCompressionRatio: totalOriginalSize > 0 ? totalCompressedSize / totalOriginalSize : 0
+      averageCompressionRatio: totalOriginalSize > 0 ? totalCompressedSize / totalOriginalSize : 0,
     };
   }
 

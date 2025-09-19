@@ -1,6 +1,6 @@
 /**
  * Basic Usage Examples for GoRules NestJS Integration
- * 
+ *
  * This file demonstrates the most common usage patterns for the GoRules library.
  */
 
@@ -33,10 +33,7 @@ export class BasicAppModule {}
  * Module configuration using environment variables
  */
 @Module({
-  imports: [
-    ConfigModule.forRoot(),
-    GoRulesModule.forEnvironment(),
-  ],
+  imports: [ConfigModule.forRoot(), GoRulesModule.forEnvironment()],
 })
 export class EnvironmentAppModule {}
 
@@ -97,7 +94,7 @@ export class CustomerService {
     try {
       const result = await this.goRulesService.executeRule<CustomerData, ValidationResult>(
         'customer-validation',
-        customerData
+        customerData,
       );
 
       return result.result;
@@ -123,7 +120,7 @@ export class CustomerService {
         timeout: 10000,
         userId: 'user-123',
         sessionId: 'session-456',
-      }
+      },
     );
 
     return {
@@ -139,7 +136,7 @@ export class CustomerService {
   async safeValidateCustomer(customerData: CustomerData): Promise<ValidationResult | null> {
     // Check if rule exists before executing
     const ruleExists = await this.goRulesService.validateRuleExists('customer-validation');
-    
+
     if (!ruleExists) {
       console.warn('Customer validation rule not found');
       return null;
@@ -147,7 +144,7 @@ export class CustomerService {
 
     const result = await this.goRulesService.executeRule<CustomerData, ValidationResult>(
       'customer-validation',
-      customerData
+      customerData,
     );
 
     return result.result;
@@ -159,7 +156,7 @@ export class CustomerService {
   async getValidationRuleInfo() {
     try {
       const metadata = await this.goRulesService.getRuleMetadata('customer-validation');
-      
+
       return {
         name: metadata.name,
         version: metadata.version,
@@ -198,13 +195,15 @@ export class LoanProcessingService {
   /**
    * Process multiple loan applications in batch
    */
-  async processLoanApplications(applications: LoanApplication[]): Promise<{
-    applicationId: string;
-    decision: LoanDecision | null;
-    error?: string;
-  }[]> {
+  async processLoanApplications(applications: LoanApplication[]): Promise<
+    {
+      applicationId: string;
+      decision: LoanDecision | null;
+      error?: string;
+    }[]
+  > {
     // Prepare batch executions
-    const batchExecutions = applications.map(app => ({
+    const batchExecutions = applications.map((app) => ({
       executionId: `loan-${app.applicationId}`,
       ruleId: 'loan-approval',
       input: {
@@ -218,7 +217,7 @@ export class LoanProcessingService {
     const results = await this.goRulesService.executeBatch(batchExecutions);
 
     // Process results
-    return results.map(result => ({
+    return results.map((result) => ({
       applicationId: result.executionId.replace('loan-', ''),
       decision: result.error ? null : result.result.decision,
       error: result.error?.message,
@@ -261,12 +260,15 @@ export class LoanProcessingService {
     const results = await this.goRulesService.executeBatch(batchExecutions);
 
     // Extract results by execution ID
-    const validationResult = results.find(r => r.executionId === 'validation');
-    const pricingResult = results.find(r => r.executionId === 'pricing');
-    const approvalResult = results.find(r => r.executionId === 'approval');
+    const validationResult = results.find((r) => r.executionId === 'validation');
+    const pricingResult = results.find((r) => r.executionId === 'pricing');
+    const approvalResult = results.find((r) => r.executionId === 'approval');
 
     return {
-      validation: validationResult?.result.decision || { isValid: false, reason: 'Validation failed' },
+      validation: validationResult?.result.decision || {
+        isValid: false,
+        reason: 'Validation failed',
+      },
       pricing: pricingResult?.result.decision || { rate: 0, terms: [] },
       approval: approvalResult?.result.decision || { approved: false, reason: 'Approval failed' },
     };
@@ -278,12 +280,12 @@ export class LoanProcessingService {
 // ============================================================================
 
 import { GoRulesException, GoRulesErrorCode } from '@org/gorules';
-import { 
-  BadRequestException, 
-  NotFoundException, 
+import {
+  BadRequestException,
+  NotFoundException,
   RequestTimeoutException,
   ServiceUnavailableException,
-  InternalServerErrorException 
+  InternalServerErrorException,
 } from '@nestjs/common';
 
 @Injectable()
@@ -298,7 +300,7 @@ export class RobustCustomerService {
       const result = await this.goRulesService.executeRule<CustomerData, ValidationResult>(
         'customer-validation',
         customerData,
-        { timeout: 15000 }
+        { timeout: 15000 },
       );
 
       return result.result;
@@ -342,16 +344,16 @@ export class RobustCustomerService {
    * Retry logic with exponential backoff
    */
   private async retryValidation(
-    customerData: CustomerData, 
+    customerData: CustomerData,
     maxRetries: number,
-    baseDelay: number = 1000
+    baseDelay: number = 1000,
   ): Promise<ValidationResult> {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const result = await this.goRulesService.executeRule<CustomerData, ValidationResult>(
           'customer-validation',
           customerData,
-          { timeout: 10000 }
+          { timeout: 10000 },
         );
 
         return result.result;
@@ -362,7 +364,7 @@ export class RobustCustomerService {
 
         // Exponential backoff
         const delay = baseDelay * Math.pow(2, attempt - 1);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
@@ -374,14 +376,17 @@ export class RobustCustomerService {
    */
   private fallbackValidation(customerData: CustomerData): ValidationResult {
     // Implement basic validation logic as fallback
-    const isValid = customerData.age >= 18 && 
-                   customerData.income > 0 && 
-                   customerData.creditScore >= 300;
+    const isValid =
+      customerData.age >= 18 && customerData.income > 0 && customerData.creditScore >= 300;
 
     return {
       isValid,
-      riskLevel: customerData.creditScore >= 700 ? 'low' : 
-                customerData.creditScore >= 600 ? 'medium' : 'high',
+      riskLevel:
+        customerData.creditScore >= 700
+          ? 'low'
+          : customerData.creditScore >= 600
+          ? 'medium'
+          : 'high',
       approvedAmount: isValid ? Math.min(customerData.income * 3, 50000) : 0,
       reason: isValid ? 'Fallback validation passed' : 'Fallback validation failed',
       recommendations: ['Service temporarily unavailable - using fallback validation'],
@@ -405,7 +410,7 @@ export class MonitoringController {
   @Get('statistics')
   getExecutionStatistics() {
     const stats = this.goRulesService.getExecutionStatistics();
-    
+
     return Object.entries(stats).map(([ruleId, stat]) => ({
       ruleId,
       totalExecutions: stat.count,
@@ -431,7 +436,7 @@ export class MonitoringController {
     try {
       // Test rule execution to verify service health
       const testResult = await this.goRulesService.validateRuleExists('health-check');
-      
+
       return {
         status: 'healthy',
         timestamp: new Date().toISOString(),
@@ -467,10 +472,7 @@ describe('CustomerService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        CustomerService,
-        { provide: GoRulesService, useValue: mockGoRulesService },
-      ],
+      providers: [CustomerService, { provide: GoRulesService, useValue: mockGoRulesService }],
     }).compile();
 
     service = module.get<CustomerService>(CustomerService);
@@ -505,7 +507,7 @@ describe('CustomerService', () => {
     expect(result).toEqual(mockResult);
     expect(goRulesService.executeRule).toHaveBeenCalledWith(
       'customer-validation',
-      mockCustomerData
+      mockCustomerData,
     );
   });
 
@@ -519,7 +521,7 @@ describe('CustomerService', () => {
     };
 
     goRulesService.executeRule.mockRejectedValue(
-      new GoRulesException(GoRulesErrorCode.RULE_NOT_FOUND, 'Rule not found')
+      new GoRulesException(GoRulesErrorCode.RULE_NOT_FOUND, 'Rule not found'),
     );
 
     await expect(service.validateCustomer(mockCustomerData)).rejects.toThrow(GoRulesException);
@@ -574,7 +576,7 @@ export class BestPracticesService {
     }
 
     const result = await this.goRulesService.executeRule(ruleId, input);
-    
+
     this.cache.set(cacheKey, {
       result: result.result,
       timestamp: Date.now(),
@@ -588,7 +590,7 @@ export class BestPracticesService {
    */
   async executeWithLogging(ruleId: string, input: any, userId?: string) {
     const startTime = Date.now();
-    
+
     try {
       console.log('Rule execution started', {
         ruleId,

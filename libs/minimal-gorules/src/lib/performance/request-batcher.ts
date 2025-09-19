@@ -43,7 +43,7 @@ export interface BatchResult<TResponse> {
  * Batch executor function
  */
 export type BatchExecutor<TRequest, TResponse> = (
-  requests: Map<string, TRequest>
+  requests: Map<string, TRequest>,
 ) => Promise<BatchResult<TResponse>>;
 
 /**
@@ -72,7 +72,7 @@ export class RequestBatcher<TRequest, TResponse> {
     averageBatchSize: 0,
     averageWaitTime: 0,
     averageExecutionTime: 0,
-    batchEfficiency: 0
+    batchEfficiency: 0,
   };
   private waitTimeSum = 0;
   private executionTimeSum = 0;
@@ -80,25 +80,21 @@ export class RequestBatcher<TRequest, TResponse> {
 
   constructor(
     private executor: BatchExecutor<TRequest, TResponse>,
-    config: Partial<BatchConfig> = {}
+    config: Partial<BatchConfig> = {},
   ) {
     this.config = {
       maxBatchSize: 50,
       maxWaitTime: 100, // 100ms
       maxConcurrentBatches: 5,
       enableAutoBatching: true,
-      ...config
+      ...config,
     };
   }
 
   /**
    * Add a request to the batch queue
    */
-  async addRequest(
-    id: string,
-    request: TRequest,
-    priority: number = 0
-  ): Promise<TResponse> {
+  async addRequest(id: string, request: TRequest, priority: number = 0): Promise<TResponse> {
     return new Promise((resolve, reject) => {
       const batchableRequest: BatchableRequest<TRequest, TResponse> = {
         id,
@@ -106,7 +102,7 @@ export class RequestBatcher<TRequest, TResponse> {
         resolve,
         reject,
         timestamp: Date.now(),
-        priority
+        priority,
       };
 
       this.pendingRequests.set(id, batchableRequest);
@@ -147,7 +143,7 @@ export class RequestBatcher<TRequest, TResponse> {
       averageBatchSize: 0,
       averageWaitTime: 0,
       averageExecutionTime: 0,
-      batchEfficiency: 0
+      batchEfficiency: 0,
     };
     this.waitTimeSum = 0;
     this.executionTimeSum = 0;
@@ -173,8 +169,10 @@ export class RequestBatcher<TRequest, TResponse> {
    */
   private scheduleExecution(): void {
     // Execute immediately if batch is full or we're at max concurrent batches
-    if (this.pendingRequests.size >= this.config.maxBatchSize ||
-        this.activeBatches >= this.config.maxConcurrentBatches) {
+    if (
+      this.pendingRequests.size >= this.config.maxBatchSize ||
+      this.activeBatches >= this.config.maxConcurrentBatches
+    ) {
       this.executePendingBatches();
       return;
     }
@@ -192,16 +190,14 @@ export class RequestBatcher<TRequest, TResponse> {
    * Execute pending batches
    */
   private async executePendingBatches(): Promise<void> {
-    while (this.pendingRequests.size > 0 && 
-           this.activeBatches < this.config.maxConcurrentBatches) {
-      
+    while (this.pendingRequests.size > 0 && this.activeBatches < this.config.maxConcurrentBatches) {
       const batch = this.createBatch();
       if (batch.size === 0) {
         break;
       }
 
       // Execute batch without waiting
-      this.executeBatch(batch).catch(error => {
+      this.executeBatch(batch).catch((error) => {
         console.error('Batch execution failed:', error);
       });
     }
@@ -215,13 +211,12 @@ export class RequestBatcher<TRequest, TResponse> {
     const batchSize = Math.min(this.config.maxBatchSize, this.pendingRequests.size);
 
     // Sort requests by priority (higher priority first) and timestamp
-    const sortedRequests = Array.from(this.pendingRequests.values())
-      .sort((a, b) => {
-        if (a.priority !== b.priority) {
-          return b.priority - a.priority; // Higher priority first
-        }
-        return a.timestamp - b.timestamp; // Older requests first
-      });
+    const sortedRequests = Array.from(this.pendingRequests.values()).sort((a, b) => {
+      if (a.priority !== b.priority) {
+        return b.priority - a.priority; // Higher priority first
+      }
+      return a.timestamp - b.timestamp; // Older requests first
+    });
 
     // Take the top requests for this batch
     for (let i = 0; i < batchSize; i++) {
@@ -237,7 +232,7 @@ export class RequestBatcher<TRequest, TResponse> {
    * Execute a single batch
    */
   private async executeBatch(
-    batch: Map<string, BatchableRequest<TRequest, TResponse>>
+    batch: Map<string, BatchableRequest<TRequest, TResponse>>,
   ): Promise<void> {
     if (batch.size === 0) {
       return;
@@ -249,9 +244,7 @@ export class RequestBatcher<TRequest, TResponse> {
 
     try {
       // Calculate wait times for statistics
-      const waitTimes = Array.from(batch.values()).map(req => 
-        batchStartTime - req.timestamp
-      );
+      const waitTimes = Array.from(batch.values()).map((req) => batchStartTime - req.timestamp);
       const avgWaitTime = waitTimes.reduce((sum, time) => sum + time, 0) / waitTimes.length;
 
       // Prepare requests for execution
@@ -289,7 +282,6 @@ export class RequestBatcher<TRequest, TResponse> {
           request.reject(new Error(`Request ${id} not found in batch result`));
         }
       }
-
     } catch (error) {
       // Reject all requests in the batch
       for (const [, request] of batch) {
@@ -298,13 +290,14 @@ export class RequestBatcher<TRequest, TResponse> {
 
       // Still update statistics for failed batch
       const executionTime = performance.now() - startTime;
-      const avgWaitTime = Array.from(batch.values())
-        .reduce((sum, req) => sum + (batchStartTime - req.timestamp), 0) / batch.size;
-      
+      const avgWaitTime =
+        Array.from(batch.values()).reduce((sum, req) => sum + (batchStartTime - req.timestamp), 0) /
+        batch.size;
+
       this.updateStats(batch.size, avgWaitTime, executionTime);
     } finally {
       this.activeBatches--;
-      
+
       // Schedule next batch if there are pending requests
       if (this.pendingRequests.size > 0 && this.config.enableAutoBatching) {
         this.scheduleExecution();
@@ -374,14 +367,14 @@ export interface VersionCheckResponse {
 export class RuleLoadBatcher extends RequestBatcher<RuleLoadRequest, RuleLoadResponse> {
   constructor(
     executor: BatchExecutor<RuleLoadRequest, RuleLoadResponse>,
-    config: Partial<BatchConfig> = {}
+    config: Partial<BatchConfig> = {},
   ) {
     super(executor, {
       maxBatchSize: 20, // Smaller batches for rule loading
-      maxWaitTime: 50,  // Faster batching for rule loading
+      maxWaitTime: 50, // Faster batching for rule loading
       maxConcurrentBatches: 3,
       enableAutoBatching: true,
-      ...config
+      ...config,
     });
   }
 
@@ -396,8 +389,8 @@ export class RuleLoadBatcher extends RequestBatcher<RuleLoadRequest, RuleLoadRes
    * Load multiple rules with batching
    */
   async loadRules(ruleIds: string[], projectId?: string): Promise<Map<string, RuleLoadResponse>> {
-    const promises = ruleIds.map(ruleId => 
-      this.loadRule(ruleId, projectId).then(response => [ruleId, response] as const)
+    const promises = ruleIds.map((ruleId) =>
+      this.loadRule(ruleId, projectId).then((response) => [ruleId, response] as const),
     );
 
     const results = await Promise.allSettled(promises);
@@ -420,14 +413,14 @@ export class RuleLoadBatcher extends RequestBatcher<RuleLoadRequest, RuleLoadRes
 export class VersionCheckBatcher extends RequestBatcher<VersionCheckRequest, VersionCheckResponse> {
   constructor(
     executor: BatchExecutor<VersionCheckRequest, VersionCheckResponse>,
-    config: Partial<BatchConfig> = {}
+    config: Partial<BatchConfig> = {},
   ) {
     super(executor, {
       maxBatchSize: 100, // Larger batches for version checking
-      maxWaitTime: 200,  // Longer wait for better batching
+      maxWaitTime: 200, // Longer wait for better batching
       maxConcurrentBatches: 2,
       enableAutoBatching: true,
-      ...config
+      ...config,
     });
   }
 
@@ -441,11 +434,9 @@ export class VersionCheckBatcher extends RequestBatcher<VersionCheckRequest, Ver
   /**
    * Check versions for multiple rules with batching
    */
-  async checkVersions(
-    rules: Map<string, string>
-  ): Promise<Map<string, VersionCheckResponse>> {
-    const promises = Array.from(rules.entries()).map(([ruleId, version]) => 
-      this.checkVersion(ruleId, version).then(response => [ruleId, response] as const)
+  async checkVersions(rules: Map<string, string>): Promise<Map<string, VersionCheckResponse>> {
+    const promises = Array.from(rules.entries()).map(([ruleId, version]) =>
+      this.checkVersion(ruleId, version).then((response) => [ruleId, response] as const),
     );
 
     const results = await Promise.allSettled(promises);

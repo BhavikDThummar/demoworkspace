@@ -57,10 +57,7 @@ import { ConfigModule } from '@nestjs/config';
 import { GoRulesModule } from '@org/gorules';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot(),
-    GoRulesModule.forRootWithConfigService(),
-  ],
+  imports: [ConfigModule.forRoot(), GoRulesModule.forRootWithConfigService()],
 })
 export class AppModule {}
 ```
@@ -72,9 +69,7 @@ import { Module } from '@nestjs/common';
 import { GoRulesModule } from '@org/gorules';
 
 @Module({
-  imports: [
-    GoRulesModule.forRootWithEnvironmentConfig(),
-  ],
+  imports: [GoRulesModule.forRootWithEnvironmentConfig()],
 })
 export class AppModule {}
 ```
@@ -105,11 +100,9 @@ export class BusinessService {
   constructor(private readonly goRulesService: GoRulesService) {}
 
   async validateCustomer(customerData: any) {
-    const result = await this.goRulesService.executeRule(
-      'customer-validation',
-      customerData,
-      { trace: true }
-    );
+    const result = await this.goRulesService.executeRule('customer-validation', customerData, {
+      trace: true,
+    });
 
     return {
       isValid: result.result.isValid,
@@ -130,7 +123,7 @@ import { InjectGoRulesService, GoRulesService } from '@org/gorules';
 export class BusinessService {
   constructor(
     @InjectGoRulesService()
-    private readonly goRulesService: GoRulesService
+    private readonly goRulesService: GoRulesService,
   ) {}
 
   async processOrder(orderData: any) {
@@ -254,7 +247,7 @@ try {
         // Handle timeout
         break;
       default:
-        // Handle other errors
+      // Handle other errors
     }
   }
 }
@@ -262,14 +255,14 @@ try {
 
 ## Configuration Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `apiUrl` | string | Required | GoRules API endpoint URL |
-| `apiKey` | string | Required | API authentication key |
-| `projectId` | string | Required | GoRules project identifier |
-| `timeout` | number | 30000 | Request timeout in milliseconds |
-| `retryAttempts` | number | 3 | Number of retry attempts for failed requests |
-| `enableLogging` | boolean | false | Enable detailed logging |
+| Option          | Type    | Default  | Description                                  |
+| --------------- | ------- | -------- | -------------------------------------------- |
+| `apiUrl`        | string  | Required | GoRules API endpoint URL                     |
+| `apiKey`        | string  | Required | API authentication key                       |
+| `projectId`     | string  | Required | GoRules project identifier                   |
+| `timeout`       | number  | 30000    | Request timeout in milliseconds              |
+| `retryAttempts` | number  | 3        | Number of retry attempts for failed requests |
+| `enableLogging` | boolean | false    | Enable detailed logging                      |
 
 ## Circuit Breaker Configuration
 
@@ -299,10 +292,7 @@ describe('BusinessService', () => {
     };
 
     const module = await Test.createTestingModule({
-      providers: [
-        BusinessService,
-        { provide: GoRulesService, useValue: mockGoRulesService },
-      ],
+      providers: [BusinessService, { provide: GoRulesService, useValue: mockGoRulesService }],
     }).compile();
 
     service = module.get<BusinessService>(BusinessService);
@@ -333,15 +323,19 @@ describe('BusinessService', () => {
 ### Common Issues
 
 1. **Configuration Errors**
+
    ```
    Error: GORULES_API_KEY is required
    ```
+
    Ensure all required environment variables are set.
 
 2. **Network Connectivity**
+
    ```
    Error: Network timeout after 30000ms
    ```
+
    Check network connectivity and consider increasing timeout values.
 
 3. **Circuit Breaker Open**
@@ -358,7 +352,7 @@ Enable debug logging for troubleshooting:
 GoRulesModule.forRoot({
   // ... other config
   enableLogging: true,
-})
+});
 ```
 
 ## Contributing
@@ -377,6 +371,7 @@ This library is licensed under the MIT License.
 ## Support
 
 For issues and questions:
+
 - Create an issue in the repository
 - Check the troubleshooting guide
 - Review the example implementations in `/examples`

@@ -29,25 +29,25 @@ import { MinimalGoRulesEngine } from '@your-org/minimal-gorules';
 const engine = new MinimalGoRulesEngine({
   apiUrl: 'https://api.gorules.io',
   apiKey: 'your-api-key',
-  projectId: 'your-project-id'
+  projectId: 'your-project-id',
 });
 
 // Load all rules from your GoRules project
 await engine.initialize();
 
 // Execute a single rule
-const result = await engine.executeRule('rule-id', { 
-  input: 'data' 
+const result = await engine.executeRule('rule-id', {
+  input: 'data',
 });
 
 // Execute multiple rules in parallel
 const results = await engine.executeRules(['rule1', 'rule2'], {
-  input: 'data'
+  input: 'data',
 });
 
 // Execute rules by tags
 const tagResults = await engine.executeByTags(['tag1', 'tag2'], {
-  input: 'data'
+  input: 'data',
 });
 ```
 

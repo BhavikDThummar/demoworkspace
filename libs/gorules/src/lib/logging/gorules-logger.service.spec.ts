@@ -40,7 +40,7 @@ describe('GoRulesLoggerService', () => {
 
     it('should log execution start', () => {
       service.logExecutionStart(ruleId, executionId, input);
-      
+
       const metrics = service.getExecutionMetrics(executionId);
       expect(metrics).toBeDefined();
       expect(metrics?.ruleId).toBe(ruleId);
@@ -50,7 +50,7 @@ describe('GoRulesLoggerService', () => {
     it('should log execution success', () => {
       service.logExecutionStart(ruleId, executionId, input);
       service.logExecutionSuccess(executionId, output);
-      
+
       const metrics = service.getExecutionMetrics(executionId);
       expect(metrics?.success).toBe(true);
       expect(metrics?.endTime).toBeGreaterThan(0);
@@ -61,7 +61,7 @@ describe('GoRulesLoggerService', () => {
       const error = new Error('Test error');
       service.logExecutionStart(ruleId, executionId, input);
       service.logExecutionError(executionId, error);
-      
+
       const metrics = service.getExecutionMetrics(executionId);
       expect(metrics?.success).toBe(false);
       expect(metrics?.error).toBe(error.message);
@@ -71,9 +71,9 @@ describe('GoRulesLoggerService', () => {
       const error = new Error('Retry error');
       service.logExecutionStart(ruleId, executionId, input);
       service.logRetryAttempt(executionId, 1, error, 1000);
-      
+
       const logEntries = service.getLogEntriesByExecution(executionId);
-      const retryEntry = logEntries.find(entry => entry.message.includes('retry'));
+      const retryEntry = logEntries.find((entry) => entry.message.includes('retry'));
       expect(retryEntry).toBeDefined();
       expect(retryEntry?.metadata?.attemptNumber).toBe(1);
     });
@@ -83,9 +83,9 @@ describe('GoRulesLoggerService', () => {
     it('should log circuit breaker state changes', () => {
       const ruleId = 'test-rule';
       service.logCircuitBreakerStateChange(ruleId, 'CLOSED', 'OPEN', 'Too many failures');
-      
+
       const logEntries = service.getLogEntriesByRule(ruleId);
-      const cbEntry = logEntries.find(entry => entry.message.includes('Circuit breaker'));
+      const cbEntry = logEntries.find((entry) => entry.message.includes('Circuit breaker'));
       expect(cbEntry).toBeDefined();
       expect(cbEntry?.metadata?.newState).toBe('OPEN');
     });
@@ -96,9 +96,9 @@ describe('GoRulesLoggerService', () => {
       const ruleId = 'slow-rule';
       const executionId = 'exec-slow';
       service.logPerformanceWarning(ruleId, executionId, 6000, 5000);
-      
+
       const logEntries = service.getLogEntriesByRule(ruleId);
-      const perfEntry = logEntries.find(entry => entry.message.includes('performance threshold'));
+      const perfEntry = logEntries.find((entry) => entry.message.includes('performance threshold'));
       expect(perfEntry).toBeDefined();
       expect(perfEntry?.duration).toBe(6000);
     });
@@ -111,7 +111,7 @@ describe('GoRulesLoggerService', () => {
         { ruleId: 'rule2', executionId: 'exec3', duration: 150 },
       ];
 
-      executions.forEach(exec => {
+      executions.forEach((exec) => {
         service.logExecutionStart(exec.ruleId, exec.executionId, {});
         // Simulate execution time
         setTimeout(() => {
@@ -132,39 +132,39 @@ describe('GoRulesLoggerService', () => {
   describe('log management', () => {
     it('should retrieve recent log entries', () => {
       service.logConfigurationEvent('test-event', { key: 'value' });
-      
+
       const recentLogs = service.getRecentLogEntries(10);
       expect(recentLogs.length).toBeGreaterThan(0);
-      
-      const configEvent = recentLogs.find(entry => entry.message.includes('test-event'));
+
+      const configEvent = recentLogs.find((entry) => entry.message.includes('test-event'));
       expect(configEvent).toBeDefined();
     });
 
     it('should filter log entries by rule', () => {
       const ruleId = 'filter-test-rule';
       const executionId = 'exec-filter';
-      
+
       service.logExecutionStart(ruleId, executionId, {});
       service.logExecutionSuccess(executionId, {});
-      
+
       const ruleLogs = service.getLogEntriesByRule(ruleId);
       expect(ruleLogs.length).toBeGreaterThan(0);
-      expect(ruleLogs.every(entry => entry.ruleId === ruleId)).toBe(true);
+      expect(ruleLogs.every((entry) => entry.ruleId === ruleId)).toBe(true);
     });
 
     it('should clear old data', () => {
       const ruleId = 'old-rule';
       const executionId = 'old-exec';
-      
+
       service.logExecutionStart(ruleId, executionId, {});
       service.logExecutionSuccess(executionId, {});
-      
+
       // Clear data older than 0ms (everything)
       service.clearOldData(0);
-      
+
       const metrics = service.getExecutionMetrics(executionId);
       expect(metrics).toBeUndefined();
-      
+
       const recentLogs = service.getRecentLogEntries();
       expect(recentLogs.length).toBe(0);
     });
@@ -181,10 +181,10 @@ describe('GoRulesLoggerService', () => {
     it('should not log when disabled', () => {
       const ruleId = 'disabled-rule';
       const executionId = 'disabled-exec';
-      
+
       disabledService.logExecutionStart(ruleId, executionId, {});
       disabledService.logExecutionSuccess(executionId, {});
-      
+
       const recentLogs = disabledService.getRecentLogEntries();
       expect(recentLogs.length).toBe(0);
     });

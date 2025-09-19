@@ -92,7 +92,7 @@ export class PerformanceBenchmark {
 
   constructor(
     config: Partial<PerformanceTestConfig> = {},
-    requirements: Partial<PerformanceRequirements> = {}
+    requirements: Partial<PerformanceRequirements> = {},
   ) {
     this.config = {
       iterations: 1000,
@@ -100,7 +100,7 @@ export class PerformanceBenchmark {
       concurrency: 10,
       timeout: 30000,
       sampleDataSize: 1024,
-      ...config
+      ...config,
     };
 
     this.requirements = {
@@ -108,7 +108,7 @@ export class PerformanceBenchmark {
       minThroughput: 100, // 100 ops/sec
       maxMemoryPerOperation: 1024 * 1024, // 1MB
       maxMemoryGrowthRate: 1024, // 1KB per operation
-      ...requirements
+      ...requirements,
     };
   }
 
@@ -117,7 +117,7 @@ export class PerformanceBenchmark {
    */
   async runTest(
     testName: string,
-    testFunction: PerformanceTestFunction
+    testFunction: PerformanceTestFunction,
   ): Promise<PerformanceTestResult> {
     console.log(`Running performance test: ${testName}`);
 
@@ -146,7 +146,7 @@ export class PerformanceBenchmark {
         const iterationStart = performance.now();
         await testFunction();
         const iterationEnd = performance.now();
-        
+
         times.push(iterationEnd - iterationStart);
 
         // Track peak memory usage
@@ -189,19 +189,22 @@ export class PerformanceBenchmark {
           before: memoryBefore,
           after: memoryAfter,
           peak: memoryPeak,
-          delta: memoryAfter - memoryBefore
+          delta: memoryAfter - memoryBefore,
         },
-        success: true
+        success: true,
       };
 
       console.log(`  ✓ ${testName} completed`);
-      console.log(`    Average: ${averageTime.toFixed(2)}ms, Throughput: ${throughput.toFixed(0)} ops/sec`);
+      console.log(
+        `    Average: ${averageTime.toFixed(2)}ms, Throughput: ${throughput.toFixed(0)} ops/sec`,
+      );
 
       return result;
-
     } catch (error) {
-      console.log(`  ✗ ${testName} failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      
+      console.log(
+        `  ✗ ${testName} failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+
       return {
         testName,
         iterations: 0,
@@ -217,10 +220,10 @@ export class PerformanceBenchmark {
           before: 0,
           after: 0,
           peak: 0,
-          delta: 0
+          delta: 0,
         },
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -230,7 +233,7 @@ export class PerformanceBenchmark {
    */
   async runThroughputTest(
     testName: string,
-    testFunction: PerformanceTestFunction
+    testFunction: PerformanceTestFunction,
   ): Promise<PerformanceTestResult> {
     console.log(`Running throughput test: ${testName} (concurrency: ${this.config.concurrency})`);
 
@@ -257,13 +260,13 @@ export class PerformanceBenchmark {
           const operationStart = performance.now();
           await testFunction();
           const operationEnd = performance.now();
-          
+
           // Track peak memory usage
           const currentMemory = this.getMemoryUsage();
           if (currentMemory > memoryPeak) {
             memoryPeak = currentMemory;
           }
-          
+
           return operationEnd - operationStart;
         })();
 
@@ -275,7 +278,7 @@ export class PerformanceBenchmark {
           // Remove completed promises
           for (let j = promises.length - 1; j >= 0; j--) {
             const promise = promises[j];
-            if (await Promise.race([promise, Promise.resolve('pending')]) !== 'pending') {
+            if ((await Promise.race([promise, Promise.resolve('pending')])) !== 'pending') {
               promises.splice(j, 1);
             }
           }
@@ -307,19 +310,24 @@ export class PerformanceBenchmark {
           before: memoryBefore,
           after: memoryAfter,
           peak: memoryPeak,
-          delta: memoryAfter - memoryBefore
+          delta: memoryAfter - memoryBefore,
         },
-        success: true
+        success: true,
       };
 
       console.log(`  ✓ ${testName} completed`);
-      console.log(`    Throughput: ${throughput.toFixed(0)} ops/sec, Average latency: ${averageTime.toFixed(2)}ms`);
+      console.log(
+        `    Throughput: ${throughput.toFixed(0)} ops/sec, Average latency: ${averageTime.toFixed(
+          2,
+        )}ms`,
+      );
 
       return result;
-
     } catch (error) {
-      console.log(`  ✗ ${testName} failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      
+      console.log(
+        `  ✗ ${testName} failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+
       return {
         testName,
         iterations: 0,
@@ -335,10 +343,10 @@ export class PerformanceBenchmark {
           before: 0,
           after: 0,
           peak: 0,
-          delta: 0
+          delta: 0,
         },
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -352,35 +360,39 @@ export class PerformanceBenchmark {
       name: string;
       test: PerformanceTestFunction;
       type?: 'latency' | 'throughput';
-    }>
+    }>,
   ): Promise<BenchmarkSuiteResult> {
     console.log(`\n=== Running Benchmark Suite: ${suiteName} ===`);
-    
+
     const suiteStartTime = performance.now();
     const results: PerformanceTestResult[] = [];
 
     for (const { name, test, type = 'latency' } of tests) {
-      const result = type === 'throughput' 
-        ? await this.runThroughputTest(name, test)
-        : await this.runTest(name, test);
-      
+      const result =
+        type === 'throughput'
+          ? await this.runThroughputTest(name, test)
+          : await this.runTest(name, test);
+
       results.push(result);
     }
 
     const totalTime = performance.now() - suiteStartTime;
-    const passed = results.filter(r => r.success).length;
-    const failed = results.filter(r => !r.success).length;
+    const passed = results.filter((r) => r.success).length;
+    const failed = results.filter((r) => !r.success).length;
 
     // Calculate overall metrics
-    const successfulResults = results.filter(r => r.success);
-    const overallThroughput = successfulResults.length > 0
-      ? successfulResults.reduce((sum, r) => sum + r.throughput, 0) / successfulResults.length
-      : 0;
+    const successfulResults = results.filter((r) => r.success);
+    const overallThroughput =
+      successfulResults.length > 0
+        ? successfulResults.reduce((sum, r) => sum + r.throughput, 0) / successfulResults.length
+        : 0;
 
-    const memoryEfficiency = successfulResults.length > 0
-      ? 1 - (successfulResults.reduce((sum, r) => sum + r.memoryUsage.delta, 0) / 
-             (successfulResults.length * this.requirements.maxMemoryPerOperation))
-      : 0;
+    const memoryEfficiency =
+      successfulResults.length > 0
+        ? 1 -
+          successfulResults.reduce((sum, r) => sum + r.memoryUsage.delta, 0) /
+            (successfulResults.length * this.requirements.maxMemoryPerOperation)
+        : 0;
 
     // Generate summary
     const summary = this.generateSummary(results);
@@ -394,7 +406,7 @@ export class PerformanceBenchmark {
       memoryEfficiency,
       passed,
       failed,
-      summary
+      summary,
     };
 
     this.printSummary(suiteResult);
@@ -421,20 +433,26 @@ export class PerformanceBenchmark {
       // Check latency requirements
       if (result.averageTime > this.requirements.maxLatency) {
         violations.push(
-          `${result.testName}: Average latency ${result.averageTime.toFixed(2)}ms exceeds limit ${this.requirements.maxLatency}ms`
+          `${result.testName}: Average latency ${result.averageTime.toFixed(2)}ms exceeds limit ${
+            this.requirements.maxLatency
+          }ms`,
         );
       }
 
       if (result.p95Time > this.requirements.maxLatency * 2) {
         violations.push(
-          `${result.testName}: P95 latency ${result.p95Time.toFixed(2)}ms exceeds limit ${this.requirements.maxLatency * 2}ms`
+          `${result.testName}: P95 latency ${result.p95Time.toFixed(2)}ms exceeds limit ${
+            this.requirements.maxLatency * 2
+          }ms`,
         );
       }
 
       // Check throughput requirements
       if (result.throughput < this.requirements.minThroughput) {
         violations.push(
-          `${result.testName}: Throughput ${result.throughput.toFixed(0)} ops/sec below minimum ${this.requirements.minThroughput} ops/sec`
+          `${result.testName}: Throughput ${result.throughput.toFixed(0)} ops/sec below minimum ${
+            this.requirements.minThroughput
+          } ops/sec`,
         );
       }
 
@@ -442,7 +460,9 @@ export class PerformanceBenchmark {
       const memoryPerOp = result.memoryUsage.delta / result.iterations;
       if (memoryPerOp > this.requirements.maxMemoryPerOperation) {
         violations.push(
-          `${result.testName}: Memory per operation ${this.formatBytes(memoryPerOp)} exceeds limit ${this.formatBytes(this.requirements.maxMemoryPerOperation)}`
+          `${result.testName}: Memory per operation ${this.formatBytes(
+            memoryPerOp,
+          )} exceeds limit ${this.formatBytes(this.requirements.maxMemoryPerOperation)}`,
         );
       }
 
@@ -463,7 +483,7 @@ export class PerformanceBenchmark {
     return {
       passed: violations.length === 0,
       violations,
-      recommendations
+      recommendations,
     };
   }
 
@@ -471,50 +491,53 @@ export class PerformanceBenchmark {
    * Generate benchmark summary
    */
   private generateSummary(results: PerformanceTestResult[]): BenchmarkSuiteResult['summary'] {
-    const successfulResults = results.filter(r => r.success);
-    
+    const successfulResults = results.filter((r) => r.success);
+
     if (successfulResults.length === 0) {
       return {
         fastestTest: 'N/A',
         slowestTest: 'N/A',
         mostMemoryEfficient: 'N/A',
         leastMemoryEfficient: 'N/A',
-        recommendations: ['All tests failed - check implementation']
+        recommendations: ['All tests failed - check implementation'],
       };
     }
 
     // Find fastest and slowest tests
-    const fastestTest = successfulResults.reduce((fastest, current) => 
-      current.averageTime < fastest.averageTime ? current : fastest
+    const fastestTest = successfulResults.reduce((fastest, current) =>
+      current.averageTime < fastest.averageTime ? current : fastest,
     );
-    
-    const slowestTest = successfulResults.reduce((slowest, current) => 
-      current.averageTime > slowest.averageTime ? current : slowest
+
+    const slowestTest = successfulResults.reduce((slowest, current) =>
+      current.averageTime > slowest.averageTime ? current : slowest,
     );
 
     // Find most and least memory efficient tests
-    const mostMemoryEfficient = successfulResults.reduce((efficient, current) => 
-      current.memoryUsage.delta < efficient.memoryUsage.delta ? current : efficient
+    const mostMemoryEfficient = successfulResults.reduce((efficient, current) =>
+      current.memoryUsage.delta < efficient.memoryUsage.delta ? current : efficient,
     );
-    
-    const leastMemoryEfficient = successfulResults.reduce((inefficient, current) => 
-      current.memoryUsage.delta > inefficient.memoryUsage.delta ? current : inefficient
+
+    const leastMemoryEfficient = successfulResults.reduce((inefficient, current) =>
+      current.memoryUsage.delta > inefficient.memoryUsage.delta ? current : inefficient,
     );
 
     // Generate recommendations
     const recommendations: string[] = [];
-    
+
     if (slowestTest.averageTime > this.requirements.maxLatency) {
       recommendations.push(`Optimize ${slowestTest.testName} for better performance`);
     }
-    
+
     if (leastMemoryEfficient.memoryUsage.delta > this.requirements.maxMemoryPerOperation) {
       recommendations.push(`Reduce memory usage in ${leastMemoryEfficient.testName}`);
     }
 
-    const avgThroughput = successfulResults.reduce((sum, r) => sum + r.throughput, 0) / successfulResults.length;
+    const avgThroughput =
+      successfulResults.reduce((sum, r) => sum + r.throughput, 0) / successfulResults.length;
     if (avgThroughput < this.requirements.minThroughput) {
-      recommendations.push('Overall throughput is below requirements - consider parallel processing');
+      recommendations.push(
+        'Overall throughput is below requirements - consider parallel processing',
+      );
     }
 
     return {
@@ -522,7 +545,7 @@ export class PerformanceBenchmark {
       slowestTest: slowestTest.testName,
       mostMemoryEfficient: mostMemoryEfficient.testName,
       leastMemoryEfficient: leastMemoryEfficient.testName,
-      recommendations
+      recommendations,
     };
   }
 
@@ -535,7 +558,7 @@ export class PerformanceBenchmark {
     console.log(`Tests passed: ${result.passed}/${result.tests.length}`);
     console.log(`Overall throughput: ${result.overallThroughput.toFixed(0)} ops/sec`);
     console.log(`Memory efficiency: ${(result.memoryEfficiency * 100).toFixed(1)}%`);
-    
+
     console.log('\nTest Results:');
     for (const test of result.tests) {
       const status = test.success ? '✓' : '✗';
@@ -569,11 +592,11 @@ export class PerformanceBenchmark {
    */
   private formatBytes(bytes: number): string {
     if (bytes === 0) return '0 B';
-    
+
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(k));
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 }

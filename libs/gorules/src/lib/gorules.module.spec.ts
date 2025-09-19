@@ -6,10 +6,10 @@ import { GoRulesService } from './services/gorules.service.js';
 import { GoRulesZenService } from './services/gorules-zen.service.js';
 import { GoRulesHttpService } from './services/gorules-http.service.js';
 import { GoRulesResilienceService } from './services/gorules-resilience.service.js';
-import { 
-  GoRulesConfigFactory, 
-  GoRulesAsyncConfigFactory, 
-  GoRulesEnvironmentConfigFactory 
+import {
+  GoRulesConfigFactory,
+  GoRulesAsyncConfigFactory,
+  GoRulesEnvironmentConfigFactory,
 } from './config/gorules-config.factory.js';
 import { GoRulesConfig, GoRulesOptionsFactory } from './config/gorules-config.interface.js';
 
@@ -78,7 +78,9 @@ describe('GoRulesModule', () => {
     it('should provide configuration factories', () => {
       const configFactory = module.get<GoRulesConfigFactory>(GoRulesConfigFactory);
       const asyncConfigFactory = module.get<GoRulesAsyncConfigFactory>(GoRulesAsyncConfigFactory);
-      const envConfigFactory = module.get<GoRulesEnvironmentConfigFactory>(GoRulesEnvironmentConfigFactory);
+      const envConfigFactory = module.get<GoRulesEnvironmentConfigFactory>(
+        GoRulesEnvironmentConfigFactory,
+      );
 
       expect(configFactory).toBeDefined();
       expect(asyncConfigFactory).toBeDefined();
@@ -204,10 +206,7 @@ describe('GoRulesModule', () => {
         process.env['NODE_ENV'] = 'test';
 
         module = await Test.createTestingModule({
-          imports: [
-            ConfigModule.forRoot(),
-            GoRulesModule.forEnvironment(),
-          ],
+          imports: [ConfigModule.forRoot(), GoRulesModule.forEnvironment()],
         }).compile();
       });
 

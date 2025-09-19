@@ -13,9 +13,9 @@ import { MemoryManager, getGlobalMemoryManager } from '@org/minimal-gorules';
 
 // Get global memory manager
 const memoryManager = getGlobalMemoryManager({
-  warningThreshold: 0.7,    // 70% of heap limit
-  criticalThreshold: 0.85,  // 85% of heap limit
-  cleanupInterval: 30000    // 30 seconds
+  warningThreshold: 0.7, // 70% of heap limit
+  criticalThreshold: 0.85, // 85% of heap limit
+  cleanupInterval: 30000, // 30 seconds
 });
 
 // Start monitoring
@@ -41,19 +41,19 @@ import { ConnectionPool } from '@org/minimal-gorules';
 
 const pool = new ConnectionPool(
   'https://api.gorules.io',
-  { 'Authorization': 'Bearer your-token' },
+  { Authorization: 'Bearer your-token' },
   {
     maxConnections: 10,
     maxRequestsPerConnection: 100,
     connectionTimeout: 5000,
-    keepAliveTimeout: 30000
-  }
+    keepAliveTimeout: 30000,
+  },
 );
 
 // Make requests
 const response = await pool.request({
   method: 'GET',
-  path: '/api/v1/projects/123/rules'
+  path: '/api/v1/projects/123/rules',
 });
 
 // Get statistics
@@ -80,8 +80,8 @@ const batcher = new RequestBatcher(
   {
     maxBatchSize: 50,
     maxWaitTime: 100,
-    maxConcurrentBatches: 5
-  }
+    maxConcurrentBatches: 5,
+  },
 );
 
 // Add requests (they will be automatically batched)
@@ -99,7 +99,7 @@ import { CompressionManager } from '@org/minimal-gorules';
 const compression = new CompressionManager({
   algorithm: 'gzip',
   level: 6,
-  threshold: 1024 // Don't compress data smaller than 1KB
+  threshold: 1024, // Don't compress data smaller than 1KB
 });
 
 // Compress data
@@ -122,13 +122,13 @@ const benchmark = new PerformanceBenchmark(
     iterations: 1000,
     warmupIterations: 100,
     concurrency: 10,
-    timeout: 30000
+    timeout: 30000,
   },
   {
-    maxLatency: 50,        // 50ms max
-    minThroughput: 1000,   // 1000 ops/sec min
-    maxMemoryPerOperation: 1024 * 1024 // 1MB max
-  }
+    maxLatency: 50, // 50ms max
+    minThroughput: 1000, // 1000 ops/sec min
+    maxMemoryPerOperation: 1024 * 1024, // 1MB max
+  },
 );
 
 // Run performance test
@@ -139,8 +139,19 @@ const result = await benchmark.runTest('my-test', async () => {
 
 // Run benchmark suite
 const suiteResult = await benchmark.runBenchmarkSuite('My Suite', [
-  { name: 'Test 1', test: async () => { /* test code */ } },
-  { name: 'Test 2', test: async () => { /* test code */ }, type: 'throughput' }
+  {
+    name: 'Test 1',
+    test: async () => {
+      /* test code */
+    },
+  },
+  {
+    name: 'Test 2',
+    test: async () => {
+      /* test code */
+    },
+    type: 'throughput',
+  },
 ]);
 ```
 
@@ -155,25 +166,25 @@ const engine = new MinimalGoRulesEngine({
   apiUrl: 'https://api.gorules.io',
   apiKey: 'your-api-key',
   projectId: 'your-project-id',
-  
+
   // Enable performance optimizations
   enablePerformanceOptimizations: true,
   enablePerformanceMetrics: true,
-  
+
   // Memory management
   memoryWarningThreshold: 0.7,
   memoryCriticalThreshold: 0.85,
   memoryCleanupInterval: 30000,
-  
+
   // Connection pooling
   enableConnectionPooling: true,
-  
+
   // Request batching
   enableRequestBatching: true,
-  
+
   // Compression
   enableCompression: true,
-  compressionAlgorithm: 'gzip'
+  compressionAlgorithm: 'gzip',
 });
 
 // Initialize with optimizations
@@ -278,6 +289,7 @@ node --expose-gc --max-old-space-size=4096 npm test
 ```
 
 The performance tests validate:
+
 - Memory management efficiency
 - Connection pool performance
 - Request batching effectiveness

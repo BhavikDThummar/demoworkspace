@@ -5,7 +5,7 @@ import {
   BatchRuleExecutionResult,
   RuleMetadata,
   RuleInputData,
-  RuleValidationResult
+  RuleValidationResult,
 } from '../types/index.js';
 
 /**
@@ -22,7 +22,7 @@ export interface IGoRulesService {
   executeRule<T extends RuleInputData = RuleInputData, R = unknown>(
     ruleId: string,
     input: T,
-    options?: RuleExecutionOptions
+    options?: RuleExecutionOptions,
   ): Promise<RuleExecutionResult<R>>;
 
   /**
@@ -31,7 +31,7 @@ export interface IGoRulesService {
    * @returns Promise resolving to array of batch execution results
    */
   executeBatch<T extends RuleInputData = RuleInputData, R = unknown>(
-    executions: BatchRuleExecution<T>[]
+    executions: BatchRuleExecution<T>[],
   ): Promise<BatchRuleExecutionResult<R>[]>;
 
   /**

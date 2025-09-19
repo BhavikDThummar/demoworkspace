@@ -22,7 +22,7 @@ export default {
     '!src/**/*.test.{ts,js}',
     '!src/**/index.{ts,js}',
     '!src/**/examples/**',
-    '!src/**/testing/**'
+    '!src/**/testing/**',
   ],
   coverageReporters: ['text', 'lcov', 'html', 'json'],
   coverageThreshold: {
@@ -30,20 +30,13 @@ export default {
       branches: 80,
       functions: 85,
       lines: 90,
-      statements: 90
-    }
+      statements: 90,
+    },
   },
-  testMatch: [
-    '<rootDir>/src/**/*.spec.{ts,js}',
-    '<rootDir>/src/**/*.test.{ts,js}'
-  ],
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    '/dist/',
-    '/examples/'
-  ],
+  testMatch: ['<rootDir>/src/**/*.spec.{ts,js}', '<rootDir>/src/**/*.test.{ts,js}'],
+  testPathIgnorePatterns: ['/node_modules/', '/dist/', '/examples/'],
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   testTimeout: 30000,
   maxWorkers: '50%',
-  verbose: true
+  verbose: true,
 };

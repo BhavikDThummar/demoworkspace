@@ -123,9 +123,6 @@
 
 - [x] 15. Implement type safety and IntelliSense support
 
-
-
-
   - Ensure all public APIs have complete TypeScript type definitions
   - Add JSDoc comments for enhanced IntelliSense documentation
   - Create generic type parameters for rule input/output type safety

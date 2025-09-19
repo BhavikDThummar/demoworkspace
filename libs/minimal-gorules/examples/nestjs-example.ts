@@ -1,35 +1,35 @@
 /**
  * NestJS Integration Example
- * 
+ *
  * Complete example showing how to integrate the Minimal GoRules Engine
  * with a NestJS application including module setup, service implementation,
  * and REST API endpoints.
  */
 
-import { 
-  Module, 
-  Injectable, 
-  Controller, 
-  Post, 
-  Get, 
-  Body, 
-  Param, 
-  HttpException, 
+import {
+  Module,
+  Injectable,
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  HttpException,
   HttpStatus,
   OnModuleInit,
   OnModuleDestroy,
-  Logger
+  Logger,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { IsObject, IsArray, IsString, IsOptional } from 'class-validator';
 
-import { 
-  MinimalGoRulesEngine, 
+import {
+  MinimalGoRulesEngine,
   MinimalGoRulesConfig,
   RuleSelector,
   MinimalGoRulesError,
-  MinimalErrorCode
+  MinimalErrorCode,
 } from '../src/index.js';
 
 // DTOs for API validation
@@ -60,10 +60,10 @@ class ExecuteByTagsDto {
   @IsObject()
   input: Record<string, unknown>;
 
-  @ApiBody({ 
+  @ApiBody({
     description: 'Execution mode',
     enum: ['parallel', 'sequential'],
-    default: 'parallel'
+    default: 'parallel',
   })
   @IsOptional()
   @IsString()
@@ -108,19 +108,16 @@ export class GoRulesService implements OnModuleInit, OnModuleDestroy {
   }
 
   // Core execution methods
-  async executeRule<T = unknown>(
-    ruleId: string, 
-    input: Record<string, unknown>
-  ): Promise<T> {
+  async executeRule<T = unknown>(ruleId: string, input: Record<string, unknown>): Promise<T> {
     try {
       this.logger.debug(`Executing rule: ${ruleId}`);
       const startTime = Date.now();
-      
+
       const result = await this.engine.executeRule<T>(ruleId, input);
-      
+
       const duration = Date.now() - startTime;
       this.logger.debug(`Rule ${ruleId} executed in ${duration}ms`);
-      
+
       return result;
     } catch (error) {
       this.handleError(error, ruleId);
@@ -129,8 +126,8 @@ export class GoRulesService implements OnModuleInit, OnModuleDestroy {
   }
 
   async executeRules<T = unknown>(
-    ruleIds: string[], 
-    input: Record<string, unknown>
+    ruleIds: string[],
+    input: Record<string, unknown>,
   ): Promise<{
     results: Record<string, T>;
     executionTime: number;
@@ -138,15 +135,15 @@ export class GoRulesService implements OnModuleInit, OnModuleDestroy {
   }> {
     try {
       this.logger.debug(`Executing ${ruleIds.length} rules: ${ruleIds.join(', ')}`);
-      
+
       const result = await this.engine.executeRules<T>(ruleIds, input);
-      
+
       return {
         results: Object.fromEntries(result.results),
         executionTime: result.executionTime,
-        errors: result.errors ? Object.fromEntries(
-          Array.from(result.errors.entries()).map(([k, v]) => [k, v.message])
-        ) : undefined
+        errors: result.errors
+          ? Object.fromEntries(Array.from(result.errors.entries()).map(([k, v]) => [k, v.message]))
+          : undefined,
       };
     } catch (error) {
       this.handleError(error);
@@ -155,9 +152,9 @@ export class GoRulesService implements OnModuleInit, OnModuleDestroy {
   }
 
   async executeByTags<T = unknown>(
-    tags: string[], 
+    tags: string[],
     input: Record<string, unknown>,
-    mode: 'parallel' | 'sequential' = 'parallel'
+    mode: 'parallel' | 'sequential' = 'parallel',
   ): Promise<{
     results: Record<string, T>;
     executionTime: number;
@@ -165,15 +162,15 @@ export class GoRulesService implements OnModuleInit, OnModuleDestroy {
   }> {
     try {
       this.logger.debug(`Executing rules by tags [${tags.join(', ')}] in ${mode} mode`);
-      
+
       const result = await this.engine.executeByTags<T>(tags, input, mode);
-      
+
       return {
         results: Object.fromEntries(result.results),
         executionTime: result.executionTime,
-        errors: result.errors ? Object.fromEntries(
-          Array.from(result.errors.entries()).map(([k, v]) => [k, v.message])
-        ) : undefined
+        errors: result.errors
+          ? Object.fromEntries(Array.from(result.errors.entries()).map(([k, v]) => [k, v.message]))
+          : undefined,
       };
     } catch (error) {
       this.handleError(error);
@@ -182,8 +179,8 @@ export class GoRulesService implements OnModuleInit, OnModuleDestroy {
   }
 
   async executeAdvanced<T = unknown>(
-    selector: RuleSelector, 
-    input: Record<string, unknown>
+    selector: RuleSelector,
+    input: Record<string, unknown>,
   ): Promise<{
     results: Record<string, T>;
     executionTime: number;
@@ -191,15 +188,15 @@ export class GoRulesService implements OnModuleInit, OnModuleDestroy {
   }> {
     try {
       this.logger.debug(`Executing advanced selector: ${JSON.stringify(selector.mode)}`);
-      
+
       const result = await this.engine.execute<T>(selector, input);
-      
+
       return {
         results: Object.fromEntries(result.results),
         executionTime: result.executionTime,
-        errors: result.errors ? Object.fromEntries(
-          Array.from(result.errors.entries()).map(([k, v]) => [k, v.message])
-        ) : undefined
+        errors: result.errors
+          ? Object.fromEntries(Array.from(result.errors.entries()).map(([k, v]) => [k, v.message]))
+          : undefined,
       };
     } catch (error) {
       this.handleError(error);
@@ -218,12 +215,12 @@ export class GoRulesService implements OnModuleInit, OnModuleDestroy {
       cache: {
         size: cacheStats.size,
         maxSize: cacheStats.maxSize,
-        hitRate: cacheStats.hitRate
+        hitRate: cacheStats.hitRate,
       },
       performance: {
         memoryUsage: perfStats.memoryUsage,
-        averageExecutionTime: perfStats.averageExecutionTime
-      }
+        averageExecutionTime: perfStats.averageExecutionTime,
+      },
     };
   }
 
@@ -252,11 +249,13 @@ export class GoRulesService implements OnModuleInit, OnModuleDestroy {
     const result = await this.engine.refreshCache(ruleIds);
     return {
       refreshedRules: result.refreshedRules,
-      failedRules: result.failedRules ? Object.fromEntries(
-        Array.from(result.failedRules.entries()).map(([k, v]) => [k, v.message])
-      ) : {},
+      failedRules: result.failedRules
+        ? Object.fromEntries(
+            Array.from(result.failedRules.entries()).map(([k, v]) => [k, v.message]),
+          )
+        : {},
       totalProcessed: result.totalProcessed,
-      refreshTime: result.refreshTime
+      refreshTime: result.refreshTime,
     };
   }
 
@@ -298,10 +297,7 @@ export class GoRulesController {
   @ApiResponse({ status: 200, description: 'Rule executed successfully' })
   @ApiResponse({ status: 400, description: 'Invalid input or rule not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async executeRule(
-    @Param('ruleId') ruleId: string,
-    @Body() dto: ExecuteRuleDto
-  ) {
+  async executeRule(@Param('ruleId') ruleId: string, @Body() dto: ExecuteRuleDto) {
     try {
       const startTime = Date.now();
       const result = await this.goRulesService.executeRule(ruleId, dto.input);
@@ -312,20 +308,17 @@ export class GoRulesController {
         ruleId,
         result,
         executionTime,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       this.logger.error(`Failed to execute rule ${ruleId}`, error);
-      
+
       if (error instanceof MinimalGoRulesError) {
         const statusCode = this.getHttpStatusFromError(error);
         throw new HttpException(error.message, statusCode);
       }
-      
-      throw new HttpException(
-        'Internal server error',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
+
+      throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -335,18 +328,15 @@ export class GoRulesController {
   async executeRules(@Body() dto: ExecuteRulesDto) {
     try {
       const result = await this.goRulesService.executeRules(dto.ruleIds, dto.input);
-      
+
       return {
         success: true,
         ...result,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       this.logger.error('Failed to execute rules batch', error);
-      throw new HttpException(
-        `Failed to execute rules: ${error.message}`,
-        HttpStatus.BAD_REQUEST
-      );
+      throw new HttpException(`Failed to execute rules: ${error.message}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -355,24 +345,20 @@ export class GoRulesController {
   @ApiResponse({ status: 200, description: 'Rules executed successfully' })
   async executeByTags(@Body() dto: ExecuteByTagsDto) {
     try {
-      const result = await this.goRulesService.executeByTags(
-        dto.tags, 
-        dto.input, 
-        dto.mode
-      );
-      
+      const result = await this.goRulesService.executeByTags(dto.tags, dto.input, dto.mode);
+
       return {
         success: true,
         tags: dto.tags,
         mode: dto.mode,
         ...result,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       this.logger.error('Failed to execute rules by tags', error);
       throw new HttpException(
         `Failed to execute rules by tags: ${error.message}`,
-        HttpStatus.BAD_REQUEST
+        HttpStatus.BAD_REQUEST,
       );
     }
   }
@@ -382,22 +368,19 @@ export class GoRulesController {
   @ApiResponse({ status: 200, description: 'Rules executed successfully' })
   async executeAdvanced(@Body() dto: ExecuteAdvancedDto) {
     try {
-      const result = await this.goRulesService.executeAdvanced(
-        dto.selector, 
-        dto.input
-      );
-      
+      const result = await this.goRulesService.executeAdvanced(dto.selector, dto.input);
+
       return {
         success: true,
         selector: dto.selector,
         ...result,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       this.logger.error('Failed to execute advanced rules', error);
       throw new HttpException(
         `Failed to execute advanced rules: ${error.message}`,
-        HttpStatus.BAD_REQUEST
+        HttpStatus.BAD_REQUEST,
       );
     }
   }
@@ -410,10 +393,7 @@ export class GoRulesController {
       return await this.goRulesService.getStatus();
     } catch (error) {
       this.logger.error('Failed to get engine status', error);
-      throw new HttpException(
-        'Failed to get engine status',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
+      throw new HttpException('Failed to get engine status', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -426,14 +406,11 @@ export class GoRulesController {
       return {
         rules: metadata,
         totalRules: Object.keys(metadata).length,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       this.logger.error('Failed to get rule metadata', error);
-      throw new HttpException(
-        'Failed to get rule metadata',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
+      throw new HttpException('Failed to get rule metadata', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -444,22 +421,19 @@ export class GoRulesController {
   async getRuleMetadata(@Param('ruleId') ruleId: string) {
     try {
       const metadata = await this.goRulesService.getRuleMetadata(ruleId);
-      
+
       if (!metadata) {
         throw new HttpException('Rule not found', HttpStatus.NOT_FOUND);
       }
-      
+
       return metadata;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       this.logger.error(`Failed to get metadata for rule ${ruleId}`, error);
-      throw new HttpException(
-        'Failed to get rule metadata',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
+      throw new HttpException('Failed to get rule metadata', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -472,7 +446,7 @@ export class GoRulesController {
       return {
         ruleId,
         valid: isValid,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       this.logger.error(`Failed to validate rule ${ruleId}`, error);
@@ -480,7 +454,7 @@ export class GoRulesController {
         ruleId,
         valid: false,
         error: error.message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }
@@ -494,13 +468,13 @@ export class GoRulesController {
       return {
         success: true,
         ...result,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       this.logger.error('Failed to refresh cache', error);
       throw new HttpException(
         `Failed to refresh cache: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -513,13 +487,13 @@ export class GoRulesController {
       const result = await this.goRulesService.checkVersions();
       return {
         ...result,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       this.logger.error('Failed to check versions', error);
       throw new HttpException(
         `Failed to check versions: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -555,13 +529,16 @@ export class GoRulesController {
           httpTimeout: configService.get<number>('GORULES_TIMEOUT', 5000),
           batchSize: configService.get<number>('GORULES_BATCH_SIZE', 50),
           platform: 'node' as const,
-          
+
           // Performance optimizations
-          enablePerformanceOptimizations: configService.get<boolean>('GORULES_ENABLE_OPTIMIZATIONS', false),
+          enablePerformanceOptimizations: configService.get<boolean>(
+            'GORULES_ENABLE_OPTIMIZATIONS',
+            false,
+          ),
           enablePerformanceMetrics: configService.get<boolean>('GORULES_ENABLE_METRICS', true),
           enableConnectionPooling: configService.get<boolean>('GORULES_ENABLE_POOLING', true),
           enableRequestBatching: configService.get<boolean>('GORULES_ENABLE_BATCHING', true),
-          enableCompression: configService.get<boolean>('GORULES_ENABLE_COMPRESSION', true)
+          enableCompression: configService.get<boolean>('GORULES_ENABLE_COMPRESSION', true),
         };
 
         // Validate required configuration
@@ -574,19 +551,19 @@ export class GoRulesController {
 
         return config;
       },
-      inject: [ConfigService]
+      inject: [ConfigService],
     },
     {
       provide: MinimalGoRulesEngine,
       useFactory: (config: MinimalGoRulesConfig) => {
         return new MinimalGoRulesEngine(config);
       },
-      inject: ['GORULES_CONFIG']
+      inject: ['GORULES_CONFIG'],
     },
-    GoRulesService
+    GoRulesService,
   ],
   controllers: [GoRulesController],
-  exports: [MinimalGoRulesEngine, GoRulesService]
+  exports: [MinimalGoRulesEngine, GoRulesService],
 })
 export class GoRulesModule {}
 
@@ -595,10 +572,10 @@ export class GoRulesModule {}
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env.local', '.env']
+      envFilePath: ['.env.local', '.env'],
     }),
-    GoRulesModule
-  ]
+    GoRulesModule,
+  ],
 })
 export class AppModule {}
 
@@ -609,5 +586,5 @@ export {
   ExecuteRuleDto,
   ExecuteRulesDto,
   ExecuteByTagsDto,
-  ExecuteAdvancedDto
+  ExecuteAdvancedDto,
 };

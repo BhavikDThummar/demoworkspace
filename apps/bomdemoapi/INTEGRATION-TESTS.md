@@ -18,18 +18,21 @@ The integration tests validate the complete functionality of the GoRules integra
 ### Test Files
 
 1. **`business-rules.controller.integration.spec.ts`**
+
    - Tests for business rules API endpoints
    - Purchase approval, supplier risk, and pricing workflows
    - Batch processing functionality
    - Statistics and monitoring endpoints
 
 2. **`simple-rules.controller.integration.spec.ts`**
+
    - Tests for basic rule execution patterns
    - Rule validation and metadata retrieval
    - Sequential rule execution
    - Error handling demonstrations
 
 3. **`app.integration.spec.ts`**
+
    - Application-wide integration tests
    - Health checks across all controllers
    - Cross-controller functionality
@@ -108,24 +111,28 @@ npx ts-node apps/bomdemoapi/scripts/run-integration-tests.ts --suite business-ru
 ### 1. Business Rules Integration
 
 #### Purchase Approval Workflow
+
 - **Valid Requests**: Standard approval scenarios
 - **High-Value Requests**: Executive approval requirements
 - **Validation Errors**: Missing fields, invalid values
 - **Service Errors**: GoRules service unavailability
 
 #### Supplier Risk Assessment
+
 - **Low-Risk Suppliers**: Established, certified suppliers
 - **High-Risk Suppliers**: New or problematic suppliers
 - **Edge Cases**: Minimal data, extreme values
 - **Validation**: Credit ratings, certifications, metrics
 
 #### Dynamic Pricing
+
 - **Tier-Based Pricing**: Bronze, Silver, Gold, Platinum tiers
 - **Volume Discounts**: Quantity-based pricing adjustments
 - **Seasonal Factors**: Time-based pricing modifications
 - **Promotion Codes**: Discount code applications
 
 #### Batch Processing
+
 - **Mixed Requests**: Multiple rule types in single batch
 - **Partial Failures**: Some rules succeed, others fail
 - **Large Batches**: Performance with many concurrent rules
@@ -134,18 +141,21 @@ npx ts-node apps/bomdemoapi/scripts/run-integration-tests.ts --suite business-ru
 ### 2. Simple Rules Integration
 
 #### Basic Rule Execution
+
 - **Standard Execution**: Simple input/output scenarios
 - **Tracing Enabled**: Debug information collection
 - **Custom Timeouts**: Performance optimization
 - **Rule Validation**: Existence checks before execution
 
 #### Sequential Processing
+
 - **Multiple Rules**: Ordered execution of rule chains
 - **Mixed Results**: Success and failure combinations
 - **Performance**: Timing and resource usage
 - **Error Isolation**: Failure containment
 
 #### Error Handling
+
 - **GoRules Exceptions**: Proper error code mapping
 - **Network Failures**: Timeout and retry scenarios
 - **Invalid Input**: Validation error responses
@@ -154,18 +164,21 @@ npx ts-node apps/bomdemoapi/scripts/run-integration-tests.ts --suite business-ru
 ### 3. Real-World Scenarios
 
 #### Complete Procurement Workflow
+
 1. **Supplier Assessment** → Risk evaluation
 2. **Pricing Calculation** → Dynamic pricing with discounts
 3. **Purchase Approval** → Multi-level approval workflow
 4. **Monitoring** → Statistics and performance tracking
 
 #### High-Concurrency Testing
+
 - **Concurrent Requests**: Multiple simultaneous API calls
 - **Load Testing**: Performance under stress
 - **Resource Management**: Memory and connection handling
 - **Graceful Degradation**: Behavior under load
 
 #### Error Recovery
+
 - **Transient Failures**: Retry mechanisms
 - **Circuit Breakers**: Failure isolation
 - **Fallback Strategies**: Alternative processing paths
@@ -185,6 +198,7 @@ The integration tests use a comprehensive mocking strategy:
 ### Test Data Sets
 
 #### Valid Test Data
+
 ```typescript
 const validPurchaseApproval = {
   amount: 15000,
@@ -210,6 +224,7 @@ const validSupplierRisk = {
 ```
 
 #### Error Test Cases
+
 - **Validation Errors**: Invalid field values
 - **Business Logic Errors**: Rule-specific failures
 - **System Errors**: Network and service failures
@@ -218,6 +233,7 @@ const validSupplierRisk = {
 ## Assertions and Validation
 
 ### Response Structure Validation
+
 ```typescript
 // Standard success response
 expect(response.body).toMatchObject({
@@ -238,6 +254,7 @@ expect(response.body).toMatchObject({
 ```
 
 ### Business Logic Validation
+
 ```typescript
 // Purchase approval validation
 expect(response.body.data).toMatchObject({
@@ -261,18 +278,21 @@ expect(response.body.data).toMatchObject({
 ## Performance Testing
 
 ### Load Testing Scenarios
+
 1. **Concurrent Requests**: 10-50 simultaneous requests
 2. **Sequential Processing**: Rapid successive requests
 3. **Large Payloads**: Complex data structures
 4. **Batch Operations**: Multiple rules per request
 
 ### Performance Metrics
+
 - **Response Time**: API endpoint response times
 - **Throughput**: Requests per second capacity
 - **Resource Usage**: Memory and CPU utilization
 - **Error Rates**: Failure percentages under load
 
 ### Performance Assertions
+
 ```typescript
 // Response time validation
 const startTime = Date.now();
@@ -288,6 +308,7 @@ expect(response.status).toBe(201);
 ## Error Handling Testing
 
 ### Error Categories
+
 1. **Validation Errors** (400): Invalid input data
 2. **Authentication Errors** (401): Invalid API keys
 3. **Not Found Errors** (404): Non-existent rules
@@ -297,6 +318,7 @@ expect(response.status).toBe(201);
 7. **Service Unavailable** (503): GoRules service down
 
 ### Error Response Testing
+
 ```typescript
 // Test validation error handling
 const invalidRequest = { amount: -1000 }; // Invalid amount
@@ -314,6 +336,7 @@ expect(response.body.error.message).toContain('amount');
 ## Continuous Integration
 
 ### CI/CD Integration
+
 ```yaml
 # Example GitHub Actions workflow
 - name: Run Integration Tests
@@ -327,6 +350,7 @@ expect(response.body.error.message).toContain('amount');
 ```
 
 ### Test Reports
+
 - **Coverage Reports**: HTML and LCOV formats
 - **Test Results**: JUnit XML for CI integration
 - **Performance Reports**: Response time metrics
@@ -337,12 +361,14 @@ expect(response.body.error.message).toContain('amount');
 ### Common Issues
 
 #### 1. Test Timeouts
+
 ```bash
 # Increase timeout for slow tests
 npx jest --testTimeout=30000
 ```
 
 #### 2. Port Conflicts
+
 ```bash
 # Use different port for testing
 export PORT=3001
@@ -350,12 +376,14 @@ npm run test:integration
 ```
 
 #### 3. Memory Issues
+
 ```bash
 # Run tests with more memory
 node --max-old-space-size=4096 node_modules/.bin/jest
 ```
 
 #### 4. Mock Issues
+
 ```typescript
 // Clear mocks between tests
 afterEach(() => {
@@ -365,6 +393,7 @@ afterEach(() => {
 ```
 
 ### Debug Mode
+
 ```bash
 # Run with debug output
 DEBUG=* npm run test:integration
@@ -374,6 +403,7 @@ npx jest --runInBand --detectOpenHandles --forceExit business-rules.controller.i
 ```
 
 ### Environment Issues
+
 ```bash
 # Verify environment variables
 echo $GORULES_API_URL
@@ -387,18 +417,21 @@ cat apps/bomdemoapi/.env
 ## Best Practices
 
 ### Test Organization
+
 1. **Group Related Tests**: Use `describe` blocks effectively
 2. **Clear Test Names**: Descriptive test descriptions
 3. **Setup and Teardown**: Proper resource management
 4. **Mock Management**: Consistent mocking strategies
 
 ### Performance Optimization
+
 1. **Parallel Execution**: Use `--runInBand` sparingly
 2. **Mock External Services**: Avoid real API calls
 3. **Resource Cleanup**: Prevent memory leaks
 4. **Selective Testing**: Run only necessary tests
 
 ### Maintenance
+
 1. **Regular Updates**: Keep test data current
 2. **Mock Validation**: Ensure mocks match real behavior
 3. **Coverage Monitoring**: Maintain high test coverage
@@ -407,12 +440,14 @@ cat apps/bomdemoapi/.env
 ## Contributing
 
 ### Adding New Tests
+
 1. **Follow Naming Convention**: `*.integration.spec.ts`
 2. **Use Test Utilities**: Leverage existing test helpers
 3. **Mock Consistently**: Follow established patterns
 4. **Document Scenarios**: Explain complex test cases
 
 ### Test Review Checklist
+
 - [ ] Tests cover happy path scenarios
 - [ ] Error cases are tested
 - [ ] Edge cases are considered

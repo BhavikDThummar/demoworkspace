@@ -8,10 +8,10 @@ import { IRuleCacheManager } from '../interfaces/services.js';
 import { MinimalExecutionResult, RuleSelector, ExecutionGroup } from '../interfaces/core.js';
 import { ITagManager } from '../tag-manager/interfaces.js';
 import { MinimalGoRulesError, MinimalErrorCode } from '../errors/minimal-errors.js';
-import { 
-  IMinimalExecutionEngine, 
-  ExecutionEngineConfig, 
-  ZenEngineLoader, 
+import {
+  IMinimalExecutionEngine,
+  ExecutionEngineConfig,
+  ZenEngineLoader,
   ZenEngineResult,
   EnhancedExecutionResult,
   ParallelExecutionOptions,
@@ -21,12 +21,12 @@ import {
   MixedExecutionOptions,
   MixedExecutionResult,
   ExecutionPlan,
-  ValidatedExecutionGroup
+  ValidatedExecutionGroup,
 } from './interfaces.js';
-import { 
-  ExecutionMetricsCollector, 
-  ExecutionMetrics, 
-  PerformanceAnalyzer 
+import {
+  ExecutionMetricsCollector,
+  ExecutionMetrics,
+  PerformanceAnalyzer,
 } from './performance-utils.js';
 
 /**
@@ -41,13 +41,13 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
   constructor(
     private cacheManager: IRuleCacheManager,
     private tagManager: ITagManager,
-    config: ExecutionEngineConfig = {}
+    config: ExecutionEngineConfig = {},
   ) {
     this.config = {
       maxConcurrency: 10,
       executionTimeout: 5000,
       includePerformanceMetrics: false,
-      ...config
+      ...config,
     };
 
     // Create loader function that reads from cache manager
@@ -57,7 +57,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
         throw new MinimalGoRulesError(
           MinimalErrorCode.RULE_NOT_FOUND,
           `Rule not found in cache: ${key}`,
-          key
+          key,
         );
       }
       return ruleData;
@@ -70,27 +70,30 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
   /**
    * Execute rules based on selector criteria
    */
-  async execute<T>(selector: RuleSelector, input: Record<string, unknown>): Promise<MinimalExecutionResult<T>> {
+  async execute<T>(
+    selector: RuleSelector,
+    input: Record<string, unknown>,
+  ): Promise<MinimalExecutionResult<T>> {
     const startTime = performance.now();
-    
+
     try {
       // Get available rules from cache
       const availableRules = await this.getAvailableRules();
-      
+
       // Resolve rules using tag manager
       const rulePlan = await this.tagManager.resolveRules(selector, availableRules);
-      
+
       if (rulePlan.ruleIds.length === 0) {
         return {
           results: new Map(),
           executionTime: performance.now() - startTime,
-          errors: new Map()
+          errors: new Map(),
         };
       }
 
       // Execute based on mode
       let result: MinimalExecutionResult<T>;
-      
+
       switch (selector.mode.type) {
         case 'parallel':
           result = await this.executeParallel(rulePlan.ruleIds, input);
@@ -102,7 +105,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
           if (!selector.mode.groups || selector.mode.groups.length === 0) {
             throw new MinimalGoRulesError(
               MinimalErrorCode.INVALID_INPUT,
-              'Mixed execution mode requires execution groups to be specified'
+              'Mixed execution mode requires execution groups to be specified',
             );
           }
           result = await this.executeMixed(selector.mode.groups, input);
@@ -110,18 +113,17 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
         default:
           throw new MinimalGoRulesError(
             MinimalErrorCode.INVALID_INPUT,
-            `Unsupported execution mode: ${selector.mode.type}`
+            `Unsupported execution mode: ${selector.mode.type}`,
           );
       }
 
       // Add total execution time
       result.executionTime = performance.now() - startTime;
       return result;
-
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
-        `Execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -132,18 +134,18 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
   async executeRule<T>(ruleId: string, input: Record<string, unknown>): Promise<T> {
     try {
       // Validate rule exists in cache
-      if (!await this.validateRule(ruleId)) {
+      if (!(await this.validateRule(ruleId))) {
         throw new MinimalGoRulesError(
           MinimalErrorCode.RULE_NOT_FOUND,
           `Rule not found: ${ruleId}`,
-          ruleId
+          ruleId,
         );
       }
 
       // Execute with timeout
       const result = await this.executeWithTimeout(
         () => this.zenEngine.evaluate(ruleId, input),
-        this.config.executionTimeout ?? 5000
+        this.config.executionTimeout ?? 5000,
       );
 
       return result.result;
@@ -154,7 +156,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
         `Rule execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        ruleId
+        ruleId,
       );
     }
   }
@@ -206,16 +208,16 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
    * Enhanced sequential execution with state tracking and pipeline mode
    */
   async executeSequentialWithMetrics<T>(
-    ruleIds: string[], 
-    input: Record<string, unknown>, 
-    options: SequentialExecutionOptions = {}
+    ruleIds: string[],
+    input: Record<string, unknown>,
+    options: SequentialExecutionOptions = {},
   ): Promise<SequentialExecutionResult<T>> {
     const {
       stopOnError = false,
       includeStateTracking = false,
       pipelineMode = true,
       ruleTimeout = this.config.executionTimeout ?? 5000,
-      includeMetrics = this.config.includePerformanceMetrics ?? false
+      includeMetrics = this.config.includePerformanceMetrics ?? false,
     } = options;
 
     const metricsCollector = new ExecutionMetricsCollector();
@@ -230,7 +232,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
       completedRules: [],
       failedRules: [],
       currentInput: { ...input },
-      timeline: []
+      timeline: [],
     };
 
     try {
@@ -241,7 +243,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
           executionState.timeline.push({
             ruleId,
             event: 'started',
-            timestamp: performance.now()
+            timestamp: performance.now(),
           });
         }
 
@@ -251,12 +253,12 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
         try {
           const result = await this.executeWithTimeout(
             () => this.zenEngine.evaluate(ruleId, currentInput),
-            ruleTimeout
+            ruleTimeout,
           );
 
           const ruleDuration = performance.now() - ruleStartTime;
           metricsCollector.endRule(ruleId);
-          
+
           results.set(ruleId, result.result);
 
           // Update execution state
@@ -266,23 +268,22 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
               ruleId,
               event: 'completed',
               timestamp: performance.now(),
-              duration: ruleDuration
+              duration: ruleDuration,
             });
           }
 
           // Update input for next rule (pipeline mode)
           if (pipelineMode && result.result && typeof result.result === 'object') {
             currentInput = { ...currentInput, ...(result.result as Record<string, unknown>) };
-            
+
             if (includeStateTracking) {
               executionState.currentInput = { ...currentInput };
             }
           }
-
         } catch (error) {
           const ruleDuration = performance.now() - ruleStartTime;
           metricsCollector.endRule(ruleId);
-          
+
           const execError = error as Error;
           errors.set(ruleId, execError);
 
@@ -294,7 +295,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
               event: 'failed',
               timestamp: performance.now(),
               duration: ruleDuration,
-              error: execError.message
+              error: execError.message,
             });
           }
 
@@ -317,7 +318,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
       const result: SequentialExecutionResult<T> = {
         results,
         executionTime: metrics.totalTime,
-        errors: errors.size > 0 ? errors : undefined
+        errors: errors.size > 0 ? errors : undefined,
       };
 
       // Add execution state if requested
@@ -337,14 +338,13 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
       }
 
       return result;
-
     } catch (error) {
       const metrics = metricsCollector.getMetrics();
       this.lastExecutionMetrics = metrics;
-      
+
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
-        `Sequential execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Sequential execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -353,15 +353,15 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
    * Enhanced parallel execution with detailed metrics and options
    */
   async executeParallelWithMetrics<T>(
-    ruleIds: string[], 
-    input: Record<string, unknown>, 
-    options: ParallelExecutionOptions = {}
+    ruleIds: string[],
+    input: Record<string, unknown>,
+    options: ParallelExecutionOptions = {},
   ): Promise<EnhancedExecutionResult<T>> {
     const {
       maxConcurrency = this.config.maxConcurrency ?? 10,
       failFast = false,
       includeMetrics = this.config.includePerformanceMetrics ?? false,
-      ruleTimeout = this.config.executionTimeout ?? 5000
+      ruleTimeout = this.config.executionTimeout ?? 5000,
     } = options;
 
     const metricsCollector = new ExecutionMetricsCollector();
@@ -373,29 +373,29 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
     try {
       // Create batches to respect concurrency limits
       const batches = this.createBatches(ruleIds, maxConcurrency);
-      
+
       for (const batch of batches) {
         const batchStartTime = performance.now();
-        
+
         const promises = batch.map(async (ruleId) => {
           metricsCollector.startRule(ruleId);
-          
+
           try {
             const result = await this.executeWithTimeout(
               () => this.zenEngine.evaluate(ruleId, input),
-              ruleTimeout
+              ruleTimeout,
             );
-            
+
             metricsCollector.endRule(ruleId);
             return { ruleId, result: result.result, error: null };
           } catch (error) {
             metricsCollector.endRule(ruleId);
             const execError = error as Error;
-            
+
             if (failFast) {
               throw execError;
             }
-            
+
             return { ruleId, result: null, error: execError };
           }
         });
@@ -403,7 +403,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
         const batchResults = await Promise.allSettled(promises);
         const batchDuration = performance.now() - batchStartTime;
         metricsCollector.recordBatch(batch.length, batchDuration);
-        
+
         for (const promiseResult of batchResults) {
           if (promiseResult.status === 'fulfilled') {
             const { ruleId, result, error } = promiseResult.value;
@@ -419,7 +419,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
             }
           }
         }
-        
+
         // If failFast is enabled and we have errors, stop processing
         if (failFast && errors.size > 0) {
           break;
@@ -433,7 +433,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
       const result: EnhancedExecutionResult<T> = {
         results,
         executionTime: metrics.totalTime,
-        errors: errors.size > 0 ? errors : undefined
+        errors: errors.size > 0 ? errors : undefined,
       };
 
       // Add performance metrics if requested
@@ -443,14 +443,13 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
       }
 
       return result;
-
     } catch (error) {
       const metrics = metricsCollector.getMetrics();
       this.lastExecutionMetrics = metrics;
-      
+
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
-        `Parallel execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Parallel execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -458,19 +457,22 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
   /**
    * Execute rules in parallel mode
    */
-  private async executeParallel<T>(ruleIds: string[], input: Record<string, unknown>): Promise<MinimalExecutionResult<T>> {
+  private async executeParallel<T>(
+    ruleIds: string[],
+    input: Record<string, unknown>,
+  ): Promise<MinimalExecutionResult<T>> {
     const results = new Map<string, T>();
     const errors = new Map<string, Error>();
 
     // Create batches to respect concurrency limits
     const batches = this.createBatches(ruleIds, this.config.maxConcurrency ?? 10);
-    
+
     for (const batch of batches) {
       const promises = batch.map(async (ruleId) => {
         try {
           const result = await this.executeWithTimeout(
             () => this.zenEngine.evaluate(ruleId, input),
-            this.config.executionTimeout ?? 5000
+            this.config.executionTimeout ?? 5000,
           );
           return { ruleId, result: result.result, error: null };
         } catch (error) {
@@ -479,7 +481,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
       });
 
       const batchResults = await Promise.allSettled(promises);
-      
+
       for (const promiseResult of batchResults) {
         if (promiseResult.status === 'fulfilled') {
           const { ruleId, result, error } = promiseResult.value;
@@ -498,26 +500,29 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
     return {
       results,
       executionTime: 0, // Will be set by caller
-      errors: errors.size > 0 ? errors : undefined
+      errors: errors.size > 0 ? errors : undefined,
     };
   }
 
   /**
    * Execute rules in sequential mode (pipeline)
    */
-  private async executeSequential<T>(ruleIds: string[], input: Record<string, unknown>): Promise<MinimalExecutionResult<T>> {
+  private async executeSequential<T>(
+    ruleIds: string[],
+    input: Record<string, unknown>,
+  ): Promise<MinimalExecutionResult<T>> {
     // Use enhanced sequential execution with default options
     const result = await this.executeSequentialWithMetrics<T>(ruleIds, input, {
       stopOnError: false,
       pipelineMode: true,
       includeStateTracking: false,
-      includeMetrics: false
+      includeMetrics: false,
     });
 
     return {
       results: result.results,
       executionTime: result.executionTime,
-      errors: result.errors
+      errors: result.errors,
     };
   }
 
@@ -525,16 +530,16 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
    * Enhanced mixed execution with complex rule orchestration
    */
   async executeMixedWithMetrics<T>(
-    groups: ExecutionGroup[], 
-    input: Record<string, unknown>, 
-    options: MixedExecutionOptions = {}
+    groups: ExecutionGroup[],
+    input: Record<string, unknown>,
+    options: MixedExecutionOptions = {},
   ): Promise<MixedExecutionResult<T>> {
     const {
       stopOnError = false,
       pipelineMode = true,
       ruleTimeout = this.config.executionTimeout ?? 5000,
       includeMetrics = this.config.includePerformanceMetrics ?? false,
-      maxConcurrency = this.config.maxConcurrency ?? 10
+      maxConcurrency = this.config.maxConcurrency ?? 10,
     } = options;
 
     const metricsCollector = new ExecutionMetricsCollector();
@@ -543,7 +548,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
     try {
       // Validate and optimize execution groups
       const executionPlan = await this.validateExecutionGroups(groups);
-      
+
       const results = new Map<string, T>();
       const errors = new Map<string, Error>();
       const groupResults: MixedExecutionResult<T>['groupResults'] = [];
@@ -555,7 +560,11 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
         const groupStartTime = performance.now();
 
         try {
-          let groupResult: { results: Map<string, T>; errors?: Map<string, Error>; executionTime: number };
+          let groupResult: {
+            results: Map<string, T>;
+            errors?: Map<string, Error>;
+            executionTime: number;
+          };
 
           if (group.mode === 'parallel') {
             // Execute group in parallel
@@ -563,7 +572,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
               maxConcurrency,
               ruleTimeout,
               includeMetrics: false, // We'll collect metrics at the mixed level
-              failFast: stopOnError
+              failFast: stopOnError,
             });
           } else {
             // Execute group sequentially
@@ -572,7 +581,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
               pipelineMode: true, // Always use pipeline within sequential groups
               ruleTimeout,
               includeMetrics: false, // We'll collect metrics at the mixed level
-              includeStateTracking: false
+              includeStateTracking: false,
             });
           }
 
@@ -585,7 +594,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
             ruleIds: group.ruleIds,
             results: groupResult.results,
             errors: groupResult.errors,
-            executionTime: groupExecutionTime
+            executionTime: groupExecutionTime,
           });
 
           // Merge results from this group
@@ -615,10 +624,9 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
           if (stopOnError && groupResult.errors && groupResult.errors.size > 0) {
             break;
           }
-
         } catch (error) {
           const groupExecutionTime = performance.now() - groupStartTime;
-          
+
           // Record group failure
           groupResults.push({
             groupIndex,
@@ -626,7 +634,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
             ruleIds: group.ruleIds,
             results: new Map(),
             errors: new Map([['group_error', error as Error]]),
-            executionTime: groupExecutionTime
+            executionTime: groupExecutionTime,
           });
 
           if (stopOnError) {
@@ -644,7 +652,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
         executionTime: metrics.totalTime,
         errors: errors.size > 0 ? errors : undefined,
         executionPlan,
-        groupResults
+        groupResults,
       };
 
       // Add final input state if pipeline mode
@@ -659,14 +667,13 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
       }
 
       return result;
-
     } catch (error) {
       const metrics = metricsCollector.getMetrics();
       this.lastExecutionMetrics = metrics;
-      
+
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
-        `Mixed execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Mixed execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -678,7 +685,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
     if (!groups || groups.length === 0) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.INVALID_INPUT,
-        'Execution groups cannot be empty'
+        'Execution groups cannot be empty',
       );
     }
 
@@ -693,19 +700,19 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
 
     for (let i = 0; i < groups.length; i++) {
       const group = groups[i];
-      
+
       // Validate group structure
       if (!group.rules || group.rules.length === 0) {
         throw new MinimalGoRulesError(
           MinimalErrorCode.INVALID_INPUT,
-          `Execution group ${i} cannot have empty rules array`
+          `Execution group ${i} cannot have empty rules array`,
         );
       }
 
       if (!['parallel', 'sequential'].includes(group.mode)) {
         throw new MinimalGoRulesError(
           MinimalErrorCode.INVALID_INPUT,
-          `Invalid execution mode '${group.mode}' in group ${i}. Must be 'parallel' or 'sequential'`
+          `Invalid execution mode '${group.mode}' in group ${i}. Must be 'parallel' or 'sequential'`,
         );
       }
 
@@ -716,7 +723,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
           throw new MinimalGoRulesError(
             MinimalErrorCode.RULE_NOT_FOUND,
             `Rule '${ruleId}' in group ${i} not found in cache`,
-            ruleId
+            ruleId,
           );
         }
 
@@ -724,7 +731,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
           throw new MinimalGoRulesError(
             MinimalErrorCode.INVALID_INPUT,
             `Rule '${ruleId}' appears in multiple execution groups. Each rule can only appear once.`,
-            ruleId
+            ruleId,
           );
         }
 
@@ -734,18 +741,22 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
 
       // Generate optimizations
       if (group.mode === 'parallel' && group.rules.length === 1) {
-        optimizations.push(`Group ${i}: Single rule in parallel mode could be optimized to sequential`);
+        optimizations.push(
+          `Group ${i}: Single rule in parallel mode could be optimized to sequential`,
+        );
       }
 
       if (group.mode === 'sequential' && group.rules.length > 5) {
-        optimizations.push(`Group ${i}: Large sequential group (${group.rules.length} rules) might benefit from parallel sub-groups`);
+        optimizations.push(
+          `Group ${i}: Large sequential group (${group.rules.length} rules) might benefit from parallel sub-groups`,
+        );
       }
 
       validatedGroups.push({
         ruleIds: validRuleIds,
         mode: group.mode,
         index: i,
-        estimatedTime: this.estimateGroupExecutionTime(group.mode, validRuleIds.length)
+        estimatedTime: this.estimateGroupExecutionTime(group.mode, validRuleIds.length),
       });
 
       totalRules += validRuleIds.length;
@@ -756,32 +767,38 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
       optimizations.push('Large number of execution groups might benefit from consolidation');
     }
 
-    const estimatedTotalTime = validatedGroups.reduce((sum, group) => sum + (group.estimatedTime || 0), 0);
+    const estimatedTotalTime = validatedGroups.reduce(
+      (sum, group) => sum + (group.estimatedTime || 0),
+      0,
+    );
 
     return {
       groups: validatedGroups,
       totalRules,
       estimatedTime: estimatedTotalTime,
-      optimizations: optimizations.length > 0 ? optimizations : undefined
+      optimizations: optimizations.length > 0 ? optimizations : undefined,
     };
   }
 
   /**
    * Execute rules in mixed mode (simplified version for backward compatibility)
    */
-  private async executeMixed<T>(groups: ExecutionGroup[], input: Record<string, unknown>): Promise<MinimalExecutionResult<T>> {
+  private async executeMixed<T>(
+    groups: ExecutionGroup[],
+    input: Record<string, unknown>,
+  ): Promise<MinimalExecutionResult<T>> {
     // Use enhanced mixed execution with default options
     const result = await this.executeMixedWithMetrics<T>(groups, input, {
       stopOnError: false,
       pipelineMode: true,
       includeStateTracking: false,
-      includeMetrics: false
+      includeMetrics: false,
     });
 
     return {
       results: result.results,
       executionTime: result.executionTime,
-      errors: result.errors
+      errors: result.errors,
     };
   }
 
@@ -790,10 +807,10 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
    */
   private estimateGroupExecutionTime(mode: 'parallel' | 'sequential', ruleCount: number): number {
     const avgRuleTime = 50; // Average rule execution time in ms
-    
+
     if (mode === 'parallel') {
       // Parallel execution time is roughly the time of the slowest rule plus overhead
-      return avgRuleTime + (ruleCount * 5); // 5ms overhead per rule
+      return avgRuleTime + ruleCount * 5; // 5ms overhead per rule
     } else {
       // Sequential execution time is sum of all rule times
       return avgRuleTime * ruleCount;
@@ -805,11 +822,16 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
    */
   private async executeWithTimeout<T>(
     fn: () => Promise<ZenEngineResult<T>>,
-    timeoutMs: number
+    timeoutMs: number,
   ): Promise<ZenEngineResult<T>> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        reject(new MinimalGoRulesError(MinimalErrorCode.TIMEOUT, `Execution timed out after ${timeoutMs}ms`));
+        reject(
+          new MinimalGoRulesError(
+            MinimalErrorCode.TIMEOUT,
+            `Execution timed out after ${timeoutMs}ms`,
+          ),
+        );
       }, timeoutMs);
 
       fn()

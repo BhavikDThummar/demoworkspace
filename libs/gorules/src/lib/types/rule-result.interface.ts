@@ -6,13 +6,13 @@ import { ExecutionTrace, PerformanceMetrics, RuleMetadata } from './rule-executi
 export interface RuleExecutionResult<T = unknown> {
   /** The decision/result from the rule execution */
   result: T;
-  
+
   /** Execution trace (if tracing was enabled) */
   trace?: ExecutionTrace;
-  
+
   /** Performance metrics */
   performance: PerformanceMetrics;
-  
+
   /** Rule metadata */
   metadata: RuleMetadata;
 }
@@ -23,13 +23,13 @@ export interface RuleExecutionResult<T = unknown> {
 export interface RuleResult<T = unknown> {
   /** The actual decision data */
   decision: T;
-  
+
   /** Confidence score (0-1) if available */
   confidence?: number;
-  
+
   /** List of rules that were applied */
   appliedRules: string[];
-  
+
   /** Any warnings generated during execution */
   warnings?: string[];
 }
@@ -40,13 +40,13 @@ export interface RuleResult<T = unknown> {
 export interface BatchRuleExecutionResult<T = unknown> {
   /** Execution ID for tracking */
   executionId: string;
-  
+
   /** Rule ID that was executed */
   ruleId: string;
-  
+
   /** Rule execution result */
   result: RuleResult<T>;
-  
+
   /** Error information if execution failed */
   error?: RuleExecutionError;
 }
@@ -57,13 +57,13 @@ export interface BatchRuleExecutionResult<T = unknown> {
 export interface RuleExecutionError {
   /** Error code */
   code: string;
-  
+
   /** Human-readable error message */
   message: string;
-  
+
   /** Additional error details */
   details?: unknown;
-  
+
   /** Whether this error is retryable */
   retryable: boolean;
 }
@@ -78,7 +78,7 @@ export enum GoRulesErrorCode {
   NETWORK_ERROR = 'NETWORK_ERROR',
   TIMEOUT = 'TIMEOUT',
   RATE_LIMIT_EXCEEDED = 'RATE_LIMIT',
-  INTERNAL_ERROR = 'INTERNAL_ERROR'
+  INTERNAL_ERROR = 'INTERNAL_ERROR',
 }
 
 /**
@@ -89,7 +89,7 @@ export class GoRulesException extends Error {
     public readonly code: GoRulesErrorCode,
     message: string,
     public readonly details?: unknown,
-    public readonly retryable = false
+    public readonly retryable = false,
   ) {
     super(message);
     this.name = 'GoRulesException';

@@ -19,10 +19,7 @@ describe('GoRulesConfigFactory', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        GoRulesConfigFactory,
-        { provide: ConfigService, useValue: mockConfigService },
-      ],
+      providers: [GoRulesConfigFactory, { provide: ConfigService, useValue: mockConfigService }],
     }).compile();
 
     factory = module.get<GoRulesConfigFactory>(GoRulesConfigFactory);
@@ -322,8 +319,9 @@ describe('GoRulesConfigUtils', () => {
       const config1: Partial<GoRulesConfig> = { timeout: 5000 };
       const config2: Partial<GoRulesConfig> = { retryAttempts: 2 };
 
-      expect(() => GoRulesConfigUtils.mergeConfigurations(config1, config2))
-        .toThrow('Merged configuration is missing required fields');
+      expect(() => GoRulesConfigUtils.mergeConfigurations(config1, config2)).toThrow(
+        'Merged configuration is missing required fields',
+      );
     });
   });
 

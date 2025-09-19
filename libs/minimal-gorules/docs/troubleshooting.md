@@ -19,6 +19,7 @@ Comprehensive troubleshooting guide for common issues and solutions when using t
 ### Engine Not Initializing
 
 **Symptoms:**
+
 - `Engine not initialized` error when executing rules
 - Initialization hangs or times out
 - Rules not loading during startup
@@ -26,23 +27,25 @@ Comprehensive troubleshooting guide for common issues and solutions when using t
 **Causes and Solutions:**
 
 1. **Invalid Configuration**
+
    ```typescript
    // ❌ Incorrect
    const config = {
      apiUrl: 'invalid-url',
      apiKey: '',
-     projectId: undefined
+     projectId: undefined,
    };
 
    // ✅ Correct
    const config = {
      apiUrl: 'https://api.gorules.io',
      apiKey: process.env.GORULES_API_KEY!,
-     projectId: 'your-project-id'
+     projectId: 'your-project-id',
    };
    ```
 
 2. **Network Connectivity Issues**
+
    ```typescript
    // Test connectivity
    try {
@@ -54,6 +57,7 @@ Comprehensive troubleshooting guide for common issues and solutions when using t
    ```
 
 3. **Missing Initialization Call**
+
    ```typescript
    // ❌ Incorrect - missing initialization
    const engine = new MinimalGoRulesEngine(config);
@@ -68,17 +72,19 @@ Comprehensive troubleshooting guide for common issues and solutions when using t
 ### Rules Not Found
 
 **Symptoms:**
+
 - `RULE_NOT_FOUND` errors
 - Rules exist in GoRules Cloud but not accessible
 
 **Causes and Solutions:**
 
 1. **Rule ID Mismatch**
+
    ```typescript
    // Check available rules
    const metadata = await engine.getAllRuleMetadata();
    console.log('Available rules:', Array.from(metadata.keys()));
-   
+
    // Validate rule exists
    const exists = await engine.validateRule('your-rule-id');
    if (!exists) {
@@ -87,21 +93,23 @@ Comprehensive troubleshooting guide for common issues and solutions when using t
    ```
 
 2. **Project ID Mismatch**
+
    ```typescript
    // Verify project configuration
    const config = engine.getConfig();
    console.log('Current project ID:', config.projectId);
-   
+
    // Check if rules are loaded for correct project
    const status = await engine.getStatus();
    console.log('Rules loaded:', status.rulesLoaded);
    ```
 
 3. **Cache Issues**
+
    ```typescript
    // Force refresh cache
    await engine.forceRefreshCache();
-   
+
    // Or refresh specific rules
    await engine.refreshCache(['rule-id-1', 'rule-id-2']);
    ```
@@ -109,6 +117,7 @@ Comprehensive troubleshooting guide for common issues and solutions when using t
 ### Execution Timeouts
 
 **Symptoms:**
+
 - `TIMEOUT` errors during rule execution
 - Slow response times
 - Hanging requests
@@ -116,6 +125,7 @@ Comprehensive troubleshooting guide for common issues and solutions when using t
 **Causes and Solutions:**
 
 1. **Insufficient Timeout Configuration**
+
    ```typescript
    // Increase timeout
    const config = {
@@ -125,6 +135,7 @@ Comprehensive troubleshooting guide for common issues and solutions when using t
    ```
 
 2. **Network Latency**
+
    ```typescript
    // Test network latency
    const startTime = Date.now();
@@ -141,7 +152,7 @@ Comprehensive troubleshooting guide for common issues and solutions when using t
    const memUsage = process.memoryUsage();
    console.log('Memory usage:', {
      heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024) + 'MB',
-     heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024) + 'MB'
+     heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024) + 'MB',
    });
    ```
 
@@ -152,6 +163,7 @@ Comprehensive troubleshooting guide for common issues and solutions when using t
 **Error:** Rule doesn't exist in cache or GoRules Cloud
 
 **Solutions:**
+
 ```typescript
 // 1. Check if rule exists in GoRules Cloud
 const allMetadata = await engine.getAllRuleMetadata();
@@ -162,8 +174,8 @@ if (!allMetadata.has('your-rule-id')) {
 
 // 2. Validate rule ID spelling
 const availableRules = Array.from(allMetadata.keys());
-const similarRules = availableRules.filter(id => 
-  id.toLowerCase().includes('your-rule'.toLowerCase())
+const similarRules = availableRules.filter((id) =>
+  id.toLowerCase().includes('your-rule'.toLowerCase()),
 );
 console.log('Similar rules found:', similarRules);
 
@@ -177,6 +189,7 @@ console.log('Rules with tag:', rulesByTag);
 **Error:** Network connectivity or API issues
 
 **Solutions:**
+
 ```typescript
 // 1. Implement retry logic
 class NetworkErrorHandler {
@@ -184,7 +197,7 @@ class NetworkErrorHandler {
     engine: MinimalGoRulesEngine,
     ruleId: string,
     input: Record<string, unknown>,
-    maxRetries: number = 3
+    maxRetries: number = 3,
   ): Promise<T> {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -193,10 +206,10 @@ class NetworkErrorHandler {
         if (error.code !== 'NETWORK_ERROR' || attempt === maxRetries) {
           throw error;
         }
-        
+
         const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
         console.log(`Retry attempt ${attempt} after ${delay}ms`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
@@ -206,7 +219,7 @@ class NetworkErrorHandler {
 async function checkConnectivity() {
   try {
     const response = await fetch('https://api.gorules.io/health', {
-      timeout: 5000
+      timeout: 5000,
     });
     return response.ok;
   } catch {
@@ -218,7 +231,7 @@ async function checkConnectivity() {
 const config = {
   // ... other config
   proxy: process.env.HTTP_PROXY,
-  httpsProxy: process.env.HTTPS_PROXY
+  httpsProxy: process.env.HTTPS_PROXY,
 };
 ```
 
@@ -227,6 +240,7 @@ const config = {
 **Error:** Request exceeded configured timeout
 
 **Solutions:**
+
 ```typescript
 // 1. Increase timeout for specific operations
 const config = {
@@ -239,13 +253,13 @@ async function executeWithCustomTimeout<T>(
   engine: MinimalGoRulesEngine,
   ruleId: string,
   input: Record<string, unknown>,
-  timeoutMs: number = 10000
+  timeoutMs: number = 10000,
 ): Promise<T> {
   return Promise.race([
     engine.executeRule<T>(ruleId, input),
-    new Promise<never>((_, reject) => 
-      setTimeout(() => reject(new Error('Custom timeout')), timeoutMs)
-    )
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Custom timeout')), timeoutMs),
+    ),
   ]);
 }
 
@@ -255,7 +269,7 @@ const startTime = Date.now();
 try {
   await engine.executeRule('rule-id', input);
   executionTimes.push(Date.now() - startTime);
-  
+
   // Log statistics
   if (executionTimes.length % 100 === 0) {
     const avg = executionTimes.reduce((a, b) => a + b, 0) / executionTimes.length;
@@ -271,6 +285,7 @@ try {
 **Error:** Configuration or input validation failed
 
 **Solutions:**
+
 ```typescript
 // 1. Validate configuration
 import { ConfigFactory } from '@your-org/minimal-gorules';
@@ -288,7 +303,7 @@ function validateRuleInput(input: Record<string, unknown>): boolean {
     console.error('Input must be an object');
     return false;
   }
-  
+
   // Check for circular references
   try {
     JSON.stringify(input);
@@ -296,21 +311,21 @@ function validateRuleInput(input: Record<string, unknown>): boolean {
     console.error('Input contains circular references');
     return false;
   }
-  
+
   return true;
 }
 
 // 3. Sanitize input data
 function sanitizeInput(input: Record<string, unknown>): Record<string, unknown> {
   const sanitized = { ...input };
-  
+
   // Remove undefined values
-  Object.keys(sanitized).forEach(key => {
+  Object.keys(sanitized).forEach((key) => {
     if (sanitized[key] === undefined) {
       delete sanitized[key];
     }
   });
-  
+
   return sanitized;
 }
 ```
@@ -320,51 +335,44 @@ function sanitizeInput(input: Record<string, unknown>): Record<string, unknown> 
 **Error:** Rule execution failed
 
 **Solutions:**
+
 ```typescript
 // 1. Check rule syntax and logic
 async function debugRuleExecution(
   engine: MinimalGoRulesEngine,
   ruleId: string,
-  input: Record<string, unknown>
+  input: Record<string, unknown>,
 ) {
   try {
     // Get rule metadata
     const metadata = await engine.getRuleMetadata(ruleId);
     console.log('Rule metadata:', metadata);
-    
+
     // Validate rule
     const isValid = await engine.validateRule(ruleId);
     console.log('Rule valid:', isValid);
-    
+
     // Execute with detailed logging
     console.log('Executing rule with input:', JSON.stringify(input, null, 2));
     const result = await engine.executeRule(ruleId, input);
     console.log('Execution result:', JSON.stringify(result, null, 2));
-    
+
     return result;
   } catch (error) {
     console.error('Execution debug info:', {
       ruleId,
       input,
       error: error.message,
-      stack: error.stack
+      stack: error.stack,
     });
     throw error;
   }
 }
 
 // 2. Test with minimal input
-async function testWithMinimalInput(
-  engine: MinimalGoRulesEngine,
-  ruleId: string
-) {
-  const minimalInputs = [
-    {},
-    { test: true },
-    { value: 1 },
-    { text: 'test' }
-  ];
-  
+async function testWithMinimalInput(engine: MinimalGoRulesEngine, ruleId: string) {
+  const minimalInputs = [{}, { test: true }, { value: 1 }, { text: 'test' }];
+
   for (const input of minimalInputs) {
     try {
       console.log(`Testing with input:`, input);
@@ -375,7 +383,7 @@ async function testWithMinimalInput(
       console.log(`Failed with input:`, input, 'Error:', error.message);
     }
   }
-  
+
   throw new Error('No working input found');
 }
 ```
@@ -387,12 +395,13 @@ async function testWithMinimalInput(
 **Problem:** Configuration values are undefined or incorrect
 
 **Solutions:**
+
 ```typescript
 // 1. Validate environment variables
 function validateEnvironment() {
   const required = ['GORULES_API_KEY', 'GORULES_PROJECT_ID'];
-  const missing = required.filter(key => !process.env[key]);
-  
+  const missing = required.filter((key) => !process.env[key]);
+
   if (missing.length > 0) {
     throw new Error(`Missing environment variables: ${missing.join(', ')}`);
   }
@@ -404,7 +413,7 @@ const config = ConfigFactory.create({
   apiKey: process.env.GORULES_API_KEY!,
   projectId: process.env.GORULES_PROJECT_ID!,
   cacheMaxSize: parseInt(process.env.GORULES_CACHE_SIZE || '1000'),
-  httpTimeout: parseInt(process.env.GORULES_TIMEOUT || '5000')
+  httpTimeout: parseInt(process.env.GORULES_TIMEOUT || '5000'),
 });
 
 // 3. Log configuration (without sensitive data)
@@ -413,7 +422,7 @@ console.log('GoRules configuration:', {
   projectId: config.projectId,
   cacheMaxSize: config.cacheMaxSize,
   httpTimeout: config.httpTimeout,
-  apiKey: config.apiKey ? '[REDACTED]' : 'NOT SET'
+  apiKey: config.apiKey ? '[REDACTED]' : 'NOT SET',
 });
 ```
 
@@ -422,6 +431,7 @@ console.log('GoRules configuration:', {
 **Problem:** Configuration validation fails
 
 **Solutions:**
+
 ```typescript
 // 1. Use configuration builder with validation
 class ConfigBuilder {
@@ -445,7 +455,9 @@ class ConfigBuilder {
 
   setProjectId(id: string): this {
     if (!id || !/^[a-zA-Z0-9-_]+$/.test(id)) {
-      throw new Error('Project ID must contain only alphanumeric characters, hyphens, and underscores');
+      throw new Error(
+        'Project ID must contain only alphanumeric characters, hyphens, and underscores',
+      );
     }
     this.config.projectId = id;
     return this;
@@ -484,13 +496,14 @@ const config = new ConfigBuilder()
 **Problem:** Cannot connect to GoRules API
 
 **Solutions:**
+
 ```typescript
 // 1. Check network connectivity
 async function diagnoseNetworkIssue() {
   const tests = [
     { name: 'DNS Resolution', test: () => require('dns').promises.lookup('api.gorules.io') },
     { name: 'HTTP Connectivity', test: () => fetch('https://api.gorules.io/health') },
-    { name: 'HTTPS Connectivity', test: () => fetch('https://api.gorules.io/health') }
+    { name: 'HTTPS Connectivity', test: () => fetch('https://api.gorules.io/health') },
   ];
 
   for (const { name, test } of tests) {
@@ -509,11 +522,13 @@ const config = {
   proxy: {
     host: process.env.PROXY_HOST,
     port: parseInt(process.env.PROXY_PORT || '8080'),
-    auth: process.env.PROXY_AUTH ? {
-      username: process.env.PROXY_USERNAME,
-      password: process.env.PROXY_PASSWORD
-    } : undefined
-  }
+    auth: process.env.PROXY_AUTH
+      ? {
+          username: process.env.PROXY_USERNAME,
+          password: process.env.PROXY_PASSWORD,
+        }
+      : undefined,
+  },
 };
 
 // 3. Use custom HTTP agent
@@ -523,7 +538,7 @@ const httpsAgent = new Agent({
   keepAlive: true,
   timeout: 10000,
   // For self-signed certificates (development only)
-  rejectUnauthorized: process.env.NODE_ENV === 'production'
+  rejectUnauthorized: process.env.NODE_ENV === 'production',
 });
 ```
 
@@ -532,6 +547,7 @@ const httpsAgent = new Agent({
 **Problem:** Too many requests to GoRules API
 
 **Solutions:**
+
 ```typescript
 // 1. Implement rate limiting
 class RateLimiter {
@@ -546,19 +562,19 @@ class RateLimiter {
 
   async waitForSlot(): Promise<void> {
     const now = Date.now();
-    
+
     // Remove old requests outside the window
-    this.requests = this.requests.filter(time => now - time < this.windowMs);
-    
+    this.requests = this.requests.filter((time) => now - time < this.windowMs);
+
     if (this.requests.length >= this.maxRequests) {
       const oldestRequest = Math.min(...this.requests);
       const waitTime = this.windowMs - (now - oldestRequest);
-      
+
       console.log(`Rate limit reached, waiting ${waitTime}ms`);
-      await new Promise(resolve => setTimeout(resolve, waitTime));
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
       return this.waitForSlot();
     }
-    
+
     this.requests.push(now);
   }
 }
@@ -573,7 +589,7 @@ const config = {
 // 3. Implement exponential backoff
 async function executeWithBackoff<T>(
   operation: () => Promise<T>,
-  maxRetries: number = 5
+  maxRetries: number = 5,
 ): Promise<T> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -582,7 +598,7 @@ async function executeWithBackoff<T>(
       if (error.status === 429 && attempt < maxRetries) {
         const delay = Math.min(1000 * Math.pow(2, attempt - 1), 30000);
         console.log(`Rate limited, retrying in ${delay}ms`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
         continue;
       }
       throw error;
@@ -599,6 +615,7 @@ async function executeWithBackoff<T>(
 **Problem:** Memory usage continuously increasing
 
 **Solutions:**
+
 ```typescript
 // 1. Monitor memory usage
 function monitorMemory() {
@@ -606,12 +623,13 @@ function monitorMemory() {
     const usage = process.memoryUsage();
     const heapUsedMB = Math.round(usage.heapUsed / 1024 / 1024);
     const heapTotalMB = Math.round(usage.heapTotal / 1024 / 1024);
-    
+
     console.log(`Memory: ${heapUsedMB}MB / ${heapTotalMB}MB`);
-    
-    if (heapUsedMB > 500) { // Alert if over 500MB
+
+    if (heapUsedMB > 500) {
+      // Alert if over 500MB
       console.warn('High memory usage detected!');
-      
+
       // Force garbage collection if available
       if (global.gc) {
         console.log('Forcing garbage collection...');
@@ -626,7 +644,7 @@ const config = {
   // ... other config
   cacheMaxSize: 1000, // Reduce from higher value
   memoryWarningThreshold: 0.6,
-  memoryCriticalThreshold: 0.75
+  memoryCriticalThreshold: 0.75,
 };
 
 // 3. Clear cache periodically
@@ -644,26 +662,27 @@ setInterval(async () => {
 **Problem:** Rules taking too long to execute
 
 **Solutions:**
+
 ```typescript
 // 1. Profile rule execution
 async function profileRuleExecution(
   engine: MinimalGoRulesEngine,
   ruleId: string,
-  input: Record<string, unknown>
+  input: Record<string, unknown>,
 ) {
   const startTime = process.hrtime.bigint();
-  
+
   try {
     const result = await engine.executeRule(ruleId, input);
     const endTime = process.hrtime.bigint();
     const durationMs = Number(endTime - startTime) / 1_000_000;
-    
+
     console.log(`Rule ${ruleId} executed in ${durationMs.toFixed(2)}ms`);
-    
+
     if (durationMs > 100) {
       console.warn(`Slow rule execution detected: ${ruleId}`);
     }
-    
+
     return result;
   } catch (error) {
     const endTime = process.hrtime.bigint();
@@ -680,19 +699,19 @@ async function executeWithCache<T>(
   engine: MinimalGoRulesEngine,
   ruleId: string,
   input: Record<string, unknown>,
-  ttlMs: number = 300000
+  ttlMs: number = 300000,
 ): Promise<T> {
   const cacheKey = `${ruleId}:${JSON.stringify(input)}`;
   const cached = executionCache.get(cacheKey);
-  
+
   if (cached && Date.now() - cached.timestamp < ttlMs) {
     console.log(`Cache hit for ${ruleId}`);
     return cached.result;
   }
-  
+
   const result = await engine.executeRule<T>(ruleId, input);
   executionCache.set(cacheKey, { result, timestamp: Date.now() });
-  
+
   return result;
 }
 
@@ -701,14 +720,14 @@ async function executeRulesOptimized<T>(
   engine: MinimalGoRulesEngine,
   ruleIds: string[],
   input: Record<string, unknown>,
-  concurrency: number = 10
+  concurrency: number = 10,
 ): Promise<Map<string, T>> {
   const results = new Map<string, T>();
-  
+
   // Process in batches to avoid overwhelming the system
   for (let i = 0; i < ruleIds.length; i += concurrency) {
     const batch = ruleIds.slice(i, i + concurrency);
-    
+
     const batchPromises = batch.map(async (ruleId) => {
       try {
         const result = await engine.executeRule<T>(ruleId, input);
@@ -717,10 +736,10 @@ async function executeRulesOptimized<T>(
         console.error(`Rule ${ruleId} failed:`, error.message);
       }
     });
-    
+
     await Promise.all(batchPromises);
   }
-  
+
   return results;
 }
 ```
@@ -732,6 +751,7 @@ async function executeRulesOptimized<T>(
 **Problem:** Memory usage grows over time and doesn't decrease
 
 **Solutions:**
+
 ```typescript
 // 1. Detect memory leaks
 class MemoryLeakDetector {
@@ -741,15 +761,15 @@ class MemoryLeakDetector {
   start(intervalMs: number = 60000) {
     this.interval = setInterval(() => {
       if (global.gc) global.gc(); // Force GC for accurate measurement
-      
+
       const heapUsed = process.memoryUsage().heapUsed;
       this.measurements.push({ timestamp: Date.now(), heapUsed });
-      
+
       // Keep only last 10 measurements
       if (this.measurements.length > 10) {
         this.measurements.shift();
       }
-      
+
       this.analyzeMemoryTrend();
     }, intervalMs);
   }
@@ -763,19 +783,23 @@ class MemoryLeakDetector {
 
   private analyzeMemoryTrend() {
     if (this.measurements.length < 5) return;
-    
+
     const recent = this.measurements.slice(-5);
     const isIncreasing = recent.every((measurement, index) => {
       if (index === 0) return true;
       return measurement.heapUsed > recent[index - 1].heapUsed;
     });
-    
+
     if (isIncreasing) {
       const first = recent[0];
       const last = recent[recent.length - 1];
       const increaseMB = (last.heapUsed - first.heapUsed) / 1024 / 1024;
-      
-      console.warn(`Potential memory leak detected: ${increaseMB.toFixed(2)}MB increase over ${recent.length} measurements`);
+
+      console.warn(
+        `Potential memory leak detected: ${increaseMB.toFixed(2)}MB increase over ${
+          recent.length
+        } measurements`,
+      );
     }
   }
 }
@@ -789,7 +813,7 @@ class ResourceManager {
   }
 
   cleanup() {
-    this.resources.forEach(cleanup => {
+    this.resources.forEach((cleanup) => {
       try {
         cleanup();
       } catch (error) {
@@ -827,6 +851,7 @@ process.on('SIGINT', () => {
 **Problem:** Application crashes with out of memory errors
 
 **Solutions:**
+
 ```typescript
 // 1. Increase Node.js memory limit
 // Start Node.js with: node --max-old-space-size=4096 app.js
@@ -838,18 +863,18 @@ function setupMemoryMonitoring() {
     const heapUsedMB = usage.heapUsed / 1024 / 1024;
     const heapTotalMB = usage.heapTotal / 1024 / 1024;
     const usagePercent = (heapUsedMB / heapTotalMB) * 100;
-    
+
     if (usagePercent > 80) {
       console.warn(`High memory usage: ${usagePercent.toFixed(1)}%`);
-      
+
       // Take corrective action
       if (global.gc) {
         global.gc();
       }
-      
+
       // Clear caches
       engine.getCacheStats(); // This might trigger cleanup
-      
+
       if (usagePercent > 90) {
         console.error('Critical memory usage, consider restarting');
         // Could implement graceful restart here
@@ -870,12 +895,12 @@ class MemoryAwareCache {
   set(key: string, value: any) {
     // Check memory usage before adding
     const currentMemoryMB = process.memoryUsage().heapUsed / 1024 / 1024;
-    
+
     if (currentMemoryMB > this.maxMemoryMB) {
       console.log('Memory limit reached, clearing cache');
       this.cache.clear();
     }
-    
+
     this.cache.set(key, value);
   }
 
@@ -896,6 +921,7 @@ class MemoryAwareCache {
 **Problem:** Engine not working properly in NestJS
 
 **Solutions:**
+
 ```typescript
 // 1. Proper module configuration
 @Module({
@@ -906,23 +932,23 @@ class MemoryAwareCache {
         const config = {
           apiUrl: configService.get<string>('GORULES_API_URL'),
           apiKey: configService.get<string>('GORULES_API_KEY'),
-          projectId: configService.get<string>('GORULES_PROJECT_ID')
+          projectId: configService.get<string>('GORULES_PROJECT_ID'),
         };
-        
+
         // Validate configuration
         if (!config.apiKey) {
           throw new Error('GORULES_API_KEY is required');
         }
-        
+
         return config;
       },
-      inject: [ConfigService]
+      inject: [ConfigService],
     },
     {
       provide: MinimalGoRulesEngine,
       useFactory: async (config) => {
         const engine = new MinimalGoRulesEngine(config);
-        
+
         try {
           await engine.initialize();
           console.log('GoRules engine initialized successfully');
@@ -932,9 +958,9 @@ class MemoryAwareCache {
           throw error;
         }
       },
-      inject: ['GORULES_CONFIG']
-    }
-  ]
+      inject: ['GORULES_CONFIG'],
+    },
+  ],
 })
 export class GoRulesModule {}
 
@@ -948,21 +974,21 @@ export class GoRulesHealthIndicator extends HealthIndicator {
   async isHealthy(key: string): Promise<HealthIndicatorResult> {
     try {
       const status = await this.engine.getStatus();
-      
+
       if (!status.initialized) {
         throw new Error('Engine not initialized');
       }
-      
+
       return this.getStatus(key, true, {
         rulesLoaded: status.rulesLoaded,
-        lastUpdate: status.lastUpdate
+        lastUpdate: status.lastUpdate,
       });
     } catch (error) {
       throw new HealthCheckError('GoRules engine unhealthy', {
         [key]: {
           status: 'down',
-          error: error.message
-        }
+          error: error.message,
+        },
       });
     }
   }
@@ -989,6 +1015,7 @@ export class GoRulesService implements OnModuleDestroy {
 **Problem:** Engine not working properly in React
 
 **Solutions:**
+
 ```typescript
 // 1. Proper service initialization
 // src/services/goRulesService.ts
@@ -999,7 +1026,7 @@ class GoRulesServiceSingleton {
     if (!this.instance) {
       this.instance = new ReactGoRulesService({
         baseUrl: process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000',
-        timeout: 10000
+        timeout: 10000,
       });
     }
     return this.instance;
@@ -1036,9 +1063,7 @@ class GoRulesErrorBoundary extends React.Component<
             <summary>Error details</summary>
             <pre>{this.state.error?.message}</pre>
           </details>
-          <button onClick={() => this.setState({ hasError: false })}>
-            Try Again
-          </button>
+          <button onClick={() => this.setState({ hasError: false })}>Try Again</button>
         </div>
       );
     }
@@ -1072,7 +1097,7 @@ export const GoRulesProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     testConnectivity();
-    
+
     // Test connectivity periodically
     const interval = setInterval(testConnectivity, 60000);
     return () => clearInterval(interval);
@@ -1098,7 +1123,7 @@ const config: MinimalGoRulesConfig = {
   // ... other config
   enablePerformanceMetrics: true,
   // Add debug flag if available
-  debug: process.env.NODE_ENV === 'development'
+  debug: process.env.NODE_ENV === 'development',
 };
 
 // Custom debug logger
@@ -1190,7 +1215,7 @@ class GoRulesDiagnostics {
       const startTime = Date.now();
       const response = await fetch('https://api.gorules.io/health');
       const latency = Date.now() - startTime;
-      
+
       console.log(`   ✅ API Reachable: ${response.ok}`);
       console.log(`   ✅ Response Time: ${latency}ms`);
     } catch (error) {
@@ -1204,7 +1229,7 @@ class GoRulesDiagnostics {
     try {
       const metadata = await this.engine.getAllRuleMetadata();
       const ruleIds = Array.from(metadata.keys());
-      
+
       if (ruleIds.length === 0) {
         console.log('   ⚠️  No rules available for testing');
         return;
@@ -1212,9 +1237,9 @@ class GoRulesDiagnostics {
 
       const testRuleId = ruleIds[0];
       const startTime = Date.now();
-      
+
       await this.engine.executeRule(testRuleId, { test: true });
-      
+
       const executionTime = Date.now() - startTime;
       console.log(`   ✅ Test execution successful: ${executionTime}ms`);
     } catch (error) {
@@ -1228,7 +1253,7 @@ class GoRulesDiagnostics {
     try {
       const perfStats = this.engine.getPerformanceStats();
       console.log(`   ✅ Memory Usage: ${perfStats.memoryUsage.toFixed(2)}MB`);
-      
+
       if (perfStats.averageExecutionTime) {
         console.log(`   ✅ Avg Execution Time: ${perfStats.averageExecutionTime.toFixed(2)}ms`);
       }
@@ -1266,6 +1291,7 @@ await diagnostics.runDiagnostics();
 ### Q: Why is my engine not initializing?
 
 **A:** Check the following:
+
 1. Verify your API key and project ID are correct
 2. Ensure network connectivity to api.gorules.io
 3. Check if your firewall allows outbound HTTPS connections
@@ -1274,6 +1300,7 @@ await diagnostics.runDiagnostics();
 ### Q: Why are my rules not found?
 
 **A:** Common causes:
+
 1. Rule ID spelling mismatch
 2. Rules not published in GoRules Cloud
 3. Wrong project ID in configuration
@@ -1282,6 +1309,7 @@ await diagnostics.runDiagnostics();
 ### Q: How can I improve performance?
 
 **A:** Try these optimizations:
+
 1. Enable performance optimizations in config
 2. Increase cache size for frequently used rules
 3. Use parallel execution for independent rules
@@ -1291,6 +1319,7 @@ await diagnostics.runDiagnostics();
 ### Q: How do I handle network errors?
 
 **A:** Implement retry logic:
+
 1. Use exponential backoff for retries
 2. Check network connectivity before operations
 3. Configure appropriate timeouts
@@ -1299,6 +1328,7 @@ await diagnostics.runDiagnostics();
 ### Q: Why is memory usage high?
 
 **A:** Check these factors:
+
 1. Cache size might be too large
 2. Memory leaks in application code
 3. Not calling `engine.cleanup()` on shutdown
@@ -1307,6 +1337,7 @@ await diagnostics.runDiagnostics();
 ### Q: How do I debug rule execution issues?
 
 **A:** Use these debugging techniques:
+
 1. Enable debug logging
 2. Test with minimal input data
 3. Check rule metadata and validation

@@ -8,7 +8,7 @@ import { ReactGoRulesService } from '../react-gorules-service.js';
 
 // Mock ReactGoRulesService
 const mockService = {
-  getStatus: jest.fn()
+  getStatus: jest.fn(),
 } as unknown as ReactGoRulesService;
 
 // Mock timers
@@ -40,7 +40,7 @@ describe('useEngineStatus', () => {
       engine: { status: 'ready', initialized: true, rulesLoaded: 10 },
       health: { status: 'healthy', uptime: 3600, lastCheck: Date.now() },
       cache: { size: 10, maxSize: 100, hitRate: 0.95, memoryUsage: 1024 },
-      initialization: { status: 'complete', startTime: Date.now() }
+      initialization: { status: 'complete', startTime: Date.now() },
     };
 
     (mockService.getStatus as jest.Mock).mockResolvedValueOnce(mockStatus);
@@ -49,7 +49,7 @@ describe('useEngineStatus', () => {
 
     // Wait for initial load
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockService.getStatus).toHaveBeenCalledTimes(1);
@@ -67,7 +67,7 @@ describe('useEngineStatus', () => {
 
     // Wait for initial load
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.loading).toBe(false);
@@ -81,7 +81,7 @@ describe('useEngineStatus', () => {
       engine: { status: 'ready', initialized: true, rulesLoaded: 10 },
       health: { status: 'healthy', uptime: 3600, lastCheck: Date.now() },
       cache: { size: 10, maxSize: 100, hitRate: 0.95, memoryUsage: 1024 },
-      initialization: { status: 'complete', startTime: Date.now() }
+      initialization: { status: 'complete', startTime: Date.now() },
     };
 
     (mockService.getStatus as jest.Mock).mockResolvedValue(mockStatus);
@@ -90,7 +90,7 @@ describe('useEngineStatus', () => {
 
     // Wait for initial load
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // Clear mock calls from initial load
@@ -110,7 +110,7 @@ describe('useEngineStatus', () => {
       engine: { status: 'ready', initialized: true, rulesLoaded: 10 },
       health: { status: 'healthy', uptime: 3600, lastCheck: Date.now() },
       cache: { size: 10, maxSize: 100, hitRate: 0.95, memoryUsage: 1024 },
-      initialization: { status: 'complete', startTime: Date.now() }
+      initialization: { status: 'complete', startTime: Date.now() },
     };
 
     (mockService.getStatus as jest.Mock).mockResolvedValue(mockStatus);
@@ -119,7 +119,7 @@ describe('useEngineStatus', () => {
 
     // Wait for initial load
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockService.getStatus).toHaveBeenCalledTimes(1);
@@ -127,7 +127,7 @@ describe('useEngineStatus', () => {
     // Fast-forward time to trigger auto-refresh
     await act(async () => {
       jest.advanceTimersByTime(5000);
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockService.getStatus).toHaveBeenCalledTimes(2);
@@ -138,7 +138,7 @@ describe('useEngineStatus', () => {
       engine: { status: 'ready', initialized: true, rulesLoaded: 10 },
       health: { status: 'healthy', uptime: 3600, lastCheck: Date.now() },
       cache: { size: 10, maxSize: 100, hitRate: 0.95, memoryUsage: 1024 },
-      initialization: { status: 'complete', startTime: Date.now() }
+      initialization: { status: 'complete', startTime: Date.now() },
     };
 
     (mockService.getStatus as jest.Mock).mockResolvedValue(mockStatus);
@@ -147,7 +147,7 @@ describe('useEngineStatus', () => {
 
     // Wait for initial load
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockService.getStatus).toHaveBeenCalledTimes(1);
@@ -160,7 +160,7 @@ describe('useEngineStatus', () => {
     // Fast-forward time to trigger auto-refresh
     await act(async () => {
       jest.advanceTimersByTime(3000);
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockService.getStatus).toHaveBeenCalledTimes(2);
@@ -171,7 +171,7 @@ describe('useEngineStatus', () => {
       engine: { status: 'ready', initialized: true, rulesLoaded: 10 },
       health: { status: 'healthy', uptime: 3600, lastCheck: Date.now() },
       cache: { size: 10, maxSize: 100, hitRate: 0.95, memoryUsage: 1024 },
-      initialization: { status: 'complete', startTime: Date.now() }
+      initialization: { status: 'complete', startTime: Date.now() },
     };
 
     (mockService.getStatus as jest.Mock).mockResolvedValue(mockStatus);
@@ -180,7 +180,7 @@ describe('useEngineStatus', () => {
 
     // Wait for initial load
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockService.getStatus).toHaveBeenCalledTimes(1);
@@ -193,7 +193,7 @@ describe('useEngineStatus', () => {
     // Fast-forward time - should not trigger refresh
     await act(async () => {
       jest.advanceTimersByTime(2000);
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockService.getStatus).toHaveBeenCalledTimes(1); // Still only initial call
@@ -204,7 +204,7 @@ describe('useEngineStatus', () => {
       engine: { status: 'ready', initialized: true, rulesLoaded: 10 },
       health: { status: 'healthy', uptime: 3600, lastCheck: Date.now() },
       cache: { size: 10, maxSize: 100, hitRate: 0.95, memoryUsage: 1024 },
-      initialization: { status: 'complete', startTime: Date.now() }
+      initialization: { status: 'complete', startTime: Date.now() },
     };
 
     (mockService.getStatus as jest.Mock).mockResolvedValue(mockStatus);
@@ -213,7 +213,7 @@ describe('useEngineStatus', () => {
 
     // Wait for initial load
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockService.getStatus).toHaveBeenCalledTimes(1);
@@ -224,7 +224,7 @@ describe('useEngineStatus', () => {
     // Fast-forward time - should not trigger refresh after unmount
     await act(async () => {
       jest.advanceTimersByTime(1000);
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockService.getStatus).toHaveBeenCalledTimes(1); // Still only initial call
@@ -235,7 +235,7 @@ describe('useEngineStatus', () => {
       engine: { status: 'ready', initialized: true, rulesLoaded: 10 },
       health: { status: 'healthy', uptime: 3600, lastCheck: Date.now() },
       cache: { size: 10, maxSize: 100, hitRate: 0.95, memoryUsage: 1024 },
-      initialization: { status: 'complete', startTime: Date.now() }
+      initialization: { status: 'complete', startTime: Date.now() },
     };
 
     (mockService.getStatus as jest.Mock).mockResolvedValue(mockStatus);
@@ -244,7 +244,7 @@ describe('useEngineStatus', () => {
 
     // Wait for initial load
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     // Start new auto-refresh with different interval
@@ -255,7 +255,7 @@ describe('useEngineStatus', () => {
     // Fast-forward by old interval - should not trigger
     await act(async () => {
       jest.advanceTimersByTime(5000);
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockService.getStatus).toHaveBeenCalledTimes(3); // Initial + 2 calls from new interval
@@ -263,7 +263,7 @@ describe('useEngineStatus', () => {
     // Fast-forward by new interval
     await act(async () => {
       jest.advanceTimersByTime(2000);
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockService.getStatus).toHaveBeenCalledTimes(4);
@@ -274,7 +274,7 @@ describe('useEngineStatus', () => {
       engine: { status: 'ready', initialized: true, rulesLoaded: 10 },
       health: { status: 'healthy', uptime: 3600, lastCheck: Date.now() },
       cache: { size: 10, maxSize: 100, hitRate: 0.95, memoryUsage: 1024 },
-      initialization: { status: 'complete', startTime: Date.now() }
+      initialization: { status: 'complete', startTime: Date.now() },
     };
 
     (mockService.getStatus as jest.Mock).mockResolvedValue(mockStatus);
@@ -283,7 +283,7 @@ describe('useEngineStatus', () => {
 
     // Wait for initial load
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockService.getStatus).toHaveBeenCalledTimes(1);
@@ -296,7 +296,7 @@ describe('useEngineStatus', () => {
     // Fast-forward time - should not trigger refresh
     await act(async () => {
       jest.advanceTimersByTime(5000);
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockService.getStatus).toHaveBeenCalledTimes(1); // Still only initial call

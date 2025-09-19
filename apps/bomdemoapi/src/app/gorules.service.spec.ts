@@ -15,10 +15,7 @@ describe('BomDemoGoRulesService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        BomDemoGoRulesService,
-        { provide: GoRulesService, useValue: mockGoRulesService },
-      ],
+      providers: [BomDemoGoRulesService, { provide: GoRulesService, useValue: mockGoRulesService }],
     }).compile();
 
     service = module.get<BomDemoGoRulesService>(BomDemoGoRulesService);
@@ -65,18 +62,14 @@ describe('BomDemoGoRulesService', () => {
       expect(result.isValid).toBe(true);
       expect(result.recommendations).toEqual(['Consider bulk discount']);
       expect(result.errors).toEqual([]);
-      expect(goRulesService.executeRule).toHaveBeenCalledWith(
-        'bom-validation',
-        mockBomData,
-        { trace: true, timeout: 10000 }
-      );
+      expect(goRulesService.executeRule).toHaveBeenCalledWith('bom-validation', mockBomData, {
+        trace: true,
+        timeout: 10000,
+      });
     });
 
     it('should handle GoRules exceptions', async () => {
-      const goRulesError = new GoRulesException(
-        GoRulesErrorCode.RULE_NOT_FOUND,
-        'Rule not found'
-      );
+      const goRulesError = new GoRulesException(GoRulesErrorCode.RULE_NOT_FOUND, 'Rule not found');
 
       goRulesService.executeRule.mockRejectedValue(goRulesError);
 
@@ -129,11 +122,10 @@ describe('BomDemoGoRulesService', () => {
       expect(result.totalPrice).toBe(950);
       expect(result.itemPrices).toHaveLength(1);
       expect(result.appliedDiscounts).toEqual(['PREMIUM_5_PERCENT']);
-      expect(goRulesService.executeRule).toHaveBeenCalledWith(
-        'bom-pricing',
-        mockPricingData,
-        { trace: true, timeout: 15000 }
-      );
+      expect(goRulesService.executeRule).toHaveBeenCalledWith('bom-pricing', mockPricingData, {
+        trace: true,
+        timeout: 15000,
+      });
     });
   });
 
@@ -181,7 +173,7 @@ describe('BomDemoGoRulesService', () => {
       expect(goRulesService.executeRule).toHaveBeenCalledWith(
         'supplier-risk-assessment',
         mockSupplierData,
-        { trace: true, timeout: 12000 }
+        { trace: true, timeout: 12000 },
       );
     });
   });
@@ -220,7 +212,7 @@ describe('BomDemoGoRulesService', () => {
       expect(goRulesService.executeRule).toHaveBeenCalledWith(
         'approval-workflow',
         mockApprovalData,
-        { trace: true, timeout: 8000 }
+        { trace: true, timeout: 8000 },
       );
     });
   });

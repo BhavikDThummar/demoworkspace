@@ -38,7 +38,7 @@ export class SimpleRulesService {
         {
           timeout: 5000,
           trace: false,
-        }
+        },
       );
 
       this.logger.debug('Simple rule executed successfully', {
@@ -53,21 +53,17 @@ export class SimpleRulesService {
     }
   }
 
-    /**
+  /**
    * Execute a simple rule with basic error handling
    */
   async executeShippingFeesRule(input: any): Promise<any> {
     try {
       this.logger.debug('Executing Shipping Fees', { input });
 
-      const result = await this.goRulesService.executeRule<any, any>(
-        'shipping-fees',
-        input,
-        {
-          timeout: 5000,
-          trace: false,
-        }
-      );
+      const result = await this.goRulesService.executeRule<any, any>('shipping-fees', input, {
+        timeout: 5000,
+        trace: false,
+      });
 
       this.logger.debug('Shipping Fees executed successfully', {
         executionTime: result.performance.executionTime,
@@ -98,7 +94,7 @@ export class SimpleRulesService {
         {
           timeout: 10000,
           trace: true, // Enable tracing
-        }
+        },
       );
 
       this.logger.debug('Rule with tracing executed successfully', {
@@ -130,14 +126,14 @@ export class SimpleRulesService {
         throw new GoRulesException(
           GoRulesErrorCode.RULE_NOT_FOUND,
           `Rule '${ruleId}' does not exist`,
-          { ruleId }
+          { ruleId },
         );
       }
 
       // Execute the rule
       const result = await this.goRulesService.executeRule<SimpleRuleInput, SimpleRuleOutput>(
         ruleId,
-        input
+        input,
       );
 
       this.logger.debug('Rule validated and executed successfully', {
@@ -156,9 +152,16 @@ export class SimpleRulesService {
    * Execute multiple rules sequentially
    */
   async executeRulesSequentially(
-    rules: Array<{ ruleId: string; input: SimpleRuleInput }>
-  ): Promise<Array<{ ruleId: string; success: boolean; result?: SimpleRuleOutput; error?: string }>> {
-    const results: Array<{ ruleId: string; success: boolean; result?: SimpleRuleOutput; error?: string }> = [];
+    rules: Array<{ ruleId: string; input: SimpleRuleInput }>,
+  ): Promise<
+    Array<{ ruleId: string; success: boolean; result?: SimpleRuleOutput; error?: string }>
+  > {
+    const results: Array<{
+      ruleId: string;
+      success: boolean;
+      result?: SimpleRuleOutput;
+      error?: string;
+    }> = [];
 
     for (const rule of rules) {
       try {
@@ -167,7 +170,7 @@ export class SimpleRulesService {
         const result = await this.goRulesService.executeRule<SimpleRuleInput, SimpleRuleOutput>(
           rule.ruleId,
           rule.input,
-          { timeout: 8000 }
+          { timeout: 8000 },
         );
 
         results.push({
@@ -193,8 +196,8 @@ export class SimpleRulesService {
 
     this.logger.log('Sequential rules execution completed', {
       totalRules: rules.length,
-      successCount: results.filter(r => r.success).length,
-      errorCount: results.filter(r => !r.success).length,
+      successCount: results.filter((r) => r.success).length,
+      errorCount: results.filter((r) => !r.success).length,
     });
 
     return results;
@@ -206,7 +209,7 @@ export class SimpleRulesService {
   async executeRuleWithCustomTimeout(
     ruleId: string,
     input: SimpleRuleInput,
-    timeoutMs: number
+    timeoutMs: number,
   ): Promise<SimpleRuleOutput> {
     try {
       this.logger.debug('Executing rule with custom timeout', {
@@ -221,7 +224,7 @@ export class SimpleRulesService {
         {
           timeout: timeoutMs,
           trace: false,
-        }
+        },
       );
 
       this.logger.debug('Rule with custom timeout executed successfully', {
@@ -281,7 +284,10 @@ export class SimpleRulesService {
   /**
    * Demonstrate error handling patterns
    */
-  async demonstrateErrorHandling(ruleId: string, input: SimpleRuleInput): Promise<{
+  async demonstrateErrorHandling(
+    ruleId: string,
+    input: SimpleRuleInput,
+  ): Promise<{
     success: boolean;
     result?: SimpleRuleOutput;
     error?: {
@@ -296,7 +302,7 @@ export class SimpleRulesService {
 
       const result = await this.goRulesService.executeRule<SimpleRuleInput, SimpleRuleOutput>(
         ruleId,
-        input
+        input,
       );
 
       return {
@@ -371,10 +377,6 @@ export class SimpleRulesService {
       return error;
     }
 
-    return new GoRulesException(
-      GoRulesErrorCode.INTERNAL_ERROR,
-      message,
-      { originalError: error }
-    );
+    return new GoRulesException(GoRulesErrorCode.INTERNAL_ERROR, message, { originalError: error });
   }
 }

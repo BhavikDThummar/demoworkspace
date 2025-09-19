@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoRulesLoggerService } from '../logging/gorules-logger.service.js';
-import { GoRulesMetricsService, SystemMetrics, RuleExecutionMetrics } from './gorules-metrics.service.js';
+import {
+  GoRulesMetricsService,
+  SystemMetrics,
+  RuleExecutionMetrics,
+} from './gorules-metrics.service.js';
 import { GoRulesConfig } from '../config/gorules-config.interface.js';
 
 /**
@@ -44,11 +48,11 @@ export class GoRulesMonitoringService {
   constructor(
     private readonly config: GoRulesConfig,
     private readonly loggerService: GoRulesLoggerService,
-    private readonly metricsService: GoRulesMetricsService
+    private readonly metricsService: GoRulesMetricsService,
   ) {
     this.initializeDefaultAlerts();
     this.startCleanupScheduler();
-    
+
     if (this.config.enableLogging) {
       this.logger.log('GoRules Monitoring Service initialized');
     }
@@ -70,18 +74,18 @@ export class GoRulesMonitoringService {
     executionId: string,
     output: any,
     executionTime: number,
-    retryCount?: number
+    retryCount?: number,
   ): void {
     this.loggerService.logExecutionSuccess(executionId, output, retryCount);
     this.metricsService.markExecutionComplete(executionId);
     this.metricsService.recordExecutionTime(ruleId, executionTime, true);
-    
+
     if (retryCount && retryCount > 0) {
       for (let i = 0; i < retryCount; i++) {
         this.metricsService.recordRetryAttempt(ruleId);
       }
     }
-    
+
     // Check for performance alerts
     this.checkPerformanceAlerts(ruleId, executionTime);
   }
@@ -94,12 +98,12 @@ export class GoRulesMonitoringService {
     executionId: string,
     error: Error,
     executionTime: number,
-    retryCount?: number
+    retryCount?: number,
   ): void {
     this.loggerService.logExecutionError(executionId, error, retryCount);
     this.metricsService.markExecutionComplete(executionId);
     this.metricsService.recordExecutionTime(ruleId, executionTime, false);
-    
+
     if (retryCount && retryCount > 0) {
       for (let i = 0; i < retryCount; i++) {
         this.metricsService.recordRetryAttempt(ruleId);
@@ -115,7 +119,7 @@ export class GoRulesMonitoringService {
     executionId: string,
     attemptNumber: number,
     error: Error,
-    nextRetryDelay?: number
+    nextRetryDelay?: number,
   ): void {
     this.loggerService.logRetryAttempt(executionId, attemptNumber, error, nextRetryDelay);
     this.metricsService.recordRetryAttempt(ruleId);
@@ -130,11 +134,11 @@ export class GoRulesMonitoringService {
     newState: 'CLOSED' | 'OPEN' | 'HALF_OPEN',
     reason?: string,
     isFailure?: boolean,
-    nextAttemptTime?: number
+    nextAttemptTime?: number,
   ): void {
     this.loggerService.logCircuitBreakerStateChange(ruleId, oldState, newState, reason);
     this.metricsService.updateCircuitBreakerState(ruleId, newState, isFailure, nextAttemptTime);
-    
+
     // Check for circuit breaker alerts
     if (newState === 'OPEN') {
       this.checkCircuitBreakerAlerts(ruleId);
@@ -155,20 +159,20 @@ export class GoRulesMonitoringService {
     const systemMetrics = this.metricsService.getSystemMetrics();
     const uptime = Date.now() - this.startTime;
     const issues: string[] = [];
-    
+
     // Check various health indicators
     const checks = {
       memory: this.checkMemoryHealth(systemMetrics, issues),
       performance: this.checkPerformanceHealth(systemMetrics, issues),
     };
-    
+
     // Determine overall status
     let status: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
-    
+
     if (issues.length > 0) {
-      status = issues.some(issue => issue.includes('critical')) ? 'unhealthy' : 'degraded';
+      status = issues.some((issue) => issue.includes('critical')) ? 'unhealthy' : 'degraded';
     }
-    
+
     return {
       status,
       timestamp: new Date().toISOString(),
@@ -217,7 +221,7 @@ export class GoRulesMonitoringService {
    */
   addPerformanceAlert(alert: PerformanceAlert): void {
     this.performanceAlerts.push(alert);
-    
+
     if (this.config.enableLogging) {
       this.logger.log('Performance alert added', alert);
     }
@@ -229,7 +233,7 @@ export class GoRulesMonitoringService {
   removePerformanceAlert(index: number): void {
     if (index >= 0 && index < this.performanceAlerts.length) {
       const removed = this.performanceAlerts.splice(index, 1)[0];
-      
+
       if (this.config.enableLogging) {
         this.logger.log('Performance alert removed', removed);
       }
@@ -249,7 +253,7 @@ export class GoRulesMonitoringService {
   resetAllData(): void {
     this.metricsService.resetAllMetrics();
     this.loggerService.clearOldData(0); // Clear all data
-    
+
     if (this.config.enableLogging) {
       this.logger.log('All monitoring data reset');
     }
@@ -274,14 +278,14 @@ export class GoRulesMonitoringService {
       threshold: 5000,
       enabled: true,
     });
-    
+
     // Default error rate alert (10%)
     this.performanceAlerts.push({
       type: 'error_rate',
       threshold: 0.1,
       enabled: true,
     });
-    
+
     // Default memory usage alert (80%)
     this.performanceAlerts.push({
       type: 'memory_usage',
@@ -296,16 +300,17 @@ export class GoRulesMonitoringService {
   private checkPerformanceAlerts(ruleId: string, executionTime: number): void {
     for (const alert of this.performanceAlerts) {
       if (!alert.enabled) continue;
-      
-      if (alert.type === 'execution_time' && 
-          (!alert.ruleId || alert.ruleId === ruleId) &&
-          executionTime > alert.threshold) {
-        
+
+      if (
+        alert.type === 'execution_time' &&
+        (!alert.ruleId || alert.ruleId === ruleId) &&
+        executionTime > alert.threshold
+      ) {
         this.loggerService.logPerformanceWarning(
           ruleId,
           `perf-${Date.now()}`,
           executionTime,
-          alert.threshold
+          alert.threshold,
         );
       }
     }
@@ -316,9 +321,9 @@ export class GoRulesMonitoringService {
    */
   private checkCircuitBreakerAlerts(ruleId: string): void {
     const circuitBreakerAlerts = this.performanceAlerts.filter(
-      alert => alert.type === 'circuit_breaker' && alert.enabled
+      (alert) => alert.type === 'circuit_breaker' && alert.enabled,
     );
-    
+
     for (const alert of circuitBreakerAlerts) {
       if (!alert.ruleId || alert.ruleId === ruleId) {
         if (this.config.enableLogging) {
@@ -339,12 +344,12 @@ export class GoRulesMonitoringService {
       issues.push('Critical memory usage detected');
       return false;
     }
-    
+
     if (metrics.memoryUsage && metrics.memoryUsage.percentage > 80) {
       issues.push('High memory usage detected');
       return false;
     }
-    
+
     return true;
   }
 
@@ -356,12 +361,12 @@ export class GoRulesMonitoringService {
       issues.push('Critical response time detected');
       return false;
     }
-    
+
     if (metrics.averageResponseTime > 5000) {
       issues.push('High response time detected');
       return false;
     }
-    
+
     return true;
   }
 
@@ -373,7 +378,7 @@ export class GoRulesMonitoringService {
     this.cleanupInterval = setInterval(() => {
       this.metricsService.cleanupOldMetrics();
       this.loggerService.clearOldData();
-      
+
       if (this.config.enableLogging) {
         this.logger.log('Periodic cleanup completed');
       }

@@ -29,7 +29,9 @@ export class GoRulesFileConfigProvider implements GoRulesConfigProvider {
       return config;
     } catch (error) {
       this.logger.error(`Failed to load configuration from file: ${this.filePath}`, error);
-      throw new Error(`Failed to load configuration: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to load configuration: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -44,7 +46,9 @@ export class GoRulesFileConfigProvider implements GoRulesConfigProvider {
       this.logger.debug('Configuration saved successfully to file');
     } catch (error) {
       this.logger.error(`Failed to save configuration to file: ${this.filePath}`, error);
-      throw new Error(`Failed to save configuration: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to save configuration: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -108,8 +112,8 @@ export class GoRulesEnvConfigProvider implements GoRulesConfigProvider {
    */
   async exists(): Promise<boolean> {
     const requiredVars = ['API_KEY', 'PROJECT_ID'];
-    return requiredVars.every(varName => 
-      process.env[`${this.envPrefix}${varName}`] !== undefined
+    return requiredVars.every(
+      (varName) => process.env[`${this.envPrefix}${varName}`] !== undefined,
     );
   }
 
@@ -271,7 +275,7 @@ class GoRulesFileConfigWatcher implements GoRulesConfigWatcher {
 
   constructor(
     private readonly filePath: string,
-    private readonly provider: GoRulesFileConfigProvider
+    private readonly provider: GoRulesFileConfigProvider,
   ) {}
 
   /**
@@ -283,7 +287,7 @@ class GoRulesFileConfigWatcher implements GoRulesConfigWatcher {
     }
 
     this.logger.debug(`Starting file watcher for: ${this.filePath}`);
-    
+
     this.watcher = watch(this.filePath, async (eventType) => {
       if (eventType === 'change') {
         await this.handleFileChange();
@@ -339,10 +343,10 @@ class GoRulesFileConfigWatcher implements GoRulesConfigWatcher {
   private async handleFileChange(): Promise<void> {
     try {
       const newConfig = await this.provider.load();
-      
+
       if (this.lastConfig) {
         const changedKeys = this.getChangedKeys(this.lastConfig, newConfig);
-        
+
         if (changedKeys.length > 0) {
           const event: GoRulesConfigChangeEvent = {
             previous: this.lastConfig,
@@ -351,7 +355,7 @@ class GoRulesFileConfigWatcher implements GoRulesConfigWatcher {
             timestamp: new Date(),
           };
 
-          this.callbacks.forEach(callback => {
+          this.callbacks.forEach((callback) => {
             try {
               callback(event);
             } catch (error) {
@@ -377,7 +381,7 @@ class GoRulesFileConfigWatcher implements GoRulesConfigWatcher {
     for (const key of allKeys) {
       const oldValue = (oldConfig as unknown as Record<string, unknown>)[key];
       const newValue = (newConfig as unknown as Record<string, unknown>)[key];
-      
+
       if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
         changedKeys.push(key);
       }

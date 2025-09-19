@@ -21,7 +21,7 @@ describe('MinimalRuleLoaderService', () => {
       projectId: 'test-project-id',
       httpTimeout: 5000,
     };
-    
+
     service = new MinimalRuleLoaderService(config);
     mockFetch.mockClear();
   });
@@ -73,21 +73,21 @@ describe('MinimalRuleLoaderService', () => {
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
-            'Authorization': 'Bearer test-api-key',
+            Authorization: 'Bearer test-api-key',
             'Content-Type': 'application/json',
           }),
-        })
+        }),
       );
 
       expect(result.size).toBe(2);
-      
+
       const rule1 = result.get('rule-1');
       expect(rule1).toBeDefined();
       expect(rule1!.metadata.id).toBe('rule-1');
       expect(rule1!.metadata.version).toBe('1.0.0');
       expect(rule1!.metadata.tags).toEqual(['tag1', 'tag2']);
       expect(rule1!.data.toString('utf-8')).toBe('{"test": "rule1"}');
-      
+
       const rule2 = result.get('rule-2');
       expect(rule2).toBeDefined();
       expect(rule2!.metadata.id).toBe('rule-2');
@@ -105,7 +105,7 @@ describe('MinimalRuleLoaderService', () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         'https://api.gorules.io/api/v1/projects/custom-project-id/rules',
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -129,14 +129,14 @@ describe('MinimalRuleLoaderService', () => {
       });
 
       await expect(service.loadAllRules()).rejects.toThrow(MinimalGoRulesError);
-      
+
       // Reset mock for second call
       mockFetch.mockImplementationOnce(() => {
         const error = new Error('The operation was aborted');
         error.name = 'AbortError';
         return Promise.reject(error);
       });
-      
+
       await expect(service.loadAllRules()).rejects.toThrow('timed out');
     });
 
@@ -160,13 +160,13 @@ describe('MinimalRuleLoaderService', () => {
       });
 
       await expect(service.loadAllRules()).rejects.toThrow(MinimalGoRulesError);
-      
+
       // Reset mock for second call
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => invalidResponse,
       });
-      
+
       await expect(service.loadAllRules()).rejects.toThrow('Failed to parse rule response');
     });
 
@@ -204,9 +204,9 @@ describe('MinimalRuleLoaderService', () => {
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
-            'Authorization': 'Bearer test-api-key',
+            Authorization: 'Bearer test-api-key',
           }),
-        })
+        }),
       );
 
       expect(result.metadata.id).toBe('rule-1');
@@ -310,10 +310,10 @@ describe('MinimalRuleLoaderService', () => {
       mockFetch.mockRejectedValueOnce('String error');
 
       await expect(service.loadAllRules()).rejects.toThrow(MinimalGoRulesError);
-      
+
       // Reset mock for second call
       mockFetch.mockRejectedValueOnce('String error');
-      
+
       await expect(service.loadAllRules()).rejects.toThrow('Unknown error');
     });
 
@@ -347,7 +347,7 @@ describe('MinimalRuleLoaderService', () => {
 
       const result = await service.loadAllRules();
       const rule = result.get('rule-1');
-      
+
       expect(rule!.metadata.lastModified).toBe(new Date('2023-06-15T14:30:00.000Z').getTime());
     });
 
@@ -372,7 +372,7 @@ describe('MinimalRuleLoaderService', () => {
 
       const result = await service.loadAllRules();
       const rule = result.get('rule-1');
-      
+
       expect(rule?.metadata.tags).toEqual([]);
     });
   });

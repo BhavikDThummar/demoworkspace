@@ -14,7 +14,7 @@ describe('ConnectionPool', () => {
   beforeEach(() => {
     connectionPool = new ConnectionPool(
       'http://localhost:3000',
-      { 'Authorization': 'Bearer test-token' },
+      { Authorization: 'Bearer test-token' },
       {
         maxConnections: 3,
         maxRequestsPerConnection: 5,
@@ -26,9 +26,9 @@ describe('ConnectionPool', () => {
         retry: {
           maxRetries: 2,
           retryDelay: 100,
-          retryOnTimeout: true
-        }
-      }
+          retryOnTimeout: true,
+        },
+      },
     );
     mockFetch.mockClear();
   });
@@ -59,13 +59,13 @@ describe('ConnectionPool', () => {
         status: 200,
         statusText: 'OK',
         headers: new Map([['content-type', 'application/json']]),
-        text: () => Promise.resolve('{"result": "success"}')
+        text: () => Promise.resolve('{"result": "success"}'),
       };
       mockFetch.mockResolvedValueOnce(mockResponse);
 
       const response = await connectionPool.request({
         method: 'GET',
-        path: '/test'
+        path: '/test',
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
@@ -73,9 +73,9 @@ describe('ConnectionPool', () => {
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
-            'Authorization': 'Bearer test-token'
-          })
-        })
+            Authorization: 'Bearer test-token',
+          }),
+        }),
       );
 
       expect(response.status).toBe(200);
@@ -89,41 +89,43 @@ describe('ConnectionPool', () => {
         status: 404,
         statusText: 'Not Found',
         headers: new Map(),
-        text: () => Promise.resolve('Not Found')
+        text: () => Promise.resolve('Not Found'),
       };
       mockFetch.mockResolvedValueOnce(mockResponse);
 
-      await expect(connectionPool.request({
-        method: 'GET',
-        path: '/not-found'
-      })).rejects.toThrow(ConnectionPoolError);
+      await expect(
+        connectionPool.request({
+          method: 'GET',
+          path: '/not-found',
+        }),
+      ).rejects.toThrow(ConnectionPoolError);
     });
 
     it('should handle network errors', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-      await expect(connectionPool.request({
-        method: 'GET',
-        path: '/test'
-      })).rejects.toThrow(ConnectionPoolError);
+      await expect(
+        connectionPool.request({
+          method: 'GET',
+          path: '/test',
+        }),
+      ).rejects.toThrow(ConnectionPoolError);
     });
 
     it('should handle request timeout', async () => {
       jest.useFakeTimers();
-      
-      mockFetch.mockImplementationOnce(() => 
-        new Promise(resolve => setTimeout(resolve, 5000))
-      );
+
+      mockFetch.mockImplementationOnce(() => new Promise((resolve) => setTimeout(resolve, 5000)));
 
       const requestPromise = connectionPool.request({
         method: 'GET',
-        path: '/slow'
+        path: '/slow',
       });
 
       jest.advanceTimersByTime(2000);
 
       await expect(requestPromise).rejects.toThrow('timeout');
-      
+
       jest.useRealTimers();
     });
 
@@ -133,22 +135,22 @@ describe('ConnectionPool', () => {
         status: 200,
         statusText: 'OK',
         headers: new Map(),
-        text: () => Promise.resolve('{"result": "created"}')
+        text: () => Promise.resolve('{"result": "created"}'),
       };
       mockFetch.mockResolvedValueOnce(mockResponse);
 
       await connectionPool.request({
         method: 'POST',
         path: '/create',
-        body: '{"name": "test"}'
+        body: '{"name": "test"}',
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/create',
         expect.objectContaining({
           method: 'POST',
-          body: '{"name": "test"}'
-        })
+          body: '{"name": "test"}',
+        }),
       );
     });
 
@@ -158,24 +160,24 @@ describe('ConnectionPool', () => {
         status: 200,
         statusText: 'OK',
         headers: new Map(),
-        text: () => Promise.resolve('{}')
+        text: () => Promise.resolve('{}'),
       };
       mockFetch.mockResolvedValueOnce(mockResponse);
 
       await connectionPool.request({
         method: 'GET',
         path: '/test',
-        headers: { 'X-Custom': 'value' }
+        headers: { 'X-Custom': 'value' },
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/test',
         expect.objectContaining({
           headers: expect.objectContaining({
-            'Authorization': 'Bearer test-token',
-            'X-Custom': 'value'
-          })
-        })
+            Authorization: 'Bearer test-token',
+            'X-Custom': 'value',
+          }),
+        }),
       );
     });
   });
@@ -187,7 +189,7 @@ describe('ConnectionPool', () => {
         status: 200,
         statusText: 'OK',
         headers: new Map(),
-        text: () => Promise.resolve('{}')
+        text: () => Promise.resolve('{}'),
       };
       mockFetch.mockResolvedValue(mockResponse);
 
@@ -195,7 +197,7 @@ describe('ConnectionPool', () => {
       await Promise.all([
         connectionPool.request({ method: 'GET', path: '/test1' }),
         connectionPool.request({ method: 'GET', path: '/test2' }),
-        connectionPool.request({ method: 'GET', path: '/test3' })
+        connectionPool.request({ method: 'GET', path: '/test3' }),
       ]);
 
       const stats = connectionPool.getStats();
@@ -208,17 +210,17 @@ describe('ConnectionPool', () => {
         status: 200,
         statusText: 'OK',
         headers: new Map(),
-        text: () => Promise.resolve('{}')
+        text: () => Promise.resolve('{}'),
       };
-      
+
       // Create a slow response to keep connections busy
-      mockFetch.mockImplementation(() => 
-        new Promise(resolve => setTimeout(() => resolve(mockResponse), 100))
+      mockFetch.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve(mockResponse), 100)),
       );
 
       // Start more requests than max connections
       const requests = Array.from({ length: 10 }, (_, i) =>
-        connectionPool.request({ method: 'GET', path: `/test${i}` })
+        connectionPool.request({ method: 'GET', path: `/test${i}` }),
       );
 
       await Promise.all(requests);
@@ -233,7 +235,7 @@ describe('ConnectionPool', () => {
         status: 200,
         statusText: 'OK',
         headers: new Map(),
-        text: () => Promise.resolve('{}')
+        text: () => Promise.resolve('{}'),
       };
       mockFetch.mockResolvedValue(mockResponse);
 
@@ -257,12 +259,12 @@ describe('ConnectionPool', () => {
           status: 200,
           statusText: 'OK',
           headers: new Map(),
-          text: () => Promise.resolve('{}')
+          text: () => Promise.resolve('{}'),
         });
 
       const response = await connectionPool.request({
         method: 'GET',
-        path: '/test'
+        path: '/test',
       });
 
       expect(response.status).toBe(200);
@@ -272,35 +274,37 @@ describe('ConnectionPool', () => {
     it('should not retry beyond max retries', async () => {
       mockFetch.mockRejectedValue(new Error('Connection failed'));
 
-      await expect(connectionPool.request({
-        method: 'GET',
-        path: '/test'
-      })).rejects.toThrow();
+      await expect(
+        connectionPool.request({
+          method: 'GET',
+          path: '/test',
+        }),
+      ).rejects.toThrow();
 
       expect(mockFetch).toHaveBeenCalledTimes(3); // Original + 2 retries (maxRetries = 2)
     });
 
     it('should retry on timeout when configured', async () => {
       jest.useFakeTimers();
-      
+
       let callCount = 0;
       mockFetch.mockImplementation(() => {
         callCount++;
         if (callCount <= 2) {
-          return new Promise(resolve => setTimeout(resolve, 5000)); // Timeout
+          return new Promise((resolve) => setTimeout(resolve, 5000)); // Timeout
         }
         return Promise.resolve({
           ok: true,
           status: 200,
           statusText: 'OK',
           headers: new Map(),
-          text: () => Promise.resolve('{}')
+          text: () => Promise.resolve('{}'),
         });
       });
 
       const requestPromise = connectionPool.request({
         method: 'GET',
-        path: '/test'
+        path: '/test',
       });
 
       // Advance time to trigger timeouts and retries
@@ -308,7 +312,7 @@ describe('ConnectionPool', () => {
 
       const response = await requestPromise;
       expect(response.status).toBe(200);
-      
+
       jest.useRealTimers();
     });
   });
@@ -320,7 +324,7 @@ describe('ConnectionPool', () => {
         status: 200,
         statusText: 'OK',
         headers: new Map(),
-        text: () => Promise.resolve('{}')
+        text: () => Promise.resolve('{}'),
       };
       mockFetch.mockResolvedValue(mockResponse);
 
@@ -350,13 +354,13 @@ describe('ConnectionPool', () => {
   describe('cleanup', () => {
     it('should cleanup idle connections', async () => {
       jest.useFakeTimers();
-      
+
       const mockResponse = {
         ok: true,
         status: 200,
         statusText: 'OK',
         headers: new Map(),
-        text: () => Promise.resolve('{}')
+        text: () => Promise.resolve('{}'),
       };
       mockFetch.mockResolvedValue(mockResponse);
 
@@ -372,7 +376,7 @@ describe('ConnectionPool', () => {
       // Connections should be cleaned up
       const finalConnections = connectionPool.getStats().totalConnections;
       expect(finalConnections).toBeLessThan(initialConnections);
-      
+
       jest.useRealTimers();
     });
 
@@ -382,10 +386,10 @@ describe('ConnectionPool', () => {
         status: 200,
         statusText: 'OK',
         headers: new Map(),
-        text: () => Promise.resolve('{}')
+        text: () => Promise.resolve('{}'),
       };
-      mockFetch.mockImplementation(() => 
-        new Promise(resolve => setTimeout(() => resolve(mockResponse), 1000))
+      mockFetch.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve(mockResponse), 1000)),
       );
 
       // Start some requests

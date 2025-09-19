@@ -166,12 +166,7 @@ describe('GoRules Integration', () => {
       const ruleId = 'cb-integration-rule';
 
       // Simulate circuit breaker state change
-      monitoringService.updateCircuitBreakerState(
-        ruleId,
-        'CLOSED',
-        'OPEN',
-        'Integration test'
-      );
+      monitoringService.updateCircuitBreakerState(ruleId, 'CLOSED', 'OPEN', 'Integration test');
 
       const cbStats = monitoringService.getCircuitBreakerStatistics();
       expect(cbStats[ruleId]).toBeDefined();

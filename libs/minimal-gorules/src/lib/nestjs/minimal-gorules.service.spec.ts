@@ -17,13 +17,13 @@ describe('MinimalGoRulesService', () => {
     rulesLoaded: 10,
     lastUpdate: Date.now(),
     projectId: 'test-project',
-    version: '1.0.0'
+    version: '1.0.0',
   };
 
   const mockExecutionResult: MinimalExecutionResult = {
     results: new Map([['rule1', { result: 'test' }]]),
     executionTime: 50,
-    errors: new Map()
+    errors: new Map(),
   };
 
   beforeEach(async () => {
@@ -45,16 +45,16 @@ describe('MinimalGoRulesService', () => {
       getCacheStats: jest.fn(),
       reset: jest.fn(),
       getConfig: jest.fn(),
-      updateConfig: jest.fn()
+      updateConfig: jest.fn(),
     } as any;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         {
           provide: MinimalGoRulesService,
-          useFactory: () => new MinimalGoRulesService(mockEngine, false) // Disable auto-init
-        }
-      ]
+          useFactory: () => new MinimalGoRulesService(mockEngine, false), // Disable auto-init
+        },
+      ],
     }).compile();
 
     service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
@@ -85,7 +85,7 @@ describe('MinimalGoRulesService', () => {
 
       expect(mockEngine.initialize).toHaveBeenCalledWith(undefined);
       expect(result).toEqual(mockEngineStatus);
-      
+
       const status = service.getInitializationStatus();
       expect(status.initialized).toBe(true);
       expect(status.rulesLoaded).toBe(10);
@@ -96,7 +96,7 @@ describe('MinimalGoRulesService', () => {
       mockEngine.initialize.mockRejectedValue(error);
 
       await expect(service.initialize()).rejects.toThrow('Initialization failed');
-      
+
       const status = service.getInitializationStatus();
       expect(status.initialized).toBe(false);
       expect(status.error).toBe('Initialization failed');
@@ -165,7 +165,7 @@ describe('MinimalGoRulesService', () => {
     it('should execute rules with selector', async () => {
       const selector: RuleSelector = { ids: ['rule1'], mode: { type: 'parallel' } };
       const input = { test: 'data' };
-      
+
       mockEngine.execute.mockResolvedValue(mockExecutionResult);
 
       const result = await service.execute(selector, input);
@@ -178,7 +178,7 @@ describe('MinimalGoRulesService', () => {
       const ruleId = 'rule1';
       const input = { test: 'data' };
       const expectedResult = { result: 'test' };
-      
+
       mockEngine.executeRule.mockResolvedValue(expectedResult);
 
       const result = await service.executeRule(ruleId, input);
@@ -190,7 +190,7 @@ describe('MinimalGoRulesService', () => {
     it('should execute multiple rules', async () => {
       const ruleIds = ['rule1', 'rule2'];
       const input = { test: 'data' };
-      
+
       mockEngine.executeRules.mockResolvedValue(mockExecutionResult);
 
       const result = await service.executeRules(ruleIds, input);
@@ -202,7 +202,7 @@ describe('MinimalGoRulesService', () => {
     it('should execute rules by tags', async () => {
       const tags = ['tag1', 'tag2'];
       const input = { test: 'data' };
-      
+
       mockEngine.executeByTags.mockResolvedValue(mockExecutionResult);
 
       const result = await service.executeByTags(tags, input, 'sequential');
@@ -215,8 +215,9 @@ describe('MinimalGoRulesService', () => {
       const uninitializedService = new MinimalGoRulesService(mockEngine, false);
       const selector: RuleSelector = { ids: ['rule1'], mode: { type: 'parallel' } };
 
-      await expect(uninitializedService.execute(selector, {}))
-        .rejects.toThrow('Engine not initialized');
+      await expect(uninitializedService.execute(selector, {})).rejects.toThrow(
+        'Engine not initialized',
+      );
     });
   });
 
@@ -246,7 +247,9 @@ describe('MinimalGoRulesService', () => {
     });
 
     it('should get all rule metadata', async () => {
-      const allMetadata = new Map([['rule1', { id: 'rule1', version: '1.0', tags: ['test'], lastModified: Date.now() }]]);
+      const allMetadata = new Map([
+        ['rule1', { id: 'rule1', version: '1.0', tags: ['test'], lastModified: Date.now() }],
+      ]);
       mockEngine.getAllRuleMetadata.mockResolvedValue(allMetadata);
 
       const result = await service.getAllRuleMetadata();
@@ -273,7 +276,12 @@ describe('MinimalGoRulesService', () => {
     });
 
     it('should check versions', async () => {
-      const versionResult = { outdatedRules: ['rule1'], upToDateRules: ['rule2'], totalChecked: 2, checkTime: 100 };
+      const versionResult = {
+        outdatedRules: ['rule1'],
+        upToDateRules: ['rule2'],
+        totalChecked: 2,
+        checkTime: 100,
+      };
       mockEngine.checkVersions.mockResolvedValue(versionResult);
 
       const result = await service.checkVersions();
@@ -283,7 +291,12 @@ describe('MinimalGoRulesService', () => {
     });
 
     it('should refresh cache', async () => {
-      const refreshResult = { refreshedRules: ['rule1'], failedRules: new Map(), totalProcessed: 1, refreshTime: 50 };
+      const refreshResult = {
+        refreshedRules: ['rule1'],
+        failedRules: new Map(),
+        totalProcessed: 1,
+        refreshTime: 50,
+      };
       mockEngine.refreshCache.mockResolvedValue(refreshResult);
 
       const result = await service.refreshCache(['rule1']);
@@ -299,7 +312,7 @@ describe('MinimalGoRulesService', () => {
 
       expect(mockEngine.forceRefreshCache).toHaveBeenCalled();
       expect(result).toEqual(mockEngineStatus);
-      
+
       const status = service.getInitializationStatus();
       expect(status.rulesLoaded).toBe(10);
     });
@@ -328,7 +341,7 @@ describe('MinimalGoRulesService', () => {
     it('should perform health check when initialized', async () => {
       mockEngine.initialize.mockResolvedValue(mockEngineStatus);
       await service.initialize();
-      
+
       mockEngine.getStatus.mockResolvedValue(mockEngineStatus);
 
       const result = await service.healthCheck();
@@ -348,7 +361,7 @@ describe('MinimalGoRulesService', () => {
     it('should handle health check errors', async () => {
       mockEngine.initialize.mockResolvedValue(mockEngineStatus);
       await service.initialize();
-      
+
       mockEngine.getStatus.mockRejectedValue(new Error('Status error'));
 
       const result = await service.healthCheck();
@@ -362,13 +375,13 @@ describe('MinimalGoRulesService', () => {
     it('should reset engine', async () => {
       mockEngine.initialize.mockResolvedValue(mockEngineStatus);
       await service.initialize();
-      
+
       mockEngine.reset.mockResolvedValue();
 
       await service.reset();
 
       expect(mockEngine.reset).toHaveBeenCalled();
-      
+
       const status = service.getInitializationStatus();
       expect(status.initialized).toBe(false);
     });

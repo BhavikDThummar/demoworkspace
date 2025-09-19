@@ -16,11 +16,14 @@ export function RuleMetadataViewer({
   showAll = true,
   filterTags = [],
   className = '',
-  onRuleSelect
+  onRuleSelect,
 }: RuleMetadataViewerProps) {
   const service = useGoRulesContext();
-  const { loading, metadata, error, loadMetadata, filterByTags, searchRules } = useRuleMetadata(service, showAll);
-  
+  const { loading, metadata, error, loadMetadata, filterByTags, searchRules } = useRuleMetadata(
+    service,
+    showAll,
+  );
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>(filterTags);
 
@@ -59,12 +62,12 @@ export function RuleMetadataViewer({
   // Get all available tags
   const allTags = useMemo(() => {
     if (!metadata) return [];
-    
+
     const tagSet = new Set<string>();
-    Object.values(metadata).forEach(meta => {
-      meta.tags.forEach(tag => tagSet.add(tag));
+    Object.values(metadata).forEach((meta) => {
+      meta.tags.forEach((tag) => tagSet.add(tag));
     });
-    
+
     return Array.from(tagSet).sort();
   }, [metadata]);
 
@@ -73,10 +76,8 @@ export function RuleMetadataViewer({
   };
 
   const handleTagToggle = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) 
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
     );
   };
 
@@ -87,11 +88,19 @@ export function RuleMetadataViewer({
   };
 
   return (
-    <div className={`rule-metadata-viewer ${className}`} style={{ padding: '16px', border: '1px solid #ddd', borderRadius: '4px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h3 style={{ margin: 0 }}>
-          {ruleId ? `Rule: ${ruleId}` : 'Rule Metadata'}
-        </h3>
+    <div
+      className={`rule-metadata-viewer ${className}`}
+      style={{ padding: '16px', border: '1px solid #ddd', borderRadius: '4px' }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '16px',
+        }}
+      >
+        <h3 style={{ margin: 0 }}>{ruleId ? `Rule: ${ruleId}` : 'Rule Metadata'}</h3>
         <button
           onClick={loadMetadata}
           disabled={loading}
@@ -102,7 +111,7 @@ export function RuleMetadataViewer({
             border: 'none',
             borderRadius: '4px',
             cursor: loading ? 'not-allowed' : 'pointer',
-            fontSize: '12px'
+            fontSize: '12px',
           }}
         >
           {loading ? 'Loading...' : 'Refresh'}
@@ -110,7 +119,15 @@ export function RuleMetadataViewer({
       </div>
 
       {error && (
-        <div style={{ color: 'red', marginBottom: '16px', padding: '8px', backgroundColor: '#f8d7da', borderRadius: '4px' }}>
+        <div
+          style={{
+            color: 'red',
+            marginBottom: '16px',
+            padding: '8px',
+            backgroundColor: '#f8d7da',
+            borderRadius: '4px',
+          }}
+        >
           <strong>Error:</strong> {error}
         </div>
       )}
@@ -129,7 +146,7 @@ export function RuleMetadataViewer({
                 padding: '8px',
                 border: '1px solid #ddd',
                 borderRadius: '4px',
-                fontSize: '14px'
+                fontSize: '14px',
               }}
             />
           </div>
@@ -141,7 +158,7 @@ export function RuleMetadataViewer({
                 Filter by Tags:
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                {allTags.map(tag => (
+                {allTags.map((tag) => (
                   <button
                     key={tag}
                     onClick={() => handleTagToggle(tag)}
@@ -152,7 +169,7 @@ export function RuleMetadataViewer({
                       borderRadius: '12px',
                       backgroundColor: selectedTags.includes(tag) ? '#007bff' : 'white',
                       color: selectedTags.includes(tag) ? 'white' : '#333',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
                     }}
                   >
                     {tag}
@@ -191,24 +208,31 @@ export function RuleMetadataViewer({
                   borderRadius: '4px',
                   padding: '12px',
                   backgroundColor: '#f9f9f9',
-                  cursor: onRuleSelect ? 'pointer' : 'default'
+                  cursor: onRuleSelect ? 'pointer' : 'default',
                 }}
                 onClick={() => handleRuleClick(id, meta)}
               >
-                <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px', fontSize: '14px' }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'auto 1fr',
+                    gap: '8px',
+                    fontSize: '14px',
+                  }}
+                >
                   <span style={{ fontWeight: 'bold' }}>ID:</span>
                   <span style={{ fontFamily: 'monospace' }}>{id}</span>
-                  
+
                   <span style={{ fontWeight: 'bold' }}>Version:</span>
                   <span>{meta.version}</span>
-                  
+
                   <span style={{ fontWeight: 'bold' }}>Last Modified:</span>
                   <span>{formatTimestamp(meta.lastModified)}</span>
-                  
+
                   <span style={{ fontWeight: 'bold' }}>Tags:</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                     {meta.tags.length > 0 ? (
-                      meta.tags.map(tag => (
+                      meta.tags.map((tag) => (
                         <span
                           key={tag}
                           style={{
@@ -216,7 +240,7 @@ export function RuleMetadataViewer({
                             fontSize: '11px',
                             backgroundColor: '#007bff',
                             color: 'white',
-                            borderRadius: '8px'
+                            borderRadius: '8px',
                           }}
                         >
                           {tag}
@@ -234,9 +258,7 @@ export function RuleMetadataViewer({
       )}
 
       {!loading && !metadata && !error && (
-        <div style={{ textAlign: 'center', color: '#666' }}>
-          No metadata available
-        </div>
+        <div style={{ textAlign: 'center', color: '#666' }}>No metadata available</div>
       )}
     </div>
   );

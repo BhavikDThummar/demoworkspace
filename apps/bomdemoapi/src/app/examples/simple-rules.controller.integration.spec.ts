@@ -43,7 +43,7 @@ describe('SimpleRulesController (Integration)', () => {
 
     app = moduleFixture.createNestApplication();
     simpleRulesService = moduleFixture.get<SimpleRulesService>(SimpleRulesService);
-    
+
     await app.init();
   });
 
@@ -65,8 +65,7 @@ describe('SimpleRulesController (Integration)', () => {
         recommendations: ['Continue with current approach'],
       };
 
-      jest.spyOn(simpleRulesService, 'executeSimpleRule')
-        .mockResolvedValue(mockResult);
+      jest.spyOn(simpleRulesService, 'executeSimpleRule').mockResolvedValue(mockResult);
 
       const response = await request(app.getHttpServer())
         .post('/simple-rules/execute')
@@ -108,7 +107,8 @@ describe('SimpleRulesController (Integration)', () => {
     });
 
     it('should handle service errors', async () => {
-      jest.spyOn(simpleRulesService, 'executeSimpleRule')
+      jest
+        .spyOn(simpleRulesService, 'executeSimpleRule')
         .mockRejectedValue(new Error('Rule execution failed'));
 
       const response = await request(app.getHttpServer())
@@ -141,8 +141,7 @@ describe('SimpleRulesController (Integration)', () => {
         performance: { executionTime: 90, networkTime: 20, totalTime: 110 },
       };
 
-      jest.spyOn(simpleRulesService, 'executeRuleWithTracing')
-        .mockResolvedValue(mockResult);
+      jest.spyOn(simpleRulesService, 'executeRuleWithTracing').mockResolvedValue(mockResult);
 
       const response = await request(app.getHttpServer())
         .post('/simple-rules/execute-with-trace')
@@ -170,8 +169,7 @@ describe('SimpleRulesController (Integration)', () => {
         recommendations: ['Rule exists and executed'],
       };
 
-      jest.spyOn(simpleRulesService, 'validateAndExecuteRule')
-        .mockResolvedValue(mockResult);
+      jest.spyOn(simpleRulesService, 'validateAndExecuteRule').mockResolvedValue(mockResult);
 
       const response = await request(app.getHttpServer())
         .post(`/simple-rules/validate-and-execute/${ruleId}`)
@@ -183,7 +181,8 @@ describe('SimpleRulesController (Integration)', () => {
     });
 
     it('should handle rule not found', async () => {
-      jest.spyOn(simpleRulesService, 'validateAndExecuteRule')
+      jest
+        .spyOn(simpleRulesService, 'validateAndExecuteRule')
         .mockRejectedValue(new Error('Rule not found'));
 
       const response = await request(app.getHttpServer())
@@ -210,8 +209,7 @@ describe('SimpleRulesController (Integration)', () => {
         { ruleId: 'rule2', success: true, result: { result: 'success2', score: 85 } },
       ];
 
-      jest.spyOn(simpleRulesService, 'executeRulesSequentially')
-        .mockResolvedValue(mockResult);
+      jest.spyOn(simpleRulesService, 'executeRulesSequentially').mockResolvedValue(mockResult);
 
       const response = await request(app.getHttpServer())
         .post('/simple-rules/execute-sequential')
@@ -231,8 +229,7 @@ describe('SimpleRulesController (Integration)', () => {
         { ruleId: 'rule2', success: false, error: 'Rule 2 failed' },
       ];
 
-      jest.spyOn(simpleRulesService, 'executeRulesSequentially')
-        .mockResolvedValue(mockResult);
+      jest.spyOn(simpleRulesService, 'executeRulesSequentially').mockResolvedValue(mockResult);
 
       const response = await request(app.getHttpServer())
         .post('/simple-rules/execute-sequential')
@@ -260,8 +257,7 @@ describe('SimpleRulesController (Integration)', () => {
         recommendations: [],
       };
 
-      jest.spyOn(simpleRulesService, 'executeRuleWithCustomTimeout')
-        .mockResolvedValue(mockResult);
+      jest.spyOn(simpleRulesService, 'executeRuleWithCustomTimeout').mockResolvedValue(mockResult);
 
       const response = await request(app.getHttpServer())
         .post(`/simple-rules/execute-with-timeout/${ruleId}`)
@@ -301,8 +297,7 @@ describe('SimpleRulesController (Integration)', () => {
         },
       };
 
-      jest.spyOn(simpleRulesService, 'getRuleInformation')
-        .mockResolvedValue(mockInfo);
+      jest.spyOn(simpleRulesService, 'getRuleInformation').mockResolvedValue(mockInfo);
 
       const response = await request(app.getHttpServer())
         .get(`/simple-rules/info/${ruleId}`)
@@ -318,8 +313,7 @@ describe('SimpleRulesController (Integration)', () => {
         error: `Rule '${ruleId}' does not exist`,
       };
 
-      jest.spyOn(simpleRulesService, 'getRuleInformation')
-        .mockResolvedValue(mockInfo);
+      jest.spyOn(simpleRulesService, 'getRuleInformation').mockResolvedValue(mockInfo);
 
       const response = await request(app.getHttpServer())
         .get(`/simple-rules/info/${ruleId}`)
@@ -344,8 +338,7 @@ describe('SimpleRulesController (Integration)', () => {
         result: { result: 'error-demo-success', score: 88, recommendations: [] },
       };
 
-      jest.spyOn(simpleRulesService, 'demonstrateErrorHandling')
-        .mockResolvedValue(mockResult);
+      jest.spyOn(simpleRulesService, 'demonstrateErrorHandling').mockResolvedValue(mockResult);
 
       const response = await request(app.getHttpServer())
         .post(`/simple-rules/demo-error-handling/${ruleId}`)
@@ -367,8 +360,7 @@ describe('SimpleRulesController (Integration)', () => {
         },
       };
 
-      jest.spyOn(simpleRulesService, 'demonstrateErrorHandling')
-        .mockResolvedValue(mockResult);
+      jest.spyOn(simpleRulesService, 'demonstrateErrorHandling').mockResolvedValue(mockResult);
 
       const response = await request(app.getHttpServer())
         .post(`/simple-rules/demo-error-handling/${ruleId}`)
@@ -390,12 +382,9 @@ describe('SimpleRulesController (Integration)', () => {
         uptime: 60000,
       };
 
-      jest.spyOn(simpleRulesService, 'getServiceHealth')
-        .mockResolvedValue(mockHealth);
+      jest.spyOn(simpleRulesService, 'getServiceHealth').mockResolvedValue(mockHealth);
 
-      const response = await request(app.getHttpServer())
-        .get('/simple-rules/health')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/simple-rules/health').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data).toEqual(mockHealth);
@@ -409,12 +398,9 @@ describe('SimpleRulesController (Integration)', () => {
         uptime: 60000,
       };
 
-      jest.spyOn(simpleRulesService, 'getServiceHealth')
-        .mockResolvedValue(mockHealth);
+      jest.spyOn(simpleRulesService, 'getServiceHealth').mockResolvedValue(mockHealth);
 
-      const response = await request(app.getHttpServer())
-        .get('/simple-rules/health')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/simple-rules/health').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.healthy).toBe(false);
@@ -423,9 +409,7 @@ describe('SimpleRulesController (Integration)', () => {
 
   describe('GET /simple-rules/examples', () => {
     it('should return example requests', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/simple-rules/examples')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/simple-rules/examples').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.simpleRule).toBeDefined();
@@ -436,9 +420,7 @@ describe('SimpleRulesController (Integration)', () => {
 
   describe('GET /simple-rules/docs', () => {
     it('should return API documentation', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/simple-rules/docs')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/simple-rules/docs').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.endpoints).toBeDefined();
@@ -463,7 +445,8 @@ describe('SimpleRulesController (Integration)', () => {
       const specialRuleId = 'rule-with-special-chars_123';
       const validRequest = { value: 50, category: 'test' };
 
-      jest.spyOn(simpleRulesService, 'validateAndExecuteRule')
+      jest
+        .spyOn(simpleRulesService, 'validateAndExecuteRule')
         .mockResolvedValue({ result: 'success', score: 80, recommendations: [] });
 
       const response = await request(app.getHttpServer())
@@ -479,7 +462,8 @@ describe('SimpleRulesController (Integration)', () => {
     it('should handle requests without explicit content-type', async () => {
       const validRequest = { value: 42, category: 'test' };
 
-      jest.spyOn(simpleRulesService, 'executeSimpleRule')
+      jest
+        .spyOn(simpleRulesService, 'executeSimpleRule')
         .mockResolvedValue({ result: 'success', score: 85, recommendations: [] });
 
       const response = await request(app.getHttpServer())
@@ -502,20 +486,19 @@ describe('SimpleRulesController (Integration)', () => {
   describe('Rate Limiting and Performance', () => {
     it('should handle multiple concurrent requests', async () => {
       const validRequest = { value: 42, category: 'concurrent-test' };
-      
-      jest.spyOn(simpleRulesService, 'executeSimpleRule')
+
+      jest
+        .spyOn(simpleRulesService, 'executeSimpleRule')
         .mockResolvedValue({ result: 'success', score: 85, recommendations: [] });
 
       // Send 5 concurrent requests
-      const promises = Array(5).fill(null).map(() =>
-        request(app.getHttpServer())
-          .post('/simple-rules/execute')
-          .send(validRequest)
-      );
+      const promises = Array(5)
+        .fill(null)
+        .map(() => request(app.getHttpServer()).post('/simple-rules/execute').send(validRequest));
 
       const responses = await Promise.all(promises);
 
-      responses.forEach(response => {
+      responses.forEach((response) => {
         expect(response.status).toBe(201);
         expect(response.body.success).toBe(true);
       });
@@ -535,7 +518,8 @@ describe('SimpleRulesController (Integration)', () => {
     });
 
     it('should return consistent error format for service errors', async () => {
-      jest.spyOn(simpleRulesService, 'executeSimpleRule')
+      jest
+        .spyOn(simpleRulesService, 'executeSimpleRule')
         .mockRejectedValue(new Error('Service error'));
 
       const response = await request(app.getHttpServer())

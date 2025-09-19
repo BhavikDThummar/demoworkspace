@@ -3,11 +3,7 @@
  * Handles version conflicts, rollback capabilities, and automatic refresh
  */
 
-import { 
-  IRuleCacheManager, 
-  IRuleLoaderService, 
-  MinimalRuleMetadata 
-} from '../interfaces/index.js';
+import { IRuleCacheManager, IRuleLoaderService, MinimalRuleMetadata } from '../interfaces/index.js';
 import { MinimalGoRulesError, MinimalErrorCode } from '../errors/index.js';
 
 /**
@@ -28,12 +24,12 @@ export interface VersionComparisonResult {
 /**
  * Version conflict resolution strategy
  */
-export type ConflictResolutionStrategy = 
-  | 'cloud-wins'      // Always use cloud version
-  | 'local-wins'      // Keep local version
-  | 'newer-wins'      // Use version with later lastModified timestamp
-  | 'manual'          // Require manual resolution
-  | 'rollback';       // Rollback to previous version
+export type ConflictResolutionStrategy =
+  | 'cloud-wins' // Always use cloud version
+  | 'local-wins' // Keep local version
+  | 'newer-wins' // Use version with later lastModified timestamp
+  | 'manual' // Require manual resolution
+  | 'rollback'; // Rollback to previous version
 
 /**
  * Version conflict information
@@ -95,24 +91,20 @@ export class VersionManager {
     maxRetries: 3,
     retryDelay: 1000,
     createSnapshot: true,
-    validateAfterUpdate: true
+    validateAfterUpdate: true,
   };
 
-  constructor(
-    private cacheManager: IRuleCacheManager,
-    private loaderService: IRuleLoaderService
-  ) {}
+  constructor(private cacheManager: IRuleCacheManager, private loaderService: IRuleLoaderService) {}
 
   /**
    * Compare local cache versions with cloud versions
    * Provides detailed version analysis for each rule
    */
   async compareVersions(ruleIds?: string[]): Promise<VersionComparisonResult[]> {
-    
     try {
       // Get rules to check
       const rulesToCheck = ruleIds || Array.from((await this.cacheManager.getAllMetadata()).keys());
-      
+
       if (rulesToCheck.length === 0) {
         return [];
       }
@@ -134,7 +126,7 @@ export class VersionManager {
 
       // Check versions against cloud
       const cloudVersionResults = await this.loaderService.checkVersions(versionMap);
-      
+
       // Load detailed cloud metadata for comparison
       const cloudMetadata = new Map<string, MinimalRuleMetadata>();
       const rulesToLoad = Array.from(cloudVersionResults.entries())
@@ -164,7 +156,7 @@ export class VersionManager {
 
       // Build comparison results
       const results: VersionComparisonResult[] = [];
-      
+
       for (const ruleId of rulesToCheck) {
         const local = localMetadata.get(ruleId);
         const cloud = cloudMetadata.get(ruleId);
@@ -179,18 +171,17 @@ export class VersionManager {
             versionDiff: this.compareVersionStrings(local.version, cloud?.version || local.version),
             lastModified: {
               local: local.lastModified,
-              cloud: cloud?.lastModified || local.lastModified
-            }
+              cloud: cloud?.lastModified || local.lastModified,
+            },
           });
         }
       }
 
       return results;
-
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.NETWORK_ERROR,
-        `Version comparison failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Version comparison failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -205,14 +196,14 @@ export class VersionManager {
     for (const comparison of comparisons) {
       if (comparison.needsUpdate) {
         const conflictType = this.determineConflictType(comparison);
-        
+
         conflicts.push({
           ruleId: comparison.ruleId,
           localVersion: comparison.localVersion,
           cloudVersion: comparison.cloudVersion,
           localLastModified: comparison.lastModified.local,
           cloudLastModified: comparison.lastModified.cloud,
-          conflictType
+          conflictType,
         });
       }
     }
@@ -225,18 +216,18 @@ export class VersionManager {
    */
   async autoRefreshCache(
     ruleIds?: string[],
-    options: Partial<CacheInvalidationOptions> = {}
+    options: Partial<CacheInvalidationOptions> = {},
   ): Promise<VersionManagementResult> {
     const opts = { ...this.defaultOptions, ...options };
     const startTime = performance.now();
-    
+
     const result: VersionManagementResult = {
       processed: [],
       updated: [],
       conflicts: [],
       errors: new Map(),
       rollbacks: [],
-      processingTime: 0
+      processingTime: 0,
     };
 
     try {
@@ -250,18 +241,18 @@ export class VersionManager {
       }
 
       // Process conflicts in batches
-      const rulesToProcess = conflicts.map(c => c.ruleId);
-      
+      const rulesToProcess = conflicts.map((c) => c.ruleId);
+
       for (let i = 0; i < rulesToProcess.length; i += opts.batchSize) {
         const batch = rulesToProcess.slice(i, i + opts.batchSize);
-        
+
         for (const ruleId of batch) {
           result.processed.push(ruleId);
-          
+
           try {
-            const conflict = conflicts.find(c => c.ruleId === ruleId)!;
+            const conflict = conflicts.find((c) => c.ruleId === ruleId)!;
             const resolved = await this.resolveVersionConflict(conflict, opts);
-            
+
             if (resolved) {
               result.updated.push(ruleId);
             }
@@ -273,11 +264,10 @@ export class VersionManager {
 
       result.processingTime = performance.now() - startTime;
       return result;
-
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
-        `Auto refresh failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Auto refresh failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -287,18 +277,18 @@ export class VersionManager {
    */
   async invalidateRules(
     ruleIds: string[],
-    options: Partial<CacheInvalidationOptions> = {}
+    options: Partial<CacheInvalidationOptions> = {},
   ): Promise<VersionManagementResult> {
     const opts = { ...this.defaultOptions, ...options };
     const startTime = performance.now();
-    
+
     const result: VersionManagementResult = {
       processed: [],
       updated: [],
       conflicts: [],
       errors: new Map(),
       rollbacks: [],
-      processingTime: 0
+      processingTime: 0,
     };
 
     try {
@@ -316,22 +306,22 @@ export class VersionManager {
       // Process invalidation in batches
       for (let i = 0; i < ruleIds.length; i += opts.batchSize) {
         const batch = ruleIds.slice(i, i + opts.batchSize);
-        
+
         for (const ruleId of batch) {
           result.processed.push(ruleId);
-          
+
           let retries = 0;
           let success = false;
-          
+
           while (retries < opts.maxRetries && !success) {
             try {
               // Invalidate from cache
               await this.cacheManager.invalidate(ruleId);
-              
+
               // Reload from cloud
               const { data, metadata } = await this.loaderService.loadRule(ruleId);
               await this.cacheManager.set(ruleId, data, metadata);
-              
+
               // Validate if requested
               if (opts.validateAfterUpdate) {
                 const cachedData = await this.cacheManager.get(ruleId);
@@ -339,17 +329,16 @@ export class VersionManager {
                   throw new Error('Validation failed after update');
                 }
               }
-              
+
               result.updated.push(ruleId);
               success = true;
-              
             } catch (error) {
               retries++;
               if (retries >= opts.maxRetries) {
                 result.errors.set(ruleId, error as Error);
               } else {
                 // Wait before retry
-                await new Promise(resolve => setTimeout(resolve, opts.retryDelay));
+                await new Promise((resolve) => setTimeout(resolve, opts.retryDelay));
               }
             }
           }
@@ -358,11 +347,10 @@ export class VersionManager {
 
       result.processingTime = performance.now() - startTime;
       return result;
-
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
-        `Manual invalidation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Manual invalidation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -374,7 +362,7 @@ export class VersionManager {
     try {
       const data = await this.cacheManager.get(ruleId);
       const metadata = await this.cacheManager.getMetadata(ruleId);
-      
+
       if (!data || !metadata) {
         return; // Rule not in cache, nothing to snapshot
       }
@@ -385,27 +373,28 @@ export class VersionManager {
         version: metadata.version,
         data: Buffer.from(data),
         metadata: { ...metadata },
-        reason
+        reason,
       };
 
       // Get existing snapshots for this rule
       let snapshots = this.rollbackSnapshots.get(ruleId) || [];
-      
+
       // Add new snapshot
       snapshots.unshift(snapshot);
-      
+
       // Keep only the most recent snapshots
       if (snapshots.length > this.maxSnapshotsPerRule) {
         snapshots = snapshots.slice(0, this.maxSnapshotsPerRule);
       }
-      
-      this.rollbackSnapshots.set(ruleId, snapshots);
 
+      this.rollbackSnapshots.set(ruleId, snapshots);
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
-        `Failed to create rollback snapshot for rule ${ruleId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        ruleId
+        `Failed to create rollback snapshot for rule ${ruleId}: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+        ruleId,
       );
     }
   }
@@ -416,26 +405,27 @@ export class VersionManager {
   async rollbackRule(ruleId: string, snapshotIndex = 0): Promise<boolean> {
     try {
       const snapshots = this.rollbackSnapshots.get(ruleId);
-      
+
       if (!snapshots || snapshots.length <= snapshotIndex) {
         throw new Error(`No rollback snapshot available at index ${snapshotIndex}`);
       }
 
       const snapshot = snapshots[snapshotIndex];
-      
+
       // Create current snapshot before rollback
       await this.createRollbackSnapshot(ruleId, 'pre-rollback');
-      
+
       // Restore from snapshot
       await this.cacheManager.set(ruleId, snapshot.data, snapshot.metadata);
-      
-      return true;
 
+      return true;
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
-        `Rollback failed for rule ${ruleId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        ruleId
+        `Rollback failed for rule ${ruleId}: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+        ruleId,
       );
     }
   }
@@ -490,13 +480,16 @@ export class VersionManager {
       totalSnapshots,
       snapshotsByRule,
       oldestSnapshot,
-      newestSnapshot
+      newestSnapshot,
     };
   }
 
   // Private helper methods
 
-  private compareVersionStrings(version1: string, version2: string): 'major' | 'minor' | 'patch' | 'same' | 'unknown' {
+  private compareVersionStrings(
+    version1: string,
+    version2: string,
+  ): 'major' | 'minor' | 'patch' | 'same' | 'unknown' {
     if (version1 === version2) {
       return 'same';
     }
@@ -505,9 +498,12 @@ export class VersionManager {
     const v1Parts = version1.split('.').map(Number);
     const v2Parts = version2.split('.').map(Number);
 
-    if (v1Parts.length >= 3 && v2Parts.length >= 3 && 
-        v1Parts.every(n => !isNaN(n)) && v2Parts.every(n => !isNaN(n))) {
-      
+    if (
+      v1Parts.length >= 3 &&
+      v2Parts.length >= 3 &&
+      v1Parts.every((n) => !isNaN(n)) &&
+      v2Parts.every((n) => !isNaN(n))
+    ) {
       if (v1Parts[0] !== v2Parts[0]) return 'major';
       if (v1Parts[1] !== v2Parts[1]) return 'minor';
       if (v1Parts[2] !== v2Parts[2]) return 'patch';
@@ -517,28 +513,30 @@ export class VersionManager {
     return 'unknown';
   }
 
-  private determineConflictType(comparison: VersionComparisonResult): VersionConflict['conflictType'] {
+  private determineConflictType(
+    comparison: VersionComparisonResult,
+  ): VersionConflict['conflictType'] {
     if (comparison.cloudVersion === 'unknown') {
       return 'rule-deleted';
     }
-    
+
     if (comparison.versionDiff !== 'same') {
       return 'version-mismatch';
     }
-    
+
     if (comparison.lastModified.local !== comparison.lastModified.cloud) {
       return 'timestamp-conflict';
     }
-    
+
     return 'version-mismatch';
   }
 
   private async resolveVersionConflict(
-    conflict: VersionConflict, 
-    options: Required<CacheInvalidationOptions>
+    conflict: VersionConflict,
+    options: Required<CacheInvalidationOptions>,
   ): Promise<boolean> {
     const { ruleId } = conflict;
-    
+
     try {
       // Create snapshot before resolution if requested
       if (options.createSnapshot) {
@@ -548,64 +546,66 @@ export class VersionManager {
       switch (options.strategy) {
         case 'cloud-wins':
           return await this.updateRuleFromCloud(ruleId, options);
-          
+
         case 'local-wins':
           // Keep local version, no action needed
           return false;
-          
+
         case 'newer-wins':
           if (conflict.cloudLastModified > conflict.localLastModified) {
             return await this.updateRuleFromCloud(ruleId, options);
           }
           return false;
-          
+
         case 'rollback':
           return await this.rollbackRule(ruleId);
-          
+
         case 'manual':
           // Manual resolution required, don't auto-resolve
           return false;
-          
+
         default:
           throw new Error(`Unknown conflict resolution strategy: ${options.strategy}`);
       }
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
-        `Failed to resolve conflict for rule ${ruleId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        ruleId
+        `Failed to resolve conflict for rule ${ruleId}: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+        ruleId,
       );
     }
   }
 
   private async updateRuleFromCloud(
-    ruleId: string, 
-    options: Required<CacheInvalidationOptions>
+    ruleId: string,
+    options: Required<CacheInvalidationOptions>,
   ): Promise<boolean> {
     let retries = 0;
-    
+
     while (retries < options.maxRetries) {
       try {
         const { data, metadata } = await this.loaderService.loadRule(ruleId);
         await this.cacheManager.set(ruleId, data, metadata);
-        
+
         if (options.validateAfterUpdate) {
           const cachedData = await this.cacheManager.get(ruleId);
           if (!cachedData || !cachedData.equals(data)) {
             throw new Error('Validation failed after update');
           }
         }
-        
+
         return true;
       } catch (error) {
         retries++;
         if (retries >= options.maxRetries) {
           throw error;
         }
-        await new Promise(resolve => setTimeout(resolve, options.retryDelay));
+        await new Promise((resolve) => setTimeout(resolve, options.retryDelay));
       }
     }
-    
+
     return false;
   }
 }

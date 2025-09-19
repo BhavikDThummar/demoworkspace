@@ -13,7 +13,7 @@ export function basicEnvironmentExample() {
   // export GORULES_API_URL="https://api.gorules.io"
   // export GORULES_API_KEY="your-api-key"
   // export GORULES_PROJECT_ID="your-project-id"
-  
+
   try {
     const config = ConfigFactory.fromEnvironment();
     const engine = new MinimalGoRulesEngine(config);
@@ -33,9 +33,9 @@ export function developmentExample() {
     apiKey: 'dev-api-key-123',
     projectId: 'dev-project-456',
     cacheMaxSize: 200,
-    enablePerformanceMetrics: true
+    enablePerformanceMetrics: true,
   });
-  
+
   const engine = new MinimalGoRulesEngine(config);
   console.log('Development engine created with custom settings');
   return engine;
@@ -47,13 +47,13 @@ export function developmentExample() {
 export function productionExample() {
   // Environment variables should be set in production:
   // GORULES_API_KEY and GORULES_PROJECT_ID are required
-  
+
   const config = ConfigFactory.forProduction({
     cacheMaxSize: 10000, // Large cache for production
     enablePerformanceOptimizations: true,
-    enableCompression: true
+    enableCompression: true,
   });
-  
+
   const engine = new MinimalGoRulesEngine(config);
   console.log('Production engine created with optimizations enabled');
   return engine;
@@ -65,9 +65,9 @@ export function productionExample() {
 export function testingExample() {
   const config = ConfigFactory.forTesting({
     cacheMaxSize: 10, // Small cache for tests
-    httpTimeout: 500  // Fast timeout for tests
+    httpTimeout: 500, // Fast timeout for tests
   });
-  
+
   const engine = new MinimalGoRulesEngine(config);
   console.log('Test engine created with minimal settings');
   return engine;
@@ -87,14 +87,14 @@ export function manualConfigurationExample() {
     enablePerformanceOptimizations: true,
     enablePerformanceMetrics: false,
     memoryWarningThreshold: 0.75,
-    memoryCriticalThreshold: 0.9
+    memoryCriticalThreshold: 0.9,
   };
 
   // Validate before using
   const validation = ConfigFactory.validate(config);
   if (!validation.isValid) {
     console.error('Configuration validation failed:');
-    validation.errors.forEach(error => console.error(`  - ${error}`));
+    validation.errors.forEach((error) => console.error(`  - ${error}`));
     throw new Error('Invalid configuration');
   }
 
@@ -108,7 +108,7 @@ export function manualConfigurationExample() {
  */
 export function environmentSpecificExample() {
   const environment = process.env.NODE_ENV || 'development';
-  
+
   let config;
   switch (environment) {
     case 'production':
@@ -120,7 +120,7 @@ export function environmentSpecificExample() {
     default:
       config = ConfigFactory.forDevelopment();
   }
-  
+
   const engine = new MinimalGoRulesEngine(config);
   console.log(`Engine created for ${environment} environment`);
   return engine;
@@ -138,13 +138,13 @@ export function configurationWithErrorHandling() {
     return engine;
   } catch (error) {
     console.warn('Failed to load from environment, falling back to development config');
-    
+
     // Fallback to development configuration
     const config = ConfigFactory.forDevelopment({
       apiKey: 'fallback-api-key',
-      projectId: 'fallback-project-id'
+      projectId: 'fallback-project-id',
     });
-    
+
     const engine = new MinimalGoRulesEngine(config);
     console.log('Using fallback development configuration');
     return engine;

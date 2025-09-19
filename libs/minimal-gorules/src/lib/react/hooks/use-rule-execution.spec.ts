@@ -11,7 +11,7 @@ const mockService = {
   executeRule: jest.fn(),
   executeByIds: jest.fn(),
   executeByTags: jest.fn(),
-  execute: jest.fn()
+  execute: jest.fn(),
 } as unknown as ReactGoRulesService;
 
 describe('useRuleExecution', () => {
@@ -33,7 +33,7 @@ describe('useRuleExecution', () => {
     const mockResponse = {
       success: true,
       results: { result: 'test-result' },
-      executionTime: 100
+      executionTime: 100,
     };
 
     (mockService.executeRule as jest.Mock).mockResolvedValueOnce(mockResponse);
@@ -55,7 +55,7 @@ describe('useRuleExecution', () => {
   it('should handle single rule execution failure', async () => {
     const mockResponse = {
       success: false,
-      message: 'Rule execution failed'
+      message: 'Rule execution failed',
     };
 
     (mockService.executeRule as jest.Mock).mockResolvedValueOnce(mockResponse);
@@ -91,8 +91,8 @@ describe('useRuleExecution', () => {
   it('should execute rules by IDs successfully', async () => {
     const mockResponse = {
       success: true,
-      results: { 'rule1': 'result1', 'rule2': 'result2' },
-      executionTime: 150
+      results: { rule1: 'result1', rule2: 'result2' },
+      executionTime: 150,
     };
 
     (mockService.executeByIds as jest.Mock).mockResolvedValueOnce(mockResponse);
@@ -103,18 +103,22 @@ describe('useRuleExecution', () => {
       await result.current.executeByIds(['rule1', 'rule2'], { input: 'test' }, 'parallel');
     });
 
-    expect(mockService.executeByIds).toHaveBeenCalledWith(['rule1', 'rule2'], { input: 'test' }, 'parallel');
+    expect(mockService.executeByIds).toHaveBeenCalledWith(
+      ['rule1', 'rule2'],
+      { input: 'test' },
+      'parallel',
+    );
     expect(result.current.loading).toBe(false);
     expect(result.current.success).toBe(true);
-    expect(result.current.results).toEqual({ 'rule1': 'result1', 'rule2': 'result2' });
+    expect(result.current.results).toEqual({ rule1: 'result1', rule2: 'result2' });
     expect(result.current.executionTime).toBe(150);
   });
 
   it('should execute rules by tags successfully', async () => {
     const mockResponse = {
       success: true,
-      results: { 'rule1': 'result1' },
-      executionTime: 120
+      results: { rule1: 'result1' },
+      executionTime: 120,
     };
 
     (mockService.executeByTags as jest.Mock).mockResolvedValueOnce(mockResponse);
@@ -125,18 +129,22 @@ describe('useRuleExecution', () => {
       await result.current.executeByTags(['tag1', 'tag2'], { input: 'test' }, 'sequential');
     });
 
-    expect(mockService.executeByTags).toHaveBeenCalledWith(['tag1', 'tag2'], { input: 'test' }, 'sequential');
+    expect(mockService.executeByTags).toHaveBeenCalledWith(
+      ['tag1', 'tag2'],
+      { input: 'test' },
+      'sequential',
+    );
     expect(result.current.loading).toBe(false);
     expect(result.current.success).toBe(true);
-    expect(result.current.results).toEqual({ 'rule1': 'result1' });
+    expect(result.current.results).toEqual({ rule1: 'result1' });
     expect(result.current.executionTime).toBe(120);
   });
 
   it('should execute with generic request successfully', async () => {
     const mockResponse = {
       success: true,
-      results: { 'rule1': 'result1' },
-      executionTime: 180
+      results: { rule1: 'result1' },
+      executionTime: 180,
     };
 
     (mockService.execute as jest.Mock).mockResolvedValueOnce(mockResponse);
@@ -146,7 +154,7 @@ describe('useRuleExecution', () => {
     const request = {
       ruleIds: ['rule1'],
       input: { input: 'test' },
-      mode: 'mixed' as const
+      mode: 'mixed' as const,
     };
 
     await act(async () => {
@@ -156,7 +164,7 @@ describe('useRuleExecution', () => {
     expect(mockService.execute).toHaveBeenCalledWith(request);
     expect(result.current.loading).toBe(false);
     expect(result.current.success).toBe(true);
-    expect(result.current.results).toEqual({ 'rule1': 'result1' });
+    expect(result.current.results).toEqual({ rule1: 'result1' });
     expect(result.current.executionTime).toBe(180);
   });
 
@@ -170,7 +178,7 @@ describe('useRuleExecution', () => {
         results: { test: 'result' },
         executionTime: 100,
         error: 'some error',
-        success: true
+        success: true,
       });
     });
 
@@ -188,7 +196,7 @@ describe('useRuleExecution', () => {
 
   it('should set loading state during execution', async () => {
     let resolvePromise: (value: any) => void;
-    const promise = new Promise(resolve => {
+    const promise = new Promise((resolve) => {
       resolvePromise = resolve;
     });
 
@@ -209,7 +217,7 @@ describe('useRuleExecution', () => {
       resolvePromise!({
         success: true,
         results: { result: 'test' },
-        executionTime: 100
+        executionTime: 100,
       });
       await promise;
     });
@@ -221,8 +229,8 @@ describe('useRuleExecution', () => {
   it('should use default mode for executeByIds', async () => {
     const mockResponse = {
       success: true,
-      results: { 'rule1': 'result1' },
-      executionTime: 100
+      results: { rule1: 'result1' },
+      executionTime: 100,
     };
 
     (mockService.executeByIds as jest.Mock).mockResolvedValueOnce(mockResponse);
@@ -239,8 +247,8 @@ describe('useRuleExecution', () => {
   it('should use default mode for executeByTags', async () => {
     const mockResponse = {
       success: true,
-      results: { 'rule1': 'result1' },
-      executionTime: 100
+      results: { rule1: 'result1' },
+      executionTime: 100,
     };
 
     (mockService.executeByTags as jest.Mock).mockResolvedValueOnce(mockResponse);

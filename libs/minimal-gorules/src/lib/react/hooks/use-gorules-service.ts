@@ -17,6 +17,6 @@ export function useGoRulesService(config: ReactGoRulesConfig): ReactGoRulesServi
     config.apiKey,
     config.timeout,
     config.withCredentials,
-    JSON.stringify(config.headers || {})
+    JSON.stringify(config.headers || {}),
   ]);
 }

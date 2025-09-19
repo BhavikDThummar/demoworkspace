@@ -19,13 +19,13 @@ The Minimal GoRules Engine is designed for high-performance scenarios with the f
 
 ### Performance Targets
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| Rule Execution Latency | < 1ms | Per rule overhead (excluding business logic) |
-| Throughput | > 10,000 rules/sec | On modern hardware (8 cores, 16GB RAM) |
-| Memory Footprint | < 50MB | For 1000 cached rules |
-| Cache Hit Rate | > 95% | In steady-state operation |
-| Startup Time | < 2 seconds | Full initialization with 1000 rules |
+| Metric                 | Target             | Measurement                                  |
+| ---------------------- | ------------------ | -------------------------------------------- |
+| Rule Execution Latency | < 1ms              | Per rule overhead (excluding business logic) |
+| Throughput             | > 10,000 rules/sec | On modern hardware (8 cores, 16GB RAM)       |
+| Memory Footprint       | < 50MB             | For 1000 cached rules                        |
+| Cache Hit Rate         | > 95%              | In steady-state operation                    |
+| Startup Time           | < 2 seconds        | Full initialization with 1000 rules          |
 
 ### Key Performance Features
 
@@ -45,24 +45,24 @@ const config: MinimalGoRulesConfig = {
   apiUrl: 'https://api.gorules.io',
   apiKey: process.env.GORULES_API_KEY!,
   projectId: 'your-project-id',
-  
+
   // Cache optimization
-  cacheMaxSize: 5000,              // Increase for more rules
-  
+  cacheMaxSize: 5000, // Increase for more rules
+
   // Network optimization
-  httpTimeout: 10000,              // Longer timeout for stability
-  batchSize: 100,                  // Larger batches for efficiency
-  
+  httpTimeout: 10000, // Longer timeout for stability
+  batchSize: 100, // Larger batches for efficiency
+
   // Platform optimization
-  platform: 'node',                // Optimize for Node.js
-  
+  platform: 'node', // Optimize for Node.js
+
   // Enable performance features
   enablePerformanceOptimizations: true,
   enablePerformanceMetrics: true,
   enableConnectionPooling: true,
   enableRequestBatching: true,
   enableCompression: true,
-  compressionAlgorithm: 'gzip'
+  compressionAlgorithm: 'gzip',
 };
 ```
 
@@ -73,14 +73,14 @@ const highPerfConfig: MinimalGoRulesConfig = {
   apiUrl: 'https://api.gorules.io',
   apiKey: process.env.GORULES_API_KEY!,
   projectId: 'your-project-id',
-  
+
   // Aggressive caching
-  cacheMaxSize: 10000,             // Large cache for high-throughput
-  
+  cacheMaxSize: 10000, // Large cache for high-throughput
+
   // Network optimization
-  httpTimeout: 15000,              // Stable timeout
-  batchSize: 200,                  // Large batches
-  
+  httpTimeout: 15000, // Stable timeout
+  batchSize: 200, // Large batches
+
   // Performance optimizations
   enablePerformanceOptimizations: true,
   enablePerformanceMetrics: true,
@@ -88,17 +88,18 @@ const highPerfConfig: MinimalGoRulesConfig = {
   enableRequestBatching: true,
   enableCompression: true,
   compressionAlgorithm: 'gzip',
-  
+
   // Memory management
-  memoryWarningThreshold: 0.8,     // Higher threshold for performance
-  memoryCriticalThreshold: 0.9,    // Higher critical threshold
-  memoryCleanupInterval: 60000     // Less frequent cleanup
+  memoryWarningThreshold: 0.8, // Higher threshold for performance
+  memoryCriticalThreshold: 0.9, // Higher critical threshold
+  memoryCleanupInterval: 60000, // Less frequent cleanup
 };
 ```
 
 ### Environment-Specific Configurations
 
 #### Production Configuration
+
 ```typescript
 const productionConfig: MinimalGoRulesConfig = {
   // ... base config
@@ -109,21 +110,22 @@ const productionConfig: MinimalGoRulesConfig = {
   enablePerformanceMetrics: true,
   memoryWarningThreshold: 0.85,
   memoryCriticalThreshold: 0.95,
-  memoryCleanupInterval: 30000
+  memoryCleanupInterval: 30000,
 };
 ```
 
 #### Development Configuration
+
 ```typescript
 const developmentConfig: MinimalGoRulesConfig = {
   // ... base config
   cacheMaxSize: 1000,
   httpTimeout: 5000,
   batchSize: 50,
-  enablePerformanceOptimizations: false,  // Easier debugging
-  enablePerformanceMetrics: true,         // Monitor during development
+  enablePerformanceOptimizations: false, // Easier debugging
+  enablePerformanceMetrics: true, // Monitor during development
   memoryWarningThreshold: 0.7,
-  memoryCriticalThreshold: 0.85
+  memoryCriticalThreshold: 0.85,
 };
 ```
 
@@ -139,13 +141,13 @@ function calculateOptimalCacheSize(): number {
   const totalMemory = process.memoryUsage().heapTotal;
   const availableMemory = totalMemory * 0.3; // Use 30% for cache
   const avgRuleSize = 50 * 1024; // 50KB per rule (estimate)
-  
+
   return Math.floor(availableMemory / avgRuleSize);
 }
 
 const config: MinimalGoRulesConfig = {
   // ... other config
-  cacheMaxSize: calculateOptimalCacheSize()
+  cacheMaxSize: calculateOptimalCacheSize(),
 };
 ```
 
@@ -168,7 +170,11 @@ class MemoryMonitor {
       const heapTotalMB = memUsage.heapTotal / 1024 / 1024;
       const usage = heapUsedMB / heapTotalMB;
 
-      console.log(`Memory usage: ${heapUsedMB.toFixed(2)}MB / ${heapTotalMB.toFixed(2)}MB (${(usage * 100).toFixed(1)}%)`);
+      console.log(
+        `Memory usage: ${heapUsedMB.toFixed(2)}MB / ${heapTotalMB.toFixed(2)}MB (${(
+          usage * 100
+        ).toFixed(1)}%)`,
+      );
 
       // Trigger cleanup if memory usage is high
       if (usage > 0.8) {
@@ -221,7 +227,7 @@ class MemoryLeakDetector {
     if (global.gc) global.gc();
     const currentMemory = process.memoryUsage().heapUsed;
     const diff = currentMemory - this.baselineMemory;
-    
+
     this.measurements.push(diff);
     console.log(`${label}: ${(diff / 1024 / 1024).toFixed(2)}MB increase from baseline`);
 
@@ -229,7 +235,7 @@ class MemoryLeakDetector {
     if (this.measurements.length >= 5) {
       const recent = this.measurements.slice(-5);
       const isIncreasing = recent.every((val, i) => i === 0 || val > recent[i - 1]);
-      
+
       if (isIncreasing) {
         console.warn('Potential memory leak detected - memory consistently increasing');
       }
@@ -254,10 +260,10 @@ import { Agent as HttpsAgent } from 'https';
 
 const httpAgent = new HttpAgent({
   keepAlive: true,
-  maxSockets: 100,        // Max concurrent connections
-  maxFreeSockets: 10,     // Keep connections alive
-  timeout: 60000,         // Socket timeout
-  freeSocketTimeout: 30000 // Free socket timeout
+  maxSockets: 100, // Max concurrent connections
+  maxFreeSockets: 10, // Keep connections alive
+  timeout: 60000, // Socket timeout
+  freeSocketTimeout: 30000, // Free socket timeout
 });
 
 const httpsAgent = new HttpsAgent({
@@ -265,14 +271,14 @@ const httpsAgent = new HttpsAgent({
   maxSockets: 100,
   maxFreeSockets: 10,
   timeout: 60000,
-  freeSocketTimeout: 30000
+  freeSocketTimeout: 30000,
 });
 
 // Use with HTTP client
 const config = {
   // ... other config
   httpAgent,
-  httpsAgent
+  httpsAgent,
 };
 ```
 
@@ -294,7 +300,7 @@ class RequestBatcher {
   constructor(
     private engine: MinimalGoRulesEngine,
     batchSize: number = 50,
-    batchDelayMs: number = 10
+    batchDelayMs: number = 10,
   ) {
     this.batchSize = batchSize;
     this.batchDelayMs = batchDelayMs;
@@ -367,7 +373,7 @@ class CompressionOptimizer {
     const compressed = await gzipAsync(data, {
       level: 6, // Balance between compression ratio and speed
       windowBits: 15,
-      memLevel: 8
+      memLevel: 8,
     });
 
     // Only use compressed version if it's significantly smaller
@@ -403,7 +409,7 @@ class ExecutionOptimizer {
   async executeRulesOptimized<T>(
     engine: MinimalGoRulesEngine,
     ruleIds: string[],
-    input: Record<string, unknown>
+    input: Record<string, unknown>,
   ): Promise<Map<string, T>> {
     const results = new Map<string, T>();
     const errors = new Map<string, Error>();
@@ -411,7 +417,7 @@ class ExecutionOptimizer {
     // Process rules in batches to avoid overwhelming the system
     for (let i = 0; i < ruleIds.length; i += this.maxConcurrency) {
       const batch = ruleIds.slice(i, i + this.maxConcurrency);
-      
+
       const batchPromises = batch.map(async (ruleId) => {
         try {
           const result = await engine.executeRule<T>(ruleId, input);
@@ -438,11 +444,14 @@ class ExecutionOptimizer {
 ```typescript
 // Cache rule execution results for identical inputs
 class ExecutionCache {
-  private cache = new Map<string, {
-    result: any;
-    timestamp: number;
-    ttl: number;
-  }>();
+  private cache = new Map<
+    string,
+    {
+      result: any;
+      timestamp: number;
+      ttl: number;
+    }
+  >();
 
   private createKey(ruleId: string, input: Record<string, unknown>): string {
     // Create deterministic hash of input
@@ -454,7 +463,7 @@ class ExecutionCache {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
     return hash.toString(36);
@@ -464,7 +473,7 @@ class ExecutionCache {
     engine: MinimalGoRulesEngine,
     ruleId: string,
     input: Record<string, unknown>,
-    ttlMs: number = 300000 // 5 minutes
+    ttlMs: number = 300000, // 5 minutes
   ): Promise<T> {
     const key = this.createKey(ruleId, input);
     const cached = this.cache.get(key);
@@ -476,11 +485,11 @@ class ExecutionCache {
 
     // Execute rule and cache result
     const result = await engine.executeRule<T>(ruleId, input);
-    
+
     this.cache.set(key, {
       result,
       timestamp: Date.now(),
-      ttl: ttlMs
+      ttl: ttlMs,
     });
 
     return result;
@@ -498,7 +507,7 @@ class ExecutionCache {
   getStats() {
     return {
       size: this.cache.size,
-      entries: this.cache.size
+      entries: this.cache.size,
     };
   }
 }
@@ -537,7 +546,7 @@ class PerformanceBenchmark {
 
   private async benchmarkSingleRuleExecution(): Promise<void> {
     console.log('Benchmarking single rule execution...');
-    
+
     const iterations = 1000;
     const ruleId = 'benchmark-rule';
     const input = { userId: 123, amount: 100 };
@@ -560,7 +569,7 @@ class PerformanceBenchmark {
       test: 'Single Rule Execution',
       duration: durationMs,
       throughput,
-      memoryUsage: memoryIncrease
+      memoryUsage: memoryIncrease,
     });
 
     console.log(`  Duration: ${durationMs.toFixed(2)}ms`);
@@ -570,7 +579,7 @@ class PerformanceBenchmark {
 
   private async benchmarkParallelExecution(): Promise<void> {
     console.log('Benchmarking parallel execution...');
-    
+
     const ruleIds = Array.from({ length: 100 }, (_, i) => `rule-${i}`);
     const input = { userId: 123, amount: 100 };
 
@@ -590,7 +599,7 @@ class PerformanceBenchmark {
       test: 'Parallel Execution (100 rules)',
       duration: durationMs,
       throughput,
-      memoryUsage: memoryIncrease
+      memoryUsage: memoryIncrease,
     });
 
     console.log(`  Duration: ${durationMs.toFixed(2)}ms`);
@@ -600,7 +609,7 @@ class PerformanceBenchmark {
 
   private async benchmarkSequentialExecution(): Promise<void> {
     console.log('Benchmarking sequential execution...');
-    
+
     const ruleIds = Array.from({ length: 50 }, (_, i) => `rule-${i}`);
     const input = { userId: 123, amount: 100 };
 
@@ -620,7 +629,7 @@ class PerformanceBenchmark {
       test: 'Sequential Execution (50 rules)',
       duration: durationMs,
       throughput,
-      memoryUsage: memoryIncrease
+      memoryUsage: memoryIncrease,
     });
 
     console.log(`  Duration: ${durationMs.toFixed(2)}ms`);
@@ -630,7 +639,7 @@ class PerformanceBenchmark {
 
   private async benchmarkCachePerformance(): Promise<void> {
     console.log('Benchmarking cache performance...');
-    
+
     const ruleId = 'cache-test-rule';
     const input = { userId: 123 };
     const iterations = 10000;
@@ -652,7 +661,7 @@ class PerformanceBenchmark {
       test: 'Cache Performance (10k hits)',
       duration: durationMs,
       throughput,
-      memoryUsage: 0
+      memoryUsage: 0,
     });
 
     console.log(`  Duration: ${durationMs.toFixed(2)}ms`);
@@ -661,13 +670,13 @@ class PerformanceBenchmark {
 
   private async benchmarkMemoryUsage(): Promise<void> {
     console.log('Benchmarking memory usage...');
-    
+
     const initialMemory = process.memoryUsage().heapUsed;
-    
+
     // Load many rules to test memory usage
     const status = await this.engine.getStatus();
     const finalMemory = process.memoryUsage().heapUsed;
-    
+
     const memoryUsage = (finalMemory - initialMemory) / 1024 / 1024;
     const memoryPerRule = memoryUsage / status.rulesLoaded;
 
@@ -678,8 +687,8 @@ class PerformanceBenchmark {
 
   private printResults(): void {
     console.log('=== BENCHMARK RESULTS ===\n');
-    
-    this.results.forEach(result => {
+
+    this.results.forEach((result) => {
       console.log(`${result.test}:`);
       console.log(`  Duration: ${result.duration.toFixed(2)}ms`);
       console.log(`  Throughput: ${result.throughput.toFixed(0)} rules/sec`);
@@ -690,12 +699,14 @@ class PerformanceBenchmark {
     });
 
     // Performance targets check
-    const singleRuleResult = this.results.find(r => r.test === 'Single Rule Execution');
+    const singleRuleResult = this.results.find((r) => r.test === 'Single Rule Execution');
     if (singleRuleResult) {
       const avgLatency = singleRuleResult.duration / 1000; // Per rule in ms
       console.log(`Average rule latency: ${avgLatency.toFixed(3)}ms`);
       console.log(`Target met (< 1ms): ${avgLatency < 1 ? '✅' : '❌'}`);
-      console.log(`Throughput target met (> 10k/sec): ${singleRuleResult.throughput > 10000 ? '✅' : '❌'}`);
+      console.log(
+        `Throughput target met (> 10k/sec): ${singleRuleResult.throughput > 10000 ? '✅' : '❌'}`,
+      );
     }
   }
 }
@@ -719,7 +730,7 @@ class LoadTester {
   async runLoadTest(
     concurrentUsers: number,
     requestsPerUser: number,
-    ruleId: string
+    ruleId: string,
   ): Promise<void> {
     console.log(`Starting load test: ${concurrentUsers} users, ${requestsPerUser} requests each`);
 
@@ -743,17 +754,13 @@ class LoadTester {
     console.log(`  Throughput: ${throughput.toFixed(0)} requests/sec`);
   }
 
-  private async simulateUser(
-    userId: number,
-    requests: number,
-    ruleId: string
-  ): Promise<void> {
+  private async simulateUser(userId: number, requests: number, ruleId: string): Promise<void> {
     for (let i = 0; i < requests; i++) {
       try {
         await this.engine.executeRule(ruleId, {
           userId,
           requestId: i,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       } catch (error) {
         console.error(`User ${userId} request ${i} failed:`, error);
@@ -784,22 +791,19 @@ class PerformanceMonitor {
       executionTimes: [],
       errorCount: 0,
       totalExecutions: 0,
-      startTime: Date.now()
+      startTime: Date.now(),
     };
   }
 
-  async executeRuleWithMonitoring<T>(
-    ruleId: string,
-    input: Record<string, unknown>
-  ): Promise<T> {
+  async executeRuleWithMonitoring<T>(ruleId: string, input: Record<string, unknown>): Promise<T> {
     const startTime = process.hrtime.bigint();
-    
+
     try {
       const result = await this.engine.executeRule<T>(ruleId, input);
-      
+
       const endTime = process.hrtime.bigint();
       const executionTime = Number(endTime - startTime) / 1_000_000; // Convert to ms
-      
+
       this.recordExecution(executionTime);
       return result;
     } catch (error) {
@@ -831,7 +835,7 @@ class PerformanceMonitor {
         p95ExecutionTime: 0,
         p99ExecutionTime: 0,
         throughput: 0,
-        uptime
+        uptime,
       };
     }
 
@@ -847,13 +851,13 @@ class PerformanceMonitor {
       p95ExecutionTime: sorted[p95Index] || 0,
       p99ExecutionTime: sorted[p99Index] || 0,
       throughput: this.metrics.totalExecutions / (uptime / 1000),
-      uptime
+      uptime,
     };
   }
 
   printMetrics(): void {
     const metrics = this.getMetrics();
-    
+
     console.log('=== PERFORMANCE METRICS ===');
     console.log(`Total Executions: ${metrics.totalExecutions}`);
     console.log(`Error Count: ${metrics.errorCount}`);
@@ -930,14 +934,14 @@ class HealthMonitor {
     return {
       healthy: allHealthy,
       checks,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 
   async startHealthMonitoring(intervalMs: number = 30000): Promise<void> {
     setInterval(async () => {
       const health = await this.checkHealth();
-      
+
       if (!health.healthy) {
         console.warn('Health check failed:', health.checks);
       } else {
@@ -955,36 +959,40 @@ class HealthMonitor {
 #### 1. High Memory Usage
 
 **Symptoms:**
+
 - Memory usage continuously increasing
 - Out of memory errors
 - Slow garbage collection
 
 **Solutions:**
+
 ```typescript
 // Reduce cache size
 const config = {
   // ... other config
   cacheMaxSize: 1000, // Reduce from higher value
   memoryWarningThreshold: 0.7,
-  memoryCriticalThreshold: 0.85
+  memoryCriticalThreshold: 0.85,
 };
 
 // Enable more aggressive cleanup
 const memoryManager = getGlobalMemoryManager({
   warningThreshold: 0.6,
   criticalThreshold: 0.75,
-  cleanupInterval: 15000 // More frequent cleanup
+  cleanupInterval: 15000, // More frequent cleanup
 });
 ```
 
 #### 2. Slow Rule Execution
 
 **Symptoms:**
+
 - High execution latency
 - Low throughput
 - Timeouts
 
 **Solutions:**
+
 ```typescript
 // Enable performance optimizations
 const config = {
@@ -993,7 +1001,7 @@ const config = {
   enableConnectionPooling: true,
   enableRequestBatching: true,
   batchSize: 100, // Increase batch size
-  httpTimeout: 15000 // Increase timeout
+  httpTimeout: 15000, // Increase timeout
 };
 
 // Use execution caching
@@ -1004,18 +1012,20 @@ const result = await executionCache.executeWithCache(engine, ruleId, input);
 #### 3. Network Issues
 
 **Symptoms:**
+
 - Frequent network errors
 - High latency to GoRules API
 - Connection timeouts
 
 **Solutions:**
+
 ```typescript
 // Optimize network configuration
 const config = {
   // ... other config
   httpTimeout: 20000, // Increase timeout
   enableConnectionPooling: true,
-  enableCompression: true
+  enableCompression: true,
 };
 
 // Implement retry logic
@@ -1023,16 +1033,16 @@ class RetryableEngine {
   async executeRuleWithRetry<T>(
     ruleId: string,
     input: Record<string, unknown>,
-    maxRetries: number = 3
+    maxRetries: number = 3,
   ): Promise<T> {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         return await this.engine.executeRule<T>(ruleId, input);
       } catch (error) {
         if (attempt === maxRetries) throw error;
-        
+
         const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
     throw new Error('Max retries exceeded');
@@ -1043,11 +1053,13 @@ class RetryableEngine {
 #### 4. Cache Inefficiency
 
 **Symptoms:**
+
 - Low cache hit rate
 - Frequent rule reloading
 - High API usage
 
 **Solutions:**
+
 ```typescript
 // Optimize cache configuration
 const config = {
@@ -1063,7 +1075,7 @@ const cacheMonitor = {
     if (stats.hitRate) {
       console.log(`Hit rate: ${(stats.hitRate * 100).toFixed(1)}%`);
     }
-  }
+  },
 };
 
 setInterval(cacheMonitor.logCacheStats, 60000); // Log every minute
@@ -1088,10 +1100,10 @@ class PerformanceDebugger {
 
     const endTime = process.hrtime.bigint();
     const durationMs = Number(endTime - startTime) / 1_000_000;
-    
+
     console.log(`${name}: ${durationMs.toFixed(2)}ms`);
     this.timers.delete(name);
-    
+
     return durationMs;
   }
 

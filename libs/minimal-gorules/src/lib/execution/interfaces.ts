@@ -28,12 +28,12 @@ export interface ExecutionEngineConfig {
    * Maximum number of concurrent rule executions in parallel mode
    */
   maxConcurrency?: number;
-  
+
   /**
    * Timeout for individual rule execution (in milliseconds)
    */
   executionTimeout?: number;
-  
+
   /**
    * Whether to include performance metrics in results
    */
@@ -48,7 +48,7 @@ export interface EnhancedExecutionResult<T = unknown> extends MinimalExecutionRe
    * Detailed performance metrics (only included if enabled in config)
    */
   performanceMetrics?: ExecutionMetrics;
-  
+
   /**
    * Performance analysis and recommendations
    */
@@ -67,7 +67,7 @@ export interface SequentialExecutionResult<T = unknown> extends EnhancedExecutio
    * Execution state tracking (only included if enabled)
    */
   executionState?: SequentialExecutionState;
-  
+
   /**
    * Final input state after all rules (for pipeline mode)
    */
@@ -82,17 +82,17 @@ export interface ParallelExecutionOptions {
    * Maximum number of concurrent rule executions
    */
   maxConcurrency?: number;
-  
+
   /**
    * Whether to fail fast on first error or collect all errors
    */
   failFast?: boolean;
-  
+
   /**
    * Whether to include detailed performance metrics
    */
   includeMetrics?: boolean;
-  
+
   /**
    * Custom timeout for individual rules (overrides engine config)
    */
@@ -107,22 +107,22 @@ export interface SequentialExecutionOptions {
    * Whether to stop execution on first error or continue with remaining rules
    */
   stopOnError?: boolean;
-  
+
   /**
    * Whether to include detailed execution state tracking
    */
   includeStateTracking?: boolean;
-  
+
   /**
    * Whether to enable pipeline mode (each rule's output becomes next rule's input)
    */
   pipelineMode?: boolean;
-  
+
   /**
    * Custom timeout for individual rules (overrides engine config)
    */
   ruleTimeout?: number;
-  
+
   /**
    * Whether to include detailed performance metrics
    */
@@ -137,22 +137,22 @@ export interface SequentialExecutionState {
    * Current rule being executed
    */
   currentRule?: string;
-  
+
   /**
    * Rules completed successfully
    */
   completedRules: string[];
-  
+
   /**
    * Rules that failed
    */
   failedRules: string[];
-  
+
   /**
    * Current input state (for pipeline mode)
    */
   currentInput: Record<string, unknown>;
-  
+
   /**
    * Execution timeline with timestamps
    */
@@ -173,27 +173,27 @@ export interface MixedExecutionOptions {
    * Whether to stop execution on first error or continue with remaining groups
    */
   stopOnError?: boolean;
-  
+
   /**
    * Whether to include detailed execution state tracking
    */
   includeStateTracking?: boolean;
-  
+
   /**
    * Whether to enable pipeline mode between groups (each group's output becomes next group's input)
    */
   pipelineMode?: boolean;
-  
+
   /**
    * Custom timeout for individual rules (overrides engine config)
    */
   ruleTimeout?: number;
-  
+
   /**
    * Whether to include detailed performance metrics
    */
   includeMetrics?: boolean;
-  
+
   /**
    * Maximum concurrency for parallel groups
    */
@@ -208,7 +208,7 @@ export interface MixedExecutionResult<T = unknown> extends EnhancedExecutionResu
    * Execution plan used for mixed mode
    */
   executionPlan?: ExecutionPlan;
-  
+
   /**
    * Group-level execution results
    */
@@ -220,7 +220,7 @@ export interface MixedExecutionResult<T = unknown> extends EnhancedExecutionResu
     errors?: Map<string, Error>;
     executionTime: number;
   }>;
-  
+
   /**
    * Final input state after all groups (for pipeline mode)
    */
@@ -235,17 +235,17 @@ export interface ExecutionPlan {
    * Validated execution groups
    */
   groups: ValidatedExecutionGroup[];
-  
+
   /**
    * Total number of rules to execute
    */
   totalRules: number;
-  
+
   /**
    * Estimated execution time based on group modes
    */
   estimatedTime?: number;
-  
+
   /**
    * Optimization recommendations
    */
@@ -260,17 +260,17 @@ export interface ValidatedExecutionGroup {
    * Resolved rule IDs (validated to exist in cache)
    */
   ruleIds: string[];
-  
+
   /**
    * Execution mode for this group
    */
   mode: 'parallel' | 'sequential';
-  
+
   /**
    * Group index in execution order
    */
   index: number;
-  
+
   /**
    * Estimated execution time for this group
    */
@@ -284,60 +284,63 @@ export interface IMinimalExecutionEngine {
   /**
    * Core execution with rule selector
    */
-  execute<T>(selector: RuleSelector, input: Record<string, unknown>): Promise<MinimalExecutionResult<T>>;
-  
+  execute<T>(
+    selector: RuleSelector,
+    input: Record<string, unknown>,
+  ): Promise<MinimalExecutionResult<T>>;
+
   /**
    * Enhanced parallel execution with detailed metrics and options
    */
   executeParallelWithMetrics<T>(
-    ruleIds: string[], 
-    input: Record<string, unknown>, 
-    options?: ParallelExecutionOptions
+    ruleIds: string[],
+    input: Record<string, unknown>,
+    options?: ParallelExecutionOptions,
   ): Promise<EnhancedExecutionResult<T>>;
-  
+
   /**
    * Enhanced sequential execution with state tracking and pipeline mode
    */
   executeSequentialWithMetrics<T>(
-    ruleIds: string[], 
-    input: Record<string, unknown>, 
-    options?: SequentialExecutionOptions
+    ruleIds: string[],
+    input: Record<string, unknown>,
+    options?: SequentialExecutionOptions,
   ): Promise<SequentialExecutionResult<T>>;
-  
+
   /**
    * Enhanced mixed execution with complex rule orchestration
    */
   executeMixedWithMetrics<T>(
-    groups: ExecutionGroup[], 
-    input: Record<string, unknown>, 
-    options?: MixedExecutionOptions
+    groups: ExecutionGroup[],
+    input: Record<string, unknown>,
+    options?: MixedExecutionOptions,
   ): Promise<MixedExecutionResult<T>>;
-  
+
   /**
    * Single rule execution
    */
   executeRule<T>(ruleId: string, input: Record<string, unknown>): Promise<T>;
-  
+
   /**
    * Validate rule existence and structure
    */
   validateRule(ruleId: string): Promise<boolean>;
-  
+
   /**
    * Validate and optimize execution groups for mixed mode
    */
   validateExecutionGroups(groups: ExecutionGroup[]): Promise<ExecutionPlan>;
-  
+
   /**
    * Get execution engine configuration
    */
   getConfig(): ExecutionEngineConfig;
-  
+
   /**
    * Update execution engine configuration
    */
   updateConfig(config: Partial<ExecutionEngineConfig>): void;
-  
+
   /**
    * Get performance metrics for the last execution (if enabled)
    */

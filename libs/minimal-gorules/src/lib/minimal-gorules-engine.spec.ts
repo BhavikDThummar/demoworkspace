@@ -3,7 +3,12 @@
  * Tests complete engine functionality with all components
  */
 
-import { MinimalGoRulesEngine, EngineStatus, VersionCheckResult, CacheRefreshResult } from './minimal-gorules-engine.js';
+import {
+  MinimalGoRulesEngine,
+  EngineStatus,
+  VersionCheckResult,
+  CacheRefreshResult,
+} from './minimal-gorules-engine.js';
 import { MinimalGoRulesConfig, RuleSelector, MinimalRuleMetadata } from './interfaces/index.js';
 import { MinimalGoRulesError, MinimalErrorCode } from './errors/index.js';
 
@@ -13,11 +18,11 @@ global.fetch = mockFetch;
 
 // Mock ZenEngine
 const mockZenEngine = {
-  evaluate: jest.fn()
+  evaluate: jest.fn(),
 };
 
 jest.mock('@gorules/zen-engine', () => ({
-  ZenEngine: jest.fn().mockImplementation(() => mockZenEngine)
+  ZenEngine: jest.fn().mockImplementation(() => mockZenEngine),
 }));
 
 // Mock rule data for testing
@@ -28,15 +33,15 @@ const mockRuleData = {
     version: '1.0.0',
     tags: ['test', 'validation'],
     lastModified: '2024-01-01T00:00:00Z',
-    content: Buffer.from(JSON.stringify({
-      kind: 'DecisionTable',
-      hitPolicy: 'first',
-      inputs: [{ field: 'input', type: 'string' }],
-      outputs: [{ field: 'output', type: 'string' }],
-      rules: [
-        { input: 'test', output: 'success' }
-      ]
-    })).toString('base64')
+    content: Buffer.from(
+      JSON.stringify({
+        kind: 'DecisionTable',
+        hitPolicy: 'first',
+        inputs: [{ field: 'input', type: 'string' }],
+        outputs: [{ field: 'output', type: 'string' }],
+        rules: [{ input: 'test', output: 'success' }],
+      }),
+    ).toString('base64'),
   },
   'rule-2': {
     id: 'rule-2',
@@ -44,15 +49,15 @@ const mockRuleData = {
     version: '1.0.0',
     tags: ['test', 'calculation'],
     lastModified: '2024-01-01T00:00:00Z',
-    content: Buffer.from(JSON.stringify({
-      kind: 'DecisionTable',
-      hitPolicy: 'first',
-      inputs: [{ field: 'value', type: 'number' }],
-      outputs: [{ field: 'result', type: 'number' }],
-      rules: [
-        { value: 10, result: 20 }
-      ]
-    })).toString('base64')
+    content: Buffer.from(
+      JSON.stringify({
+        kind: 'DecisionTable',
+        hitPolicy: 'first',
+        inputs: [{ field: 'value', type: 'number' }],
+        outputs: [{ field: 'result', type: 'number' }],
+        rules: [{ value: 10, result: 20 }],
+      }),
+    ).toString('base64'),
   },
   'rule-3': {
     id: 'rule-3',
@@ -60,16 +65,19 @@ const mockRuleData = {
     version: '2.0.0',
     tags: ['calculation', 'advanced'],
     lastModified: '2024-01-02T00:00:00Z',
-    content: Buffer.from(JSON.stringify({
-      kind: 'DecisionTable',
-      hitPolicy: 'first',
-      inputs: [{ field: 'x', type: 'number' }, { field: 'y', type: 'number' }],
-      outputs: [{ field: 'sum', type: 'number' }],
-      rules: [
-        { x: 5, y: 3, sum: 8 }
-      ]
-    })).toString('base64')
-  }
+    content: Buffer.from(
+      JSON.stringify({
+        kind: 'DecisionTable',
+        hitPolicy: 'first',
+        inputs: [
+          { field: 'x', type: 'number' },
+          { field: 'y', type: 'number' },
+        ],
+        outputs: [{ field: 'sum', type: 'number' }],
+        rules: [{ x: 5, y: 3, sum: 8 }],
+      }),
+    ).toString('base64'),
+  },
 };
 
 // Test configuration
@@ -79,7 +87,7 @@ const testConfig: MinimalGoRulesConfig = {
   projectId: 'test-project',
   cacheMaxSize: 100,
   httpTimeout: 5000,
-  batchSize: 10
+  batchSize: 10,
 };
 
 describe('MinimalGoRulesEngine', () => {
@@ -87,7 +95,7 @@ describe('MinimalGoRulesEngine', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Setup default ZenEngine mock behavior
     mockZenEngine.evaluate.mockImplementation(async (ruleId: string, input: any) => {
       // Return mock results based on rule ID
@@ -102,26 +110,36 @@ describe('MinimalGoRulesEngine', () => {
           throw new Error(`Rule not found: ${ruleId}`);
       }
     });
-    
+
     engine = new MinimalGoRulesEngine(testConfig);
   });
 
   describe('Configuration Validation', () => {
     it('should validate required configuration fields', () => {
-      expect(() => new MinimalGoRulesEngine({} as MinimalGoRulesConfig)).toThrow(MinimalGoRulesError);
-      expect(() => new MinimalGoRulesEngine({ apiUrl: '', apiKey: '', projectId: '' })).toThrow(MinimalGoRulesError);
+      expect(() => new MinimalGoRulesEngine({} as MinimalGoRulesConfig)).toThrow(
+        MinimalGoRulesError,
+      );
+      expect(() => new MinimalGoRulesEngine({ apiUrl: '', apiKey: '', projectId: '' })).toThrow(
+        MinimalGoRulesError,
+      );
     });
 
     it('should validate numeric configuration values', () => {
-      expect(() => new MinimalGoRulesEngine({
-        ...testConfig,
-        cacheMaxSize: -1
-      })).toThrow(MinimalGoRulesError);
+      expect(
+        () =>
+          new MinimalGoRulesEngine({
+            ...testConfig,
+            cacheMaxSize: -1,
+          }),
+      ).toThrow(MinimalGoRulesError);
 
-      expect(() => new MinimalGoRulesEngine({
-        ...testConfig,
-        httpTimeout: 0
-      })).toThrow(MinimalGoRulesError);
+      expect(
+        () =>
+          new MinimalGoRulesEngine({
+            ...testConfig,
+            httpTimeout: 0,
+          }),
+      ).toThrow(MinimalGoRulesError);
     });
 
     it('should accept valid configuration', () => {
@@ -135,8 +153,8 @@ describe('MinimalGoRulesEngine', () => {
       mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
-          rules: Object.values(mockRuleData)
-        })
+          rules: Object.values(mockRuleData),
+        }),
       });
     });
 
@@ -174,7 +192,7 @@ describe('MinimalGoRulesEngine', () => {
       expect(status.projectId).toBe('different-project');
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('/projects/different-project/rules'),
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -184,8 +202,8 @@ describe('MinimalGoRulesEngine', () => {
       mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
-          rules: Object.values(mockRuleData)
-        })
+          rules: Object.values(mockRuleData),
+        }),
       });
       await engine.initialize();
     });
@@ -198,7 +216,7 @@ describe('MinimalGoRulesEngine', () => {
     it('should execute multiple rules in parallel', async () => {
       const selector: RuleSelector = {
         ids: ['rule-1', 'rule-2'],
-        mode: { type: 'parallel' }
+        mode: { type: 'parallel' },
       };
 
       const result = await engine.execute(selector, { input: 'test', value: 10 });
@@ -212,7 +230,7 @@ describe('MinimalGoRulesEngine', () => {
     it('should execute rules in sequential mode', async () => {
       const selector: RuleSelector = {
         ids: ['rule-1', 'rule-2'],
-        mode: { type: 'sequential' }
+        mode: { type: 'sequential' },
       };
 
       const result = await engine.execute(selector, { input: 'test', value: 10 });
@@ -237,16 +255,16 @@ describe('MinimalGoRulesEngine', () => {
           type: 'mixed',
           groups: [
             { rules: ['rule-1'], mode: 'sequential' },
-            { rules: ['rule-2', 'rule-3'], mode: 'parallel' }
-          ]
-        }
+            { rules: ['rule-2', 'rule-3'], mode: 'parallel' },
+          ],
+        },
       };
 
-      const result = await engine.execute(selector, { 
-        input: 'test', 
-        value: 10, 
-        x: 5, 
-        y: 3 
+      const result = await engine.execute(selector, {
+        input: 'test',
+        value: 10,
+        x: 5,
+        y: 3,
       });
 
       expect(result.results.size).toBe(3);
@@ -272,7 +290,7 @@ describe('MinimalGoRulesEngine', () => {
 
       const selector: RuleSelector = {
         ids: ['rule-1'], // This rule exists but will cause execution error
-        mode: { type: 'parallel' }
+        mode: { type: 'parallel' },
       };
 
       const result = await engine.execute(selector, {});
@@ -288,7 +306,9 @@ describe('MinimalGoRulesEngine', () => {
     it('should require initialization before execution', async () => {
       const uninitializedEngine = new MinimalGoRulesEngine(testConfig);
 
-      await expect(uninitializedEngine.executeRule('rule-1', {})).rejects.toThrow(MinimalGoRulesError);
+      await expect(uninitializedEngine.executeRule('rule-1', {})).rejects.toThrow(
+        MinimalGoRulesError,
+      );
     });
   });
 
@@ -297,16 +317,16 @@ describe('MinimalGoRulesEngine', () => {
       mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
-          rules: Object.values(mockRuleData)
-        })
+          rules: Object.values(mockRuleData),
+        }),
       });
       await engine.initialize();
     });
 
     it('should execute multiple rules by IDs', async () => {
-      const result = await engine.executeRules(['rule-1', 'rule-2'], { 
-        input: 'test', 
-        value: 10 
+      const result = await engine.executeRules(['rule-1', 'rule-2'], {
+        input: 'test',
+        value: 10,
       });
 
       expect(result.results.size).toBe(2);
@@ -316,7 +336,11 @@ describe('MinimalGoRulesEngine', () => {
 
     it('should execute rules by tags with different modes', async () => {
       const parallelResult = await engine.executeByTags(['test'], { input: 'test' }, 'parallel');
-      const sequentialResult = await engine.executeByTags(['test'], { input: 'test' }, 'sequential');
+      const sequentialResult = await engine.executeByTags(
+        ['test'],
+        { input: 'test' },
+        'sequential',
+      );
 
       expect(parallelResult.results.size).toBe(sequentialResult.results.size);
       expect(parallelResult.results.size).toBeGreaterThan(0);
@@ -328,8 +352,8 @@ describe('MinimalGoRulesEngine', () => {
       mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
-          rules: Object.values(mockRuleData)
-        })
+          rules: Object.values(mockRuleData),
+        }),
       });
       await engine.initialize();
     });
@@ -342,9 +366,9 @@ describe('MinimalGoRulesEngine', () => {
           rules: [
             { ...mockRuleData['rule-1'], version: '1.1.0' }, // Updated version
             mockRuleData['rule-2'], // Same version
-            mockRuleData['rule-3']  // Same version
-          ]
-        })
+            mockRuleData['rule-3'], // Same version
+          ],
+        }),
       });
 
       const versionCheck = await engine.checkVersions();
@@ -360,7 +384,7 @@ describe('MinimalGoRulesEngine', () => {
       // Mock individual rule refresh - note the API endpoint for individual rules
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ ...mockRuleData['rule-1'], version: '1.1.0' })
+        json: async () => ({ ...mockRuleData['rule-1'], version: '1.1.0' }),
       });
 
       const refreshResult = await engine.refreshCache(['rule-1']);
@@ -395,8 +419,8 @@ describe('MinimalGoRulesEngine', () => {
       mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
-          rules: Object.values(mockRuleData)
-        })
+          rules: Object.values(mockRuleData),
+        }),
       });
       await engine.initialize();
     });
@@ -453,8 +477,8 @@ describe('MinimalGoRulesEngine', () => {
       mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
-          rules: Object.values(mockRuleData)
-        })
+          rules: Object.values(mockRuleData),
+        }),
       });
 
       await engine.initialize();
@@ -499,8 +523,8 @@ describe('MinimalGoRulesEngine', () => {
       mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
-          rules: Object.values(mockRuleData)
-        })
+          rules: Object.values(mockRuleData),
+        }),
       });
       await engine.initialize();
     });
@@ -531,7 +555,7 @@ describe('MinimalGoRulesEngine', () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 401,
-        statusText: 'Unauthorized'
+        statusText: 'Unauthorized',
       });
 
       await expect(engine.initialize()).rejects.toThrow(MinimalGoRulesError);
@@ -541,8 +565,8 @@ describe('MinimalGoRulesEngine', () => {
       mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
-          rules: Object.values(mockRuleData)
-        })
+          rules: Object.values(mockRuleData),
+        }),
       });
 
       await engine.initialize();
@@ -566,11 +590,11 @@ describe('MinimalGoRulesEngine', () => {
       // Test with valid selector but rule that will cause execution error
       const selector: RuleSelector = {
         ids: ['rule-1'], // This will trigger the error mock
-        mode: { type: 'parallel' }
+        mode: { type: 'parallel' },
       };
 
       const result = await engine.execute(selector, {});
-      
+
       expect(result.results.size).toBe(0);
       expect(result.errors).toBeDefined();
       expect(result.errors!.size).toBeGreaterThan(0);
@@ -582,15 +606,15 @@ describe('MinimalGoRulesEngine', () => {
       mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
-          rules: Object.values(mockRuleData)
-        })
+          rules: Object.values(mockRuleData),
+        }),
       });
       await engine.initialize();
     });
 
     it('should handle concurrent executions', async () => {
       const promises = Array.from({ length: 10 }, (_, i) =>
-        engine.executeRule('rule-1', { input: `test-${i}` })
+        engine.executeRule('rule-1', { input: `test-${i}` }),
       );
 
       const results = await Promise.all(promises);
@@ -598,9 +622,9 @@ describe('MinimalGoRulesEngine', () => {
     });
 
     it('should measure execution time', async () => {
-      const result = await engine.executeRules(['rule-1', 'rule-2'], { 
-        input: 'test', 
-        value: 10 
+      const result = await engine.executeRules(['rule-1', 'rule-2'], {
+        input: 'test',
+        value: 10,
       });
 
       expect(result.executionTime).toBeGreaterThan(0);
@@ -611,12 +635,12 @@ describe('MinimalGoRulesEngine', () => {
       const manyRules = Array.from({ length: 50 }, (_, i) => ({
         ...mockRuleData['rule-1'],
         id: `rule-${i}`,
-        name: `Test Rule ${i}`
+        name: `Test Rule ${i}`,
       }));
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ rules: manyRules })
+        json: async () => ({ rules: manyRules }),
       });
 
       // Update ZenEngine mock to handle the new rule IDs
@@ -632,7 +656,7 @@ describe('MinimalGoRulesEngine', () => {
 
       expect(status.rulesLoaded).toBe(50);
 
-      const ruleIds = manyRules.map(rule => rule.id);
+      const ruleIds = manyRules.map((rule) => rule.id);
       const result = await newEngine.executeRules(ruleIds.slice(0, 10), { input: 'test' });
 
       expect(result.results.size).toBe(10);

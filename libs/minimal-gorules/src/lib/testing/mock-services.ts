@@ -3,7 +3,11 @@
  * Provides realistic mock implementations for all external services
  */
 
-import { IRuleLoaderService, MinimalRuleMetadata, MinimalGoRulesConfig } from '../interfaces/index.js';
+import {
+  IRuleLoaderService,
+  MinimalRuleMetadata,
+  MinimalGoRulesConfig,
+} from '../interfaces/index.js';
 import { MinimalGoRulesError } from '../errors/minimal-errors.js';
 
 /**
@@ -32,7 +36,7 @@ export class MockRuleLoaderService implements IRuleLoaderService {
     options: {
       networkDelay?: number;
       failureRate?: number;
-    } = {}
+    } = {},
   ) {
     this.networkDelay = options.networkDelay || 0;
     this.failureRate = options.failureRate || 0;
@@ -44,7 +48,7 @@ export class MockRuleLoaderService implements IRuleLoaderService {
         id: mockRule.id,
         version: mockRule.version,
         tags: mockRule.tags,
-        lastModified: (mockRule.lastModified || new Date()).getTime()
+        lastModified: (mockRule.lastModified || new Date()).getTime(),
       };
       this.rules.set(mockRule.id, { data, metadata });
     }
@@ -59,7 +63,7 @@ export class MockRuleLoaderService implements IRuleLoaderService {
       id: mockRule.id,
       version: mockRule.version,
       tags: mockRule.tags,
-      lastModified: (mockRule.lastModified || new Date()).getTime()
+      lastModified: (mockRule.lastModified || new Date()).getTime(),
     };
     this.rules.set(mockRule.id, { data, metadata });
   }
@@ -94,7 +98,7 @@ export class MockRuleLoaderService implements IRuleLoaderService {
    */
   private async simulateDelay(): Promise<void> {
     if (this.networkDelay > 0) {
-      await new Promise(resolve => setTimeout(resolve, this.networkDelay));
+      await new Promise((resolve) => setTimeout(resolve, this.networkDelay));
     }
   }
 
@@ -112,7 +116,9 @@ export class MockRuleLoaderService implements IRuleLoaderService {
     }
   }
 
-  async loadAllRules(projectId?: string): Promise<Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>> {
+  async loadAllRules(
+    projectId?: string,
+  ): Promise<Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>> {
     await this.simulateDelay();
     this.checkForFailure();
 
@@ -136,7 +142,7 @@ export class MockRuleLoaderService implements IRuleLoaderService {
     this.checkForFailure();
 
     const results = new Map<string, boolean>();
-    
+
     for (const [ruleId, currentVersion] of rules) {
       const rule = this.rules.get(ruleId);
       if (rule) {
@@ -162,10 +168,12 @@ export class MockZenEngine {
   private executionDelay: number;
   private failureRate: number;
 
-  constructor(options: {
-    executionDelay?: number;
-    failureRate?: number;
-  } = {}) {
+  constructor(
+    options: {
+      executionDelay?: number;
+      failureRate?: number;
+    } = {},
+  ) {
     this.executionDelay = options.executionDelay || 0;
     this.failureRate = options.failureRate || 0;
   }
@@ -180,14 +188,17 @@ export class MockZenEngine {
   /**
    * Mock evaluate method
    */
-  async evaluate(ruleId: string, input: Record<string, unknown>): Promise<{
+  async evaluate(
+    ruleId: string,
+    input: Record<string, unknown>,
+  ): Promise<{
     result: unknown;
     performance: string;
     trace?: Record<string, unknown>;
   }> {
     // Simulate execution delay
     if (this.executionDelay > 0) {
-      await new Promise(resolve => setTimeout(resolve, this.executionDelay));
+      await new Promise((resolve) => setTimeout(resolve, this.executionDelay));
     }
 
     // Simulate random failures
@@ -202,11 +213,11 @@ export class MockZenEngine {
 
     // Simple mock evaluation logic
     const result = this.mockEvaluateRule(ruleContent, input);
-    
+
     return {
       result,
       performance: `${this.executionDelay || Math.random() * 10 + 1}ms`,
-      trace: { ruleId, input, timestamp: Date.now() }
+      trace: { ruleId, input, timestamp: Date.now() },
     };
   }
 
@@ -214,22 +225,24 @@ export class MockZenEngine {
    * Simple mock rule evaluation
    */
   private mockEvaluateRule(rule: Record<string, unknown>, input: Record<string, unknown>): unknown {
-    const conditions = rule.conditions as Array<{
-      field: string;
-      operator: string;
-      value: unknown;
-    }> || [];
+    const conditions =
+      (rule.conditions as Array<{
+        field: string;
+        operator: string;
+        value: unknown;
+      }>) || [];
 
-    const actions = rule.actions as Array<{
-      type: string;
-      field?: string;
-      value?: unknown;
-    }> || [];
+    const actions =
+      (rule.actions as Array<{
+        type: string;
+        field?: string;
+        value?: unknown;
+      }>) || [];
 
     // Check conditions
-    const conditionsMet = conditions.every(condition => {
+    const conditionsMet = conditions.every((condition) => {
       const inputValue = input[condition.field];
-      
+
       switch (condition.operator) {
         case 'eq':
           return inputValue === condition.value;
@@ -255,7 +268,7 @@ export class MockZenEngine {
     // Execute actions if conditions are met
     if (conditionsMet) {
       const result: Record<string, unknown> = { ...input };
-      
+
       for (const action of actions) {
         switch (action.type) {
           case 'set':
@@ -274,13 +287,13 @@ export class MockZenEngine {
               if (Array.isArray(current)) {
                 current.push(action.value);
               } else {
-                result[action.field] = [current, action.value].filter(v => v !== undefined);
+                result[action.field] = [current, action.value].filter((v) => v !== undefined);
               }
             }
             break;
         }
       }
-      
+
       return result;
     }
 
@@ -296,24 +309,23 @@ export class MockDataFactory {
   /**
    * Create mock rules for testing
    */
-  static createMockRules(count: number, options: {
-    tagGroups?: string[];
-    versionRange?: [string, string];
-    complexityLevel?: 'simple' | 'medium' | 'complex';
-  } = {}): MockRuleData[] {
+  static createMockRules(
+    count: number,
+    options: {
+      tagGroups?: string[];
+      versionRange?: [string, string];
+      complexityLevel?: 'simple' | 'medium' | 'complex';
+    } = {},
+  ): MockRuleData[] {
     const {
       tagGroups = ['validation', 'scoring', 'approval'],
       versionRange = ['1.0.0', '2.0.0'],
-      complexityLevel = 'medium'
+      complexityLevel = 'medium',
     } = options;
 
     return Array.from({ length: count }, (_, i) => {
       const ruleId = `mock-rule-${i + 1}`;
-      const tags = [
-        tagGroups[i % tagGroups.length],
-        `group-${Math.floor(i / 5)}`,
-        'test'
-      ];
+      const tags = [tagGroups[i % tagGroups.length], `group-${Math.floor(i / 5)}`, 'test'];
 
       const version = this.generateVersion(versionRange);
       const content = this.generateRuleContent(ruleId, complexityLevel);
@@ -324,7 +336,7 @@ export class MockDataFactory {
         version,
         tags,
         content,
-        lastModified: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000) // Random date within last 30 days
+        lastModified: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000), // Random date within last 30 days
       };
     });
   }
@@ -335,33 +347,36 @@ export class MockDataFactory {
   private static generateVersion([min, max]: [string, string]): string {
     const minParts = min.split('.').map(Number);
     const maxParts = max.split('.').map(Number);
-    
+
     const major = minParts[0] + Math.floor(Math.random() * (maxParts[0] - minParts[0] + 1));
     const minor = Math.floor(Math.random() * 10);
     const patch = Math.floor(Math.random() * 10);
-    
+
     return `${major}.${minor}.${patch}`;
   }
 
   /**
    * Generate rule content based on complexity level
    */
-  private static generateRuleContent(ruleId: string, complexity: 'simple' | 'medium' | 'complex'): Record<string, unknown> {
+  private static generateRuleContent(
+    ruleId: string,
+    complexity: 'simple' | 'medium' | 'complex',
+  ): Record<string, unknown> {
     const baseConditions = [
       { field: 'age', operator: 'gte', value: 18 },
-      { field: 'income', operator: 'gt', value: 30000 }
+      { field: 'income', operator: 'gt', value: 30000 },
     ];
 
     const baseActions = [
       { type: 'set', field: 'eligible', value: true },
-      { type: 'set', field: 'processedBy', value: ruleId }
+      { type: 'set', field: 'processedBy', value: ruleId },
     ];
 
     switch (complexity) {
       case 'simple':
         return {
           conditions: baseConditions.slice(0, 1),
-          actions: baseActions.slice(0, 1)
+          actions: baseActions.slice(0, 1),
         };
 
       case 'complex':
@@ -370,27 +385,21 @@ export class MockDataFactory {
             ...baseConditions,
             { field: 'creditScore', operator: 'gte', value: 650 },
             { field: 'employmentStatus', operator: 'in', value: ['employed', 'self-employed'] },
-            { field: 'residenceType', operator: 'ne', value: 'temporary' }
+            { field: 'residenceType', operator: 'ne', value: 'temporary' },
           ],
           actions: [
             ...baseActions,
             { type: 'set', field: 'approvalLevel', value: 'standard' },
             { type: 'set', field: 'interestRate', value: 4.5 },
-            { type: 'increment', field: 'processCount', value: 1 }
-          ]
+            { type: 'increment', field: 'processCount', value: 1 },
+          ],
         };
 
       case 'medium':
       default:
         return {
-          conditions: [
-            ...baseConditions,
-            { field: 'creditScore', operator: 'gte', value: 600 }
-          ],
-          actions: [
-            ...baseActions,
-            { type: 'set', field: 'score', value: 75 }
-          ]
+          conditions: [...baseConditions, { field: 'creditScore', operator: 'gte', value: 600 }],
+          actions: [...baseActions, { type: 'set', field: 'score', value: 75 }],
         };
     }
   }
@@ -398,7 +407,9 @@ export class MockDataFactory {
   /**
    * Create mock input data for testing
    */
-  static createMockInput(scenario: 'valid' | 'invalid' | 'edge' | 'random' = 'valid'): Record<string, unknown> {
+  static createMockInput(
+    scenario: 'valid' | 'invalid' | 'edge' | 'random' = 'valid',
+  ): Record<string, unknown> {
     switch (scenario) {
       case 'valid':
         return {
@@ -406,7 +417,7 @@ export class MockDataFactory {
           income: 50000,
           creditScore: 720,
           employmentStatus: 'employed',
-          residenceType: 'owned'
+          residenceType: 'owned',
         };
 
       case 'invalid':
@@ -415,7 +426,7 @@ export class MockDataFactory {
           income: 15000,
           creditScore: 500,
           employmentStatus: 'unemployed',
-          residenceType: 'temporary'
+          residenceType: 'temporary',
         };
 
       case 'edge':
@@ -424,7 +435,7 @@ export class MockDataFactory {
           income: 30000,
           creditScore: 650,
           employmentStatus: 'self-employed',
-          residenceType: 'rented'
+          residenceType: 'rented',
         };
 
       case 'random':
@@ -433,8 +444,10 @@ export class MockDataFactory {
           age: Math.floor(Math.random() * 50) + 18,
           income: Math.floor(Math.random() * 100000) + 20000,
           creditScore: Math.floor(Math.random() * 350) + 450,
-          employmentStatus: ['employed', 'self-employed', 'unemployed'][Math.floor(Math.random() * 3)],
-          residenceType: ['owned', 'rented', 'temporary'][Math.floor(Math.random() * 3)]
+          employmentStatus: ['employed', 'self-employed', 'unemployed'][
+            Math.floor(Math.random() * 3)
+          ],
+          residenceType: ['owned', 'rented', 'temporary'][Math.floor(Math.random() * 3)],
         };
     }
   }
@@ -450,7 +463,7 @@ export class MockDataFactory {
       cacheMaxSize: 100,
       httpTimeout: 5000,
       batchSize: 10,
-      ...overrides
+      ...overrides,
     };
   }
 }
@@ -465,17 +478,17 @@ export class TestUtils {
   static async waitFor(
     condition: () => boolean | Promise<boolean>,
     timeout: number = 5000,
-    interval: number = 100
+    interval: number = 100,
   ): Promise<void> {
     const startTime = Date.now();
-    
+
     while (Date.now() - startTime < timeout) {
       if (await condition()) {
         return;
       }
-      await new Promise(resolve => setTimeout(resolve, interval));
+      await new Promise((resolve) => setTimeout(resolve, interval));
     }
-    
+
     throw new Error(`Condition not met within ${timeout}ms`);
   }
 
@@ -483,7 +496,7 @@ export class TestUtils {
    * Create a promise that resolves after a delay
    */
   static delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -491,7 +504,9 @@ export class TestUtils {
    */
   static randomString(length: number = 10): string {
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    return Array.from({ length }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join('');
+    return Array.from({ length }, () =>
+      chars.charAt(Math.floor(Math.random() * chars.length)),
+    ).join('');
   }
 
   /**
@@ -504,17 +519,19 @@ export class TestUtils {
   /**
    * Create a mock fetch function for HTTP testing
    */
-  static createMockFetch(responses: Array<{
-    url?: string | RegExp;
-    method?: string;
-    response: {
-      ok?: boolean;
-      status?: number;
-      statusText?: string;
-      json?: () => Promise<unknown>;
-      text?: () => Promise<string>;
-    };
-  }>): any {
+  static createMockFetch(
+    responses: Array<{
+      url?: string | RegExp;
+      method?: string;
+      response: {
+        ok?: boolean;
+        status?: number;
+        statusText?: string;
+        json?: () => Promise<unknown>;
+        text?: () => Promise<string>;
+      };
+    }>,
+  ): any {
     const mockFn = (() => {}) as any;
     mockFn.mockImplementation = (impl: any) => {
       mockFn._implementation = impl;
@@ -522,12 +539,15 @@ export class TestUtils {
     };
     return mockFn.mockImplementation((url: string, options: RequestInit = {}) => {
       const method = options.method || 'GET';
-      
+
       for (const mockResponse of responses) {
-        const urlMatches = !mockResponse.url || 
-          (typeof mockResponse.url === 'string' ? url.includes(mockResponse.url) : mockResponse.url.test(url));
+        const urlMatches =
+          !mockResponse.url ||
+          (typeof mockResponse.url === 'string'
+            ? url.includes(mockResponse.url)
+            : mockResponse.url.test(url));
         const methodMatches = !mockResponse.method || mockResponse.method === method;
-        
+
         if (urlMatches && methodMatches) {
           return Promise.resolve({
             ok: true,
@@ -535,18 +555,18 @@ export class TestUtils {
             statusText: 'OK',
             json: () => Promise.resolve({}),
             text: () => Promise.resolve(''),
-            ...mockResponse.response
+            ...mockResponse.response,
           });
         }
       }
-      
+
       // Default response for unmatched requests
       return Promise.resolve({
         ok: false,
         status: 404,
         statusText: 'Not Found',
         json: () => Promise.resolve({ error: 'Not Found' }),
-        text: () => Promise.resolve('Not Found')
+        text: () => Promise.resolve('Not Found'),
       });
     });
   }

@@ -3,7 +3,11 @@
  * High-performance HTTP client for project-wide rule loading
  */
 
-import { IRuleLoaderService, MinimalRuleMetadata, MinimalGoRulesConfig } from '../interfaces/index.js';
+import {
+  IRuleLoaderService,
+  MinimalRuleMetadata,
+  MinimalGoRulesConfig,
+} from '../interfaces/index.js';
 import { MinimalGoRulesError } from '../errors/index.js';
 
 /**
@@ -69,10 +73,10 @@ class MinimalHttpClient {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      return await response.json() as T;
+      return (await response.json()) as T;
     } catch (error) {
       clearTimeout(timeoutId);
-      
+
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
           throw MinimalGoRulesError.timeout(`GET ${path}`);
@@ -82,7 +86,7 @@ class MinimalHttpClient {
         }
         throw MinimalGoRulesError.networkError(`Failed to fetch ${path}`, error);
       }
-      
+
       throw MinimalGoRulesError.networkError(`Unknown error fetching ${path}`);
     }
   }
@@ -98,15 +102,15 @@ export class MinimalRuleLoaderService implements IRuleLoaderService {
 
   constructor(config: MinimalGoRulesConfig) {
     this.projectId = config.projectId;
-    
+
     // Initialize HTTP client with minimal configuration
     this.httpClient = new MinimalHttpClient({
       timeout: config.httpTimeout || 5000,
       baseUrl: config.apiUrl.endsWith('/') ? config.apiUrl.slice(0, -1) : config.apiUrl,
       headers: {
-        'Authorization': `Bearer ${config.apiKey}`,
+        Authorization: `Bearer ${config.apiKey}`,
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'User-Agent': 'minimal-gorules-engine/1.0.0',
       },
     });
@@ -116,12 +120,14 @@ export class MinimalRuleLoaderService implements IRuleLoaderService {
    * Load all rules from GoRules Cloud project at startup
    * Primary method for initial rule loading
    */
-  async loadAllRules(projectId?: string): Promise<Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>> {
+  async loadAllRules(
+    projectId?: string,
+  ): Promise<Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>> {
     const targetProjectId = projectId || this.projectId;
-    
+
     try {
       const response = await this.httpClient.get<GoRulesProjectResponse>(
-        `/api/v1/projects/${targetProjectId}/rules`
+        `/api/v1/projects/${targetProjectId}/rules`,
       );
 
       const rules = new Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>();
@@ -138,7 +144,7 @@ export class MinimalRuleLoaderService implements IRuleLoaderService {
       }
       throw MinimalGoRulesError.networkError(
         `Failed to load all rules for project ${targetProjectId}`,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -149,7 +155,7 @@ export class MinimalRuleLoaderService implements IRuleLoaderService {
   async loadRule(ruleId: string): Promise<{ data: Buffer; metadata: MinimalRuleMetadata }> {
     try {
       const response = await this.httpClient.get<GoRulesRuleDetailResponse>(
-        `/api/v1/projects/${this.projectId}/rules/${ruleId}`
+        `/api/v1/projects/${this.projectId}/rules/${ruleId}`,
       );
 
       return this.parseRuleResponse(response);
@@ -159,7 +165,7 @@ export class MinimalRuleLoaderService implements IRuleLoaderService {
       }
       throw MinimalGoRulesError.networkError(
         `Failed to load rule ${ruleId}`,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -169,12 +175,12 @@ export class MinimalRuleLoaderService implements IRuleLoaderService {
    */
   async checkVersions(rules: Map<string, string>): Promise<Map<string, boolean>> {
     const results = new Map<string, boolean>();
-    
+
     // For efficiency, we'll batch check by loading all rules and comparing versions
     // This is more efficient than individual API calls for each rule
     try {
       const allRules = await this.loadAllRules();
-      
+
       for (const [ruleId, currentVersion] of rules) {
         const ruleData = allRules.get(ruleId);
         if (ruleData) {
@@ -185,7 +191,7 @@ export class MinimalRuleLoaderService implements IRuleLoaderService {
           results.set(ruleId, true);
         }
       }
-      
+
       return results;
     } catch (error) {
       if (error instanceof MinimalGoRulesError) {
@@ -193,7 +199,7 @@ export class MinimalRuleLoaderService implements IRuleLoaderService {
       }
       throw MinimalGoRulesError.networkError(
         'Failed to check rule versions',
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -209,13 +215,14 @@ export class MinimalRuleLoaderService implements IRuleLoaderService {
    * Parse GoRules API response into internal format
    * Converts Base64 content to Buffer and creates metadata
    */
-  private parseRuleResponse(
-    rule: GoRulesRuleResponse | GoRulesRuleDetailResponse
-  ): { data: Buffer; metadata: MinimalRuleMetadata } {
+  private parseRuleResponse(rule: GoRulesRuleResponse | GoRulesRuleDetailResponse): {
+    data: Buffer;
+    metadata: MinimalRuleMetadata;
+  } {
     try {
       // Decode Base64 content to Buffer
       const data = Buffer.from(rule.content, 'base64');
-      
+
       // Validate that the content is valid JSON
       try {
         JSON.parse(data.toString('utf-8'));
@@ -235,7 +242,7 @@ export class MinimalRuleLoaderService implements IRuleLoaderService {
     } catch (error) {
       throw MinimalGoRulesError.networkError(
         `Failed to parse rule response for ${rule.id}`,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }

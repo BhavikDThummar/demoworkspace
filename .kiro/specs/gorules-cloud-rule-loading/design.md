@@ -15,18 +15,18 @@ graph TB
     A[Zen Engine] --> B[Rule Loader]
     B --> C[Rule Cache Manager]
     B --> D[GoRules HTTP Service]
-    
+
     C --> E[In-Memory Cache]
     C --> F[Cache Eviction Policy]
-    
+
     D --> G[Project Manager]
     D --> H[Authentication Manager]
     D --> I[Rate Limiter]
-    
+
     G --> J[Project 1 API]
     G --> K[Project 2 API]
     G --> L[Project N API]
-    
+
     H --> M[Token Refresh]
     I --> N[Request Queue]
 ```
@@ -43,7 +43,7 @@ sequenceDiagram
 
     ZE->>RL: Load Rule (ruleId)
     RL->>CM: Check Cache
-    
+
     alt Cache Hit
         CM-->>RL: Return Cached Rule
         RL-->>ZE: Rule Data
@@ -179,7 +179,7 @@ interface RateLimitConfig {
 ```typescript
 interface IGoRulesHttpService {
   // Existing methods...
-  
+
   // New methods for rule loading
   loadRuleFromProject(ruleId: string, projectId: string): Promise<Buffer>;
   getRuleMetadataFromProject(ruleId: string, projectId: string): Promise<RuleMetadata>;
@@ -292,12 +292,14 @@ interface ProjectHealthStatus {
 ### Enhanced Error Handling Strategy
 
 1. **Rule Loading Errors**
+
    - Network failures: Retry with exponential backoff, fall back to cache
    - Authentication errors: Attempt token refresh, clear invalid tokens
    - Rate limiting: Queue requests, implement backoff strategies
    - Rule not found: Search across configured projects
 
 2. **Cache Errors**
+
    - Memory pressure: Implement aggressive eviction, warn about performance
    - Corruption: Invalidate corrupted entries, reload from API
    - Serialization errors: Log and skip problematic entries
@@ -327,7 +329,7 @@ class GoRulesLoadingException extends GoRulesException {
     public readonly projectId?: string,
     public readonly recoveryStrategy?: ErrorRecoveryStrategy,
     details?: any,
-    retryable: boolean = true
+    retryable: boolean = true,
   ) {
     super(code, message, details, retryable);
   }
@@ -339,12 +341,14 @@ class GoRulesLoadingException extends GoRulesException {
 ### Unit Testing
 
 1. **Rule Loader Tests**
+
    - Mock HTTP service responses for different scenarios
    - Test cache hit/miss scenarios
    - Validate error handling and retry logic
    - Test multi-project rule resolution
 
 2. **Cache Manager Tests**
+
    - Test LRU eviction policy
    - Validate TTL expiration
    - Test memory pressure handling
@@ -359,6 +363,7 @@ class GoRulesLoadingException extends GoRulesException {
 ### Integration Testing
 
 1. **API Integration Tests**
+
    - Test actual rule loading from GoRules Cloud API
    - Validate authentication and authorization
    - Test rate limiting behavior
@@ -373,6 +378,7 @@ class GoRulesLoadingException extends GoRulesException {
 ### Performance Testing
 
 1. **Load Testing**
+
    - Test concurrent rule loading requests
    - Measure cache performance under load
    - Validate memory usage patterns
@@ -389,12 +395,14 @@ class GoRulesLoadingException extends GoRulesException {
 ### Performance Optimizations
 
 1. **Intelligent Caching**
+
    - Implement predictive caching based on usage patterns
    - Use compression for cached rule data
    - Implement cache warming for critical rules
    - Optimize cache key generation and lookup
 
 2. **Network Optimization**
+
    - Implement HTTP/2 connection pooling
    - Use compression for API requests/responses
    - Implement request batching where possible
@@ -409,6 +417,7 @@ class GoRulesLoadingException extends GoRulesException {
 ### Security Considerations
 
 1. **API Security**
+
    - Secure storage of API keys and tokens
    - Implement token rotation and refresh
    - Validate SSL/TLS certificates
@@ -423,12 +432,14 @@ class GoRulesLoadingException extends GoRulesException {
 ### Monitoring and Observability
 
 1. **Metrics Collection**
+
    - Rule loading performance metrics
    - Cache hit/miss ratios and performance
    - API response times and error rates
    - Memory usage and garbage collection metrics
 
 2. **Logging Strategy**
+
    - Structured logging for all rule loading operations
    - Performance logging with execution traces
    - Error logging with context and recovery actions
@@ -443,6 +454,7 @@ class GoRulesLoadingException extends GoRulesException {
 ### Configuration Management
 
 1. **Dynamic Configuration**
+
    - Support for runtime configuration updates
    - Configuration validation and rollback
    - Environment-specific configuration profiles

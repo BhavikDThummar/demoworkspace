@@ -24,6 +24,7 @@ The main service for executing business rules.
 Executes a single business rule.
 
 **Parameters:**
+
 - `ruleId` (string): The unique identifier of the rule to execute
 - `input` (T): The input data for the rule execution
 - `options` (RuleExecutionOptions, optional): Execution options
@@ -31,11 +32,12 @@ Executes a single business rule.
 **Returns:** `Promise<RuleExecutionResult<R>>` - The rule execution result
 
 **Example:**
+
 ```typescript
 const result = await goRulesService.executeRule<CustomerData, ValidationResult>(
   'customer-validation',
   { age: 25, income: 50000 },
-  { trace: true, timeout: 10000 }
+  { trace: true, timeout: 10000 },
 );
 
 console.log(result.result.isValid); // true/false
@@ -47,18 +49,20 @@ console.log(result.performance.executionTime); // execution time in ms
 Executes multiple rules in batch for improved performance.
 
 **Parameters:**
+
 - `executions` (BatchRuleExecution<T>[]): Array of rule executions to perform
 
 **Returns:** `Promise<BatchRuleExecutionResult<R>[]>` - Array of execution results
 
 **Example:**
+
 ```typescript
 const batchResults = await goRulesService.executeBatch([
   { ruleId: 'validation', input: { age: 25 }, executionId: 'val-1' },
   { ruleId: 'pricing', input: { tier: 'premium' }, executionId: 'price-1' },
 ]);
 
-batchResults.forEach(result => {
+batchResults.forEach((result) => {
   if (result.error) {
     console.error(`Rule ${result.ruleId} failed:`, result.error);
   } else {
@@ -72,11 +76,13 @@ batchResults.forEach(result => {
 Validates that a rule exists and is accessible.
 
 **Parameters:**
+
 - `ruleId` (string): The rule identifier to validate
 
 **Returns:** `Promise<boolean>` - True if the rule exists, false otherwise
 
 **Example:**
+
 ```typescript
 const exists = await goRulesService.validateRuleExists('customer-validation');
 if (!exists) {
@@ -89,11 +95,13 @@ if (!exists) {
 Retrieves metadata information about a rule.
 
 **Parameters:**
+
 - `ruleId` (string): The rule identifier
 
 **Returns:** `Promise<RuleMetadata>` - Rule metadata information
 
 **Example:**
+
 ```typescript
 const metadata = await goRulesService.getRuleMetadata('customer-validation');
 console.log(metadata.name); // Rule display name
@@ -108,6 +116,7 @@ Gets execution statistics for all rules.
 **Returns:** `Record<string, ExecutionStatistics>` - Statistics by rule ID
 
 **Example:**
+
 ```typescript
 const stats = goRulesService.getExecutionStatistics();
 Object.entries(stats).forEach(([ruleId, stat]) => {
@@ -122,6 +131,7 @@ Gets circuit breaker statistics for all operations.
 **Returns:** `Record<string, CircuitBreakerStats>` - Circuit breaker statistics
 
 **Example:**
+
 ```typescript
 const cbStats = goRulesService.getCircuitBreakerStatistics();
 Object.entries(cbStats).forEach(([operation, stats]) => {
@@ -170,6 +180,7 @@ Logs failed rule execution.
 Gets recent log entries.
 
 **Parameters:**
+
 - `count` (number, optional): Number of entries to retrieve (default: 100)
 
 **Returns:** `GoRulesLogEntry[]` - Array of log entries
@@ -228,42 +239,42 @@ Gets comprehensive health status.
 interface GoRulesConfig {
   /** GoRules API URL */
   apiUrl: string;
-  
+
   /** API key for authentication */
   apiKey: string;
-  
+
   /** Project ID in GoRules */
   projectId: string;
-  
+
   /** Request timeout in milliseconds (default: 30000) */
   timeout?: number;
-  
+
   /** Number of retry attempts for failed requests (default: 3) */
   retryAttempts?: number;
-  
+
   /** Enable detailed logging (default: false) */
   enableLogging?: boolean;
-  
+
   /** Log level for GoRules operations (default: 'info') */
   logLevel?: 'error' | 'warn' | 'info' | 'debug' | 'verbose';
-  
+
   /** Maximum number of log entries to keep in memory (default: 1000) */
   maxLogEntries?: number;
-  
+
   /** Log retention period in milliseconds (default: 24 hours) */
   logRetentionMs?: number;
-  
+
   /** Enable performance monitoring (default: true) */
   enableMetrics?: boolean;
-  
+
   /** Performance alert thresholds */
   performanceThresholds?: {
     /** Execution time threshold in milliseconds (default: 5000) */
     executionTime?: number;
-    
+
     /** Error rate threshold (0-1, default: 0.1) */
     errorRate?: number;
-    
+
     /** Memory usage threshold percentage (default: 80) */
     memoryUsage?: number;
   };
@@ -288,7 +299,7 @@ GoRulesModule.forRoot({
     errorRate: 0.1,
     memoryUsage: 80,
   },
-})
+});
 ```
 
 #### Async Configuration
@@ -303,16 +314,17 @@ GoRulesModule.forRootAsync({
     enableLogging: configService.get('NODE_ENV') === 'development',
   }),
   inject: [ConfigService],
-})
+});
 ```
 
 #### Environment Configuration
 
 ```typescript
-GoRulesModule.forEnvironment()
+GoRulesModule.forEnvironment();
 ```
 
 Uses these environment variables:
+
 - `GORULES_API_URL`
 - `GORULES_API_KEY`
 - `GORULES_PROJECT_ID`
@@ -332,16 +344,16 @@ Uses these environment variables:
 interface RuleExecutionOptions {
   /** Enable execution tracing for debugging */
   trace?: boolean;
-  
+
   /** Execution timeout in milliseconds */
   timeout?: number;
-  
+
   /** User ID for audit logging */
   userId?: string;
-  
+
   /** Session ID for request correlation */
   sessionId?: string;
-  
+
   /** Request ID for tracing */
   requestId?: string;
 }
@@ -353,13 +365,13 @@ interface RuleExecutionOptions {
 interface RuleExecutionResult<T> {
   /** The rule execution result */
   result: T;
-  
+
   /** Performance metrics */
   performance: PerformanceMetrics;
-  
+
   /** Rule metadata */
   metadata: RuleMetadata;
-  
+
   /** Execution trace (if tracing enabled) */
   trace?: ExecutionTrace;
 }
@@ -371,13 +383,13 @@ interface RuleExecutionResult<T> {
 interface BatchRuleExecution<T> {
   /** Unique execution identifier */
   executionId?: string;
-  
+
   /** Rule identifier */
   ruleId: string;
-  
+
   /** Input data for the rule */
   input: T;
-  
+
   /** Execution options */
   options?: RuleExecutionOptions;
 }
@@ -389,17 +401,17 @@ interface BatchRuleExecution<T> {
 interface BatchRuleExecutionResult<T> {
   /** Execution identifier */
   executionId: string;
-  
+
   /** Rule identifier */
   ruleId: string;
-  
+
   /** Execution result */
   result: {
     decision: T | null;
     appliedRules: string[];
     warnings: string[];
   };
-  
+
   /** Error information (if execution failed) */
   error?: {
     code: GoRulesErrorCode;
@@ -407,7 +419,7 @@ interface BatchRuleExecutionResult<T> {
     details?: any;
     retryable: boolean;
   };
-  
+
   /** Performance metrics */
   performance?: PerformanceMetrics;
 }
@@ -480,7 +492,7 @@ class GoRulesException extends Error {
     public readonly code: GoRulesErrorCode,
     message: string,
     public readonly details?: any,
-    public readonly retryable: boolean = false
+    public readonly retryable: boolean = false,
   );
 }
 ```
@@ -492,20 +504,20 @@ enum GoRulesErrorCode {
   // Input validation errors
   INVALID_INPUT = 'INVALID_INPUT',
   VALIDATION_ERROR = 'VALIDATION_ERROR',
-  
+
   // Rule-related errors
   RULE_NOT_FOUND = 'RULE_NOT_FOUND',
   RULE_EXECUTION_ERROR = 'RULE_EXECUTION_ERROR',
-  
+
   // Authentication and authorization
   UNAUTHORIZED = 'UNAUTHORIZED',
   AUTHENTICATION_FAILED = 'AUTHENTICATION_FAILED',
-  
+
   // Network and connectivity
   NETWORK_ERROR = 'NETWORK_ERROR',
   TIMEOUT = 'TIMEOUT',
   RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
-  
+
   // System errors
   INTERNAL_ERROR = 'INTERNAL_ERROR',
   SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
@@ -525,22 +537,22 @@ try {
     switch (error.code) {
       case GoRulesErrorCode.RULE_NOT_FOUND:
         throw new NotFoundException(`Rule not found: ${error.message}`);
-      
+
       case GoRulesErrorCode.TIMEOUT:
         if (error.retryable) {
           // Implement retry logic
           return await this.retryExecution(ruleId, input);
         }
         throw new RequestTimeoutException(error.message);
-      
+
       case GoRulesErrorCode.RATE_LIMIT_EXCEEDED:
         throw new TooManyRequestsException(error.message);
-      
+
       default:
         throw new InternalServerErrorException(error.message);
     }
   }
-  
+
   // Handle unexpected errors
   throw new InternalServerErrorException('Unexpected error occurred');
 }
@@ -580,12 +592,16 @@ Monitor rule execution performance:
 const stats = monitoringService.getExecutionStatistics();
 console.log(`Total executions: ${stats.totalExecutions}`);
 console.log(`Average time: ${stats.averageExecutionTime}ms`);
-console.log(`Error rate: ${(stats.failedExecutions / stats.totalExecutions * 100).toFixed(2)}%`);
+console.log(`Error rate: ${((stats.failedExecutions / stats.totalExecutions) * 100).toFixed(2)}%`);
 
 // Get rule-specific metrics
 const ruleMetrics = monitoringService.getRuleMetrics('customer-validation');
 console.log(`Rule executions: ${ruleMetrics.totalExecutions}`);
-console.log(`Success rate: ${(ruleMetrics.successfulExecutions / ruleMetrics.totalExecutions * 100).toFixed(2)}%`);
+console.log(
+  `Success rate: ${((ruleMetrics.successfulExecutions / ruleMetrics.totalExecutions) * 100).toFixed(
+    2,
+  )}%`,
+);
 ```
 
 ### Health Checks
@@ -600,11 +616,11 @@ export class HealthController {
   @Get('gorules')
   async checkGoRulesHealth() {
     const health = this.monitoringService.getHealthStatus();
-    
+
     if (health.status === 'unhealthy') {
       throw new ServiceUnavailableException('GoRules service is unhealthy');
     }
-    
+
     return health;
   }
 }

@@ -60,7 +60,7 @@ export const testData = {
     supplier: 'TechCorp Inc',
     justification: 'New development tools for the team',
   },
-  
+
   validSupplierRisk: {
     supplierId: 'SUP-001',
     supplierName: 'Reliable Components Ltd',
@@ -72,7 +72,7 @@ export const testData = {
     qualityScore: 92,
     complianceCertifications: ['ISO9001', 'ISO14001'],
   },
-  
+
   validPricing: {
     basePrice: 100,
     quantity: 50,
@@ -82,7 +82,7 @@ export const testData = {
     promotionCode: 'SUMMER2024',
     contractDiscount: 0.05,
   },
-  
+
   validSimpleRule: {
     value: 42,
     category: 'test',
@@ -99,7 +99,7 @@ export const mockResponses = {
     conditions: ['Budget available'],
     reason: 'Within department budget',
   },
-  
+
   supplierRisk: {
     riskLevel: 'low' as const,
     riskScore: 15,
@@ -108,14 +108,12 @@ export const mockResponses = {
     approved: true,
     requiresReview: false,
   },
-  
+
   pricing: {
     finalPrice: 4275,
     originalPrice: 5000,
     totalDiscount: 725,
-    appliedDiscounts: [
-      { type: 'tier', amount: 250, percentage: 5, reason: 'Gold tier discount' },
-    ],
+    appliedDiscounts: [{ type: 'tier', amount: 250, percentage: 5, reason: 'Gold tier discount' }],
     priceBreakdown: {
       basePrice: 5000,
       quantityDiscount: 200,
@@ -125,7 +123,7 @@ export const mockResponses = {
       contractDiscount: 0,
     },
   },
-  
+
   simpleRule: {
     result: 'success',
     score: 85,
@@ -138,13 +136,13 @@ export const testUtils = {
   /**
    * Create a delay for testing async operations
    */
-  delay: (ms: number) => new Promise(resolve => setTimeout(resolve, ms)),
-  
+  delay: (ms: number) => new Promise((resolve) => setTimeout(resolve, ms)),
+
   /**
    * Generate random test data
    */
   generateRandomId: () => `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-  
+
   /**
    * Create test request with random data
    */
@@ -153,21 +151,21 @@ export const testUtils = {
     ...overrides,
     id: testUtils.generateRandomId(),
   }),
-  
+
   /**
    * Validate response structure
    */
   validateResponseStructure: (response: any) => {
     expect(response).toHaveProperty('success');
     expect(response).toHaveProperty('timestamp');
-    
+
     if (response.success) {
       expect(response).toHaveProperty('data');
     } else {
       expect(response).toHaveProperty('error');
     }
   },
-  
+
   /**
    * Validate error response structure
    */
@@ -193,7 +191,7 @@ declare global {
 // Add custom Jest matchers
 expect.extend({
   toBeValidGoRulesResponse(received) {
-    const pass = 
+    const pass =
       received &&
       typeof received === 'object' &&
       typeof received.success === 'boolean' &&
@@ -212,9 +210,9 @@ expect.extend({
       };
     }
   },
-  
+
   toBeValidErrorResponse(received) {
-    const pass = 
+    const pass =
       received &&
       typeof received === 'object' &&
       received.success === false &&

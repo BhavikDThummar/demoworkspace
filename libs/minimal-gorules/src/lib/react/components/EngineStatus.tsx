@@ -14,10 +14,13 @@ export function EngineStatus({
   refreshInterval = 0,
   detailed = false,
   className = '',
-  onStatusUpdate
+  onStatusUpdate,
 }: EngineStatusProps) {
   const service = useGoRulesContext();
-  const { loading, status, error, lastUpdated, refresh } = useEngineStatus(service, refreshInterval);
+  const { loading, status, error, lastUpdated, refresh } = useEngineStatus(
+    service,
+    refreshInterval,
+  );
 
   // Notify parent of status updates
   useEffect(() => {
@@ -55,8 +58,18 @@ export function EngineStatus({
   };
 
   return (
-    <div className={`engine-status ${className}`} style={{ padding: '16px', border: '1px solid #ddd', borderRadius: '4px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+    <div
+      className={`engine-status ${className}`}
+      style={{ padding: '16px', border: '1px solid #ddd', borderRadius: '4px' }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '16px',
+        }}
+      >
         <h3 style={{ margin: 0 }}>Engine Status</h3>
         <button
           onClick={refresh}
@@ -68,7 +81,7 @@ export function EngineStatus({
             border: 'none',
             borderRadius: '4px',
             cursor: loading ? 'not-allowed' : 'pointer',
-            fontSize: '12px'
+            fontSize: '12px',
           }}
         >
           {loading ? 'Refreshing...' : 'Refresh'}
@@ -76,7 +89,15 @@ export function EngineStatus({
       </div>
 
       {error && (
-        <div style={{ color: 'red', marginBottom: '16px', padding: '8px', backgroundColor: '#f8d7da', borderRadius: '4px' }}>
+        <div
+          style={{
+            color: 'red',
+            marginBottom: '16px',
+            padding: '8px',
+            backgroundColor: '#f8d7da',
+            borderRadius: '4px',
+          }}
+        >
           <strong>Error:</strong> {error}
         </div>
       )}
@@ -86,16 +107,29 @@ export function EngineStatus({
           {/* Engine Status */}
           <div style={{ marginBottom: '16px' }}>
             <h4 style={{ margin: '0 0 8px 0' }}>Engine</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px', fontSize: '14px' }}>
-              <span><strong>Status:</strong></span>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'auto 1fr',
+                gap: '8px',
+                fontSize: '14px',
+              }}
+            >
+              <span>
+                <strong>Status:</strong>
+              </span>
               <span style={{ color: getStatusColor(status.engine.status) }}>
                 {status.engine.status}
               </span>
-              
-              <span><strong>Initialized:</strong></span>
+
+              <span>
+                <strong>Initialized:</strong>
+              </span>
               <span>{status.engine.initialized ? 'Yes' : 'No'}</span>
-              
-              <span><strong>Rules Loaded:</strong></span>
+
+              <span>
+                <strong>Rules Loaded:</strong>
+              </span>
               <span>{status.engine.rulesLoaded}</span>
             </div>
           </div>
@@ -103,16 +137,29 @@ export function EngineStatus({
           {/* Health Status */}
           <div style={{ marginBottom: '16px' }}>
             <h4 style={{ margin: '0 0 8px 0' }}>Health</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px', fontSize: '14px' }}>
-              <span><strong>Status:</strong></span>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'auto 1fr',
+                gap: '8px',
+                fontSize: '14px',
+              }}
+            >
+              <span>
+                <strong>Status:</strong>
+              </span>
               <span style={{ color: getStatusColor(status.health.status) }}>
                 {status.health.status}
               </span>
-              
-              <span><strong>Uptime:</strong></span>
+
+              <span>
+                <strong>Uptime:</strong>
+              </span>
               <span>{formatUptime(status.health.uptime)}</span>
-              
-              <span><strong>Last Check:</strong></span>
+
+              <span>
+                <strong>Last Check:</strong>
+              </span>
               <span>{formatTimestamp(status.health.lastCheck)}</span>
             </div>
           </div>
@@ -120,14 +167,29 @@ export function EngineStatus({
           {/* Cache Status */}
           <div style={{ marginBottom: '16px' }}>
             <h4 style={{ margin: '0 0 8px 0' }}>Cache</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px', fontSize: '14px' }}>
-              <span><strong>Size:</strong></span>
-              <span>{status.cache.size} / {status.cache.maxSize}</span>
-              
-              <span><strong>Hit Rate:</strong></span>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'auto 1fr',
+                gap: '8px',
+                fontSize: '14px',
+              }}
+            >
+              <span>
+                <strong>Size:</strong>
+              </span>
+              <span>
+                {status.cache.size} / {status.cache.maxSize}
+              </span>
+
+              <span>
+                <strong>Hit Rate:</strong>
+              </span>
               <span>{(status.cache.hitRate * 100).toFixed(1)}%</span>
-              
-              <span><strong>Memory Usage:</strong></span>
+
+              <span>
+                <strong>Memory Usage:</strong>
+              </span>
               <span>{(status.cache.memoryUsage / 1024 / 1024).toFixed(2)} MB</span>
             </div>
           </div>
@@ -136,32 +198,49 @@ export function EngineStatus({
           {detailed && (
             <div style={{ marginBottom: '16px' }}>
               <h4 style={{ margin: '0 0 8px 0' }}>Initialization</h4>
-              <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px', fontSize: '14px' }}>
-                <span><strong>Status:</strong></span>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'auto 1fr',
+                  gap: '8px',
+                  fontSize: '14px',
+                }}
+              >
+                <span>
+                  <strong>Status:</strong>
+                </span>
                 <span style={{ color: getStatusColor(status.initialization.status) }}>
                   {status.initialization.status}
                 </span>
-                
-                <span><strong>Start Time:</strong></span>
+
+                <span>
+                  <strong>Start Time:</strong>
+                </span>
                 <span>{formatTimestamp(status.initialization.startTime)}</span>
-                
+
                 {status.initialization.duration && (
                   <>
-                    <span><strong>Duration:</strong></span>
+                    <span>
+                      <strong>Duration:</strong>
+                    </span>
                     <span>{status.initialization.duration}ms</span>
                   </>
                 )}
-                
+
                 {status.initialization.rulesLoaded && (
                   <>
-                    <span><strong>Rules Loaded:</strong></span>
+                    <span>
+                      <strong>Rules Loaded:</strong>
+                    </span>
                     <span>{status.initialization.rulesLoaded}</span>
                   </>
                 )}
-                
+
                 {status.initialization.errors && status.initialization.errors.length > 0 && (
                   <>
-                    <span><strong>Errors:</strong></span>
+                    <span>
+                      <strong>Errors:</strong>
+                    </span>
                     <div>
                       {status.initialization.errors.map((error, index) => (
                         <div key={index} style={{ color: 'red', fontSize: '12px' }}>
@@ -185,9 +264,7 @@ export function EngineStatus({
       )}
 
       {!loading && !status && !error && (
-        <div style={{ textAlign: 'center', color: '#666' }}>
-          No status data available
-        </div>
+        <div style={{ textAlign: 'center', color: '#666' }}>No status data available</div>
       )}
     </div>
   );

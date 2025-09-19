@@ -1,16 +1,16 @@
 /**
  * Advanced Usage Examples for Minimal GoRules Engine
- * 
+ *
  * This file demonstrates advanced usage patterns including mixed execution modes,
  * performance optimization, error handling, and monitoring.
  */
 
-import { 
-  MinimalGoRulesEngine, 
-  MinimalGoRulesConfig, 
+import {
+  MinimalGoRulesEngine,
+  MinimalGoRulesConfig,
   RuleSelector,
   MinimalGoRulesError,
-  MinimalErrorCode
+  MinimalErrorCode,
 } from '../src/index.js';
 
 // High-performance configuration
@@ -18,7 +18,7 @@ const advancedConfig: MinimalGoRulesConfig = {
   apiUrl: 'https://api.gorules.io',
   apiKey: process.env.GORULES_API_KEY!,
   projectId: 'your-project-id',
-  
+
   // Performance optimizations
   cacheMaxSize: 5000,
   httpTimeout: 15000,
@@ -28,11 +28,11 @@ const advancedConfig: MinimalGoRulesConfig = {
   enableConnectionPooling: true,
   enableRequestBatching: true,
   enableCompression: true,
-  
+
   // Memory management
   memoryWarningThreshold: 0.8,
   memoryCriticalThreshold: 0.9,
-  memoryCleanupInterval: 30000
+  memoryCleanupInterval: 30000,
 };
 
 async function advancedUsageExamples() {
@@ -67,7 +67,7 @@ async function advancedUsageExamples() {
 
 async function demonstrateMixedExecution(engine: MinimalGoRulesEngine) {
   console.log('1. Mixed Execution Mode:');
-  
+
   try {
     // Define complex execution pattern
     const selector: RuleSelector = {
@@ -78,35 +78,35 @@ async function demonstrateMixedExecution(engine: MinimalGoRulesEngine) {
           // First group: validation rules in parallel
           {
             rules: ['validation-1', 'validation-2'],
-            mode: 'parallel'
+            mode: 'parallel',
           },
           // Second group: business rules in sequence
           {
             rules: ['business-1', 'business-2'],
-            mode: 'sequential'
+            mode: 'sequential',
           },
           // Third group: final check
           {
             rules: ['final-check'],
-            mode: 'parallel'
-          }
-        ]
-      }
+            mode: 'parallel',
+          },
+        ],
+      },
     };
 
     const input = {
       userId: 12345,
       amount: 5000,
       currency: 'USD',
-      country: 'US'
+      country: 'US',
     };
 
     console.log('   Executing mixed mode with complex workflow...');
     const result = await engine.execute(selector, input);
-    
+
     console.log(`   Completed in ${result.executionTime}ms`);
     console.log(`   Results: ${result.results.size} rules executed`);
-    
+
     if (result.errors && result.errors.size > 0) {
       console.log(`   Errors: ${result.errors.size} rules failed`);
     }
@@ -139,7 +139,9 @@ async function demonstrateErrorHandling(engine: MinimalGoRulesEngine) {
           console.log(`   [${context}] Unknown GoRules error: ${error.message}`);
       }
     } else {
-      console.log(`   [${context}] Unexpected error: ${error instanceof Error ? error.message : 'Unknown'}`);
+      console.log(
+        `   [${context}] Unexpected error: ${error instanceof Error ? error.message : 'Unknown'}`,
+      );
     }
   };
 
@@ -147,7 +149,7 @@ async function demonstrateErrorHandling(engine: MinimalGoRulesEngine) {
   const executeWithRetry = async <T>(
     operation: () => Promise<T>,
     maxRetries: number = 3,
-    context: string = 'Operation'
+    context: string = 'Operation',
   ): Promise<T | null> => {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -155,16 +157,16 @@ async function demonstrateErrorHandling(engine: MinimalGoRulesEngine) {
       } catch (error) {
         console.log(`   [${context}] Attempt ${attempt} failed`);
         handleGoRulesError(error, context);
-        
+
         if (attempt === maxRetries) {
           console.log(`   [${context}] Max retries exceeded`);
           return null;
         }
-        
+
         // Exponential backoff
         const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
         console.log(`   [${context}] Retrying in ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
     return null;
@@ -174,7 +176,7 @@ async function demonstrateErrorHandling(engine: MinimalGoRulesEngine) {
   const result = await executeWithRetry(
     () => engine.executeRule('non-existent-rule', { test: true }),
     3,
-    'Rule Execution'
+    'Rule Execution',
   );
 
   if (result) {
@@ -201,7 +203,7 @@ async function demonstratePerformanceMonitoring(engine: MinimalGoRulesEngine) {
       const startTime = process.hrtime.bigint();
       const timestamp = Date.now();
       let success = false;
-      
+
       try {
         const result = await fn();
         success = true;
@@ -209,12 +211,12 @@ async function demonstratePerformanceMonitoring(engine: MinimalGoRulesEngine) {
       } finally {
         const endTime = process.hrtime.bigint();
         const duration = Number(endTime - startTime) / 1_000_000; // Convert to ms
-        
+
         this.metrics.push({
           operation,
           duration,
           timestamp,
-          success
+          success,
         });
       }
     }
@@ -222,16 +224,16 @@ async function demonstratePerformanceMonitoring(engine: MinimalGoRulesEngine) {
     getStats() {
       if (this.metrics.length === 0) return null;
 
-      const durations = this.metrics.map(m => m.duration);
-      const successCount = this.metrics.filter(m => m.success).length;
-      
+      const durations = this.metrics.map((m) => m.duration);
+      const successCount = this.metrics.filter((m) => m.success).length;
+
       return {
         totalOperations: this.metrics.length,
         successRate: successCount / this.metrics.length,
         averageDuration: durations.reduce((a, b) => a + b, 0) / durations.length,
         minDuration: Math.min(...durations),
         maxDuration: Math.max(...durations),
-        p95Duration: durations.sort((a, b) => a - b)[Math.floor(durations.length * 0.95)] || 0
+        p95Duration: durations.sort((a, b) => a - b)[Math.floor(durations.length * 0.95)] || 0,
       };
     }
   }
@@ -240,7 +242,7 @@ async function demonstratePerformanceMonitoring(engine: MinimalGoRulesEngine) {
 
   // Perform monitored operations
   console.log('   Running performance tests...');
-  
+
   for (let i = 0; i < 10; i++) {
     await collector.measure('single-rule', async () => {
       return await engine.executeRule('test-rule', { iteration: i });
@@ -271,10 +273,10 @@ async function demonstratePerformanceMonitoring(engine: MinimalGoRulesEngine) {
   const engineStats = engine.getPerformanceStats();
   console.log('   Engine Performance:');
   console.log(`     Memory Usage: ${engineStats.memoryUsage.toFixed(2)}MB`);
-  
+
   const cacheStats = engine.getCacheStats();
   console.log(`     Cache Usage: ${cacheStats.size}/${cacheStats.maxSize}`);
-  
+
   console.log('');
 }
 
@@ -285,7 +287,7 @@ async function demonstrateVersionManagement(engine: MinimalGoRulesEngine) {
     // Check for version updates
     console.log('   Checking for rule version updates...');
     const versionCheck = await engine.checkVersions();
-    
+
     console.log(`   Version Check Results:`);
     console.log(`     Up to date: ${versionCheck.upToDateRules.length} rules`);
     console.log(`     Outdated: ${versionCheck.outdatedRules.length} rules`);
@@ -293,11 +295,11 @@ async function demonstrateVersionManagement(engine: MinimalGoRulesEngine) {
 
     if (versionCheck.outdatedRules.length > 0) {
       console.log('   Outdated rules:', versionCheck.outdatedRules);
-      
+
       // Refresh outdated rules
       console.log('   Refreshing outdated rules...');
       const refreshResult = await engine.refreshCache(versionCheck.outdatedRules);
-      
+
       console.log(`   Refresh Results:`);
       console.log(`     Refreshed: ${refreshResult.refreshedRules.length} rules`);
       console.log(`     Failed: ${refreshResult.failedRules.size} rules`);
@@ -338,7 +340,7 @@ async function demonstrateBatchProcessing(engine: MinimalGoRulesEngine) {
 
     private scheduleProcessing() {
       if (this.processing) return;
-      
+
       if (this.queue.length >= this.batchSize) {
         this.processBatch();
       } else {
@@ -352,10 +354,10 @@ async function demonstrateBatchProcessing(engine: MinimalGoRulesEngine) {
 
     private async processBatch() {
       if (this.processing || this.queue.length === 0) return;
-      
+
       this.processing = true;
       const batch = this.queue.splice(0, this.batchSize);
-      
+
       try {
         // Group by rule ID for efficiency
         const ruleGroups = new Map<string, typeof batch>();
@@ -381,7 +383,7 @@ async function demonstrateBatchProcessing(engine: MinimalGoRulesEngine) {
         }
       } finally {
         this.processing = false;
-        
+
         // Schedule next batch if queue has items
         if (this.queue.length > 0) {
           this.scheduleProcessing();
@@ -394,22 +396,22 @@ async function demonstrateBatchProcessing(engine: MinimalGoRulesEngine) {
 
   console.log('   Processing batch requests...');
   const startTime = Date.now();
-  
+
   // Simulate high-throughput scenario
   const promises = [];
   for (let i = 0; i < 100; i++) {
     promises.push(
       batchProcessor.executeRule('batch-test-rule', {
         requestId: i,
-        timestamp: Date.now()
-      })
+        timestamp: Date.now(),
+      }),
     );
   }
 
   try {
     const results = await Promise.allSettled(promises);
-    const successful = results.filter(r => r.status === 'fulfilled').length;
-    const failed = results.filter(r => r.status === 'rejected').length;
+    const successful = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.filter((r) => r.status === 'rejected').length;
     const duration = Date.now() - startTime;
 
     console.log(`   Batch Processing Results:`);
@@ -417,7 +419,9 @@ async function demonstrateBatchProcessing(engine: MinimalGoRulesEngine) {
     console.log(`     Successful: ${successful}`);
     console.log(`     Failed: ${failed}`);
     console.log(`     Duration: ${duration}ms`);
-    console.log(`     Throughput: ${(promises.length / (duration / 1000)).toFixed(0)} requests/sec`);
+    console.log(
+      `     Throughput: ${(promises.length / (duration / 1000)).toFixed(0)} requests/sec`,
+    );
   } catch (error) {
     console.error('   Batch processing error:', error.message);
   }
@@ -428,10 +432,7 @@ async function demonstrateCustomExecutionPatterns(engine: MinimalGoRulesEngine) 
   console.log('6. Custom Execution Patterns:');
 
   // Pipeline execution pattern
-  const executePipeline = async (
-    ruleIds: string[],
-    initialInput: Record<string, unknown>
-  ) => {
+  const executePipeline = async (ruleIds: string[], initialInput: Record<string, unknown>) => {
     let currentInput = { ...initialInput };
     const results: Array<{ ruleId: string; input: any; output: any }> = [];
 
@@ -439,9 +440,9 @@ async function demonstrateCustomExecutionPatterns(engine: MinimalGoRulesEngine) 
       try {
         console.log(`   Executing pipeline step: ${ruleId}`);
         const output = await engine.executeRule(ruleId, currentInput);
-        
+
         results.push({ ruleId, input: currentInput, output });
-        
+
         // Use output as input for next rule
         currentInput = { ...currentInput, ...output };
       } catch (error) {
@@ -458,15 +459,15 @@ async function demonstrateCustomExecutionPatterns(engine: MinimalGoRulesEngine) 
     conditionRule: string,
     trueRules: string[],
     falseRules: string[],
-    input: Record<string, unknown>
+    input: Record<string, unknown>,
   ) => {
     try {
       console.log(`   Evaluating condition: ${conditionRule}`);
       const condition = await engine.executeRule(conditionRule, input);
-      
+
       const rulesToExecute = condition ? trueRules : falseRules;
       console.log(`   Condition result: ${condition}, executing ${rulesToExecute.length} rules`);
-      
+
       return await engine.executeRules(rulesToExecute, input);
     } catch (error) {
       console.error('   Conditional execution error:', error.message);
@@ -478,7 +479,7 @@ async function demonstrateCustomExecutionPatterns(engine: MinimalGoRulesEngine) 
   console.log('   Testing pipeline execution...');
   const pipelineResults = await executePipeline(
     ['input-validation', 'data-enrichment', 'business-logic'],
-    { userId: 12345, action: 'purchase' }
+    { userId: 12345, action: 'purchase' },
   );
   console.log(`   Pipeline completed with ${pipelineResults.length} steps`);
 
@@ -488,9 +489,9 @@ async function demonstrateCustomExecutionPatterns(engine: MinimalGoRulesEngine) 
     'user-type-check',
     ['premium-user-rules'],
     ['standard-user-rules'],
-    { userId: 12345 }
+    { userId: 12345 },
   );
-  
+
   if (conditionalResults) {
     console.log(`   Conditional execution completed: ${conditionalResults.results.size} rules`);
   }
@@ -514,11 +515,11 @@ async function demonstrateMemoryOptimization(engine: MinimalGoRulesEngine) {
   // Simulate memory-intensive operations
   console.log('   Performing memory-intensive operations...');
   const results = [];
-  
+
   for (let i = 0; i < 50; i++) {
     const result = await engine.executeRule('memory-test-rule', {
       iteration: i,
-      data: new Array(1000).fill(`data-${i}`)
+      data: new Array(1000).fill(`data-${i}`),
     });
     results.push(result);
   }
@@ -538,7 +539,7 @@ async function demonstrateMemoryOptimization(engine: MinimalGoRulesEngine) {
 
   const cacheStats = engine.getCacheStats();
   console.log(`   Cache Memory: ${cacheStats.size} rules cached`);
-  
+
   console.log('');
 }
 

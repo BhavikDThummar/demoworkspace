@@ -20,7 +20,7 @@ export class GoRulesHttpService {
 
   constructor(
     private readonly configService: GoRulesConfigService,
-    private readonly resilienceService: GoRulesResilienceService
+    private readonly resilienceService: GoRulesResilienceService,
   ) {}
 
   /**
@@ -28,12 +28,12 @@ export class GoRulesHttpService {
    */
   async loadRule(ruleId: string): Promise<Buffer> {
     const config = this.configService.getConfig();
-    
+
     const requestConfig: ApiRequestConfig = {
       method: 'GET',
       url: `${config.apiUrl}/api/v1/rules/${ruleId}`,
       headers: {
-        'Authorization': `Bearer ${config.apiKey}`,
+        Authorization: `Bearer ${config.apiKey}`,
         'Content-Type': 'application/json',
         'User-Agent': 'GoRules-NestJS-Client/1.0.0',
       },
@@ -62,7 +62,7 @@ export class GoRulesHttpService {
             windowSize: 60000,
             strategy: 'delay',
           },
-        }
+        },
       );
       return Buffer.from(response.data);
     } catch (error) {
@@ -76,12 +76,12 @@ export class GoRulesHttpService {
    */
   async getRuleMetadata(ruleId: string): Promise<RuleMetadata> {
     const config = this.configService.getConfig();
-    
+
     const requestConfig: ApiRequestConfig = {
       method: 'GET',
       url: `${config.apiUrl}/api/v1/rules/${ruleId}/metadata`,
       headers: {
-        'Authorization': `Bearer ${config.apiKey}`,
+        Authorization: `Bearer ${config.apiKey}`,
         'Content-Type': 'application/json',
       },
       timeout: config.timeout,
@@ -118,15 +118,15 @@ export class GoRulesHttpService {
   async executeRuleViaApi<T extends RuleInputData, R = unknown>(
     ruleId: string,
     input: T,
-    options?: { trace?: boolean; timeout?: number }
+    options?: { trace?: boolean; timeout?: number },
   ): Promise<{ result: R; trace?: any; performance: string }> {
     const config = this.configService.getConfig();
-    
+
     const requestConfig: ApiRequestConfig = {
       method: 'POST',
       url: `${config.apiUrl}/api/v1/rules/${ruleId}/execute`,
       headers: {
-        'Authorization': `Bearer ${config.apiKey}`,
+        Authorization: `Bearer ${config.apiKey}`,
         'Content-Type': 'application/json',
       },
       body: {
@@ -158,12 +158,12 @@ export class GoRulesHttpService {
    */
   async validateRuleExists(ruleId: string): Promise<boolean> {
     const config = this.configService.getConfig();
-    
+
     const requestConfig: ApiRequestConfig = {
       method: 'HEAD',
       url: `${config.apiUrl}/api/v1/rules/${ruleId}`,
       headers: {
-        'Authorization': `Bearer ${config.apiKey}`,
+        Authorization: `Bearer ${config.apiKey}`,
       },
       timeout: config.timeout,
       retries: 1, // Fewer retries for validation
@@ -177,7 +177,7 @@ export class GoRulesHttpService {
       if (this.isHttpError(error) && error.status === HttpStatusCode.NOT_FOUND) {
         return false;
       }
-      
+
       // For other errors, we can't determine existence
       this.logger.warn(`Failed to validate rule existence for ${ruleId}`, error);
       return false;
@@ -193,7 +193,7 @@ export class GoRulesHttpService {
     timestamp: Date;
   }> {
     const config = this.configService.getConfig();
-    
+
     const requestConfig: ApiRequestConfig = {
       method: 'GET',
       url: `${config.apiUrl}/health`,
@@ -230,14 +230,14 @@ export class GoRulesHttpService {
     let lastError: unknown;
 
     const maxRetries = config.retries || 0;
-    
+
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         if (attempt > 0) {
           // Exponential backoff: wait 2^attempt * 100ms
           const delay = Math.pow(2, attempt - 1) * 100;
           await this.sleep(delay);
-          
+
           this.logger.debug(`Retrying request (attempt ${attempt}/${maxRetries})`, {
             url: config.url,
             method: config.method,
@@ -246,9 +246,9 @@ export class GoRulesHttpService {
         }
 
         const response = await this.executeHttpRequest<T>(config);
-        
+
         const duration = Date.now() - startTime;
-        
+
         if (this.configService.get('enableLogging')) {
           this.logger.debug('HTTP request completed', {
             url: config.url,
@@ -262,13 +262,15 @@ export class GoRulesHttpService {
         return response;
       } catch (error) {
         lastError = error;
-        
+
         // Don't retry on certain errors
         if (this.isHttpError(error)) {
-          if (error.status === HttpStatusCode.UNAUTHORIZED ||
-              error.status === HttpStatusCode.FORBIDDEN ||
-              error.status === HttpStatusCode.NOT_FOUND ||
-              error.status === HttpStatusCode.BAD_REQUEST) {
+          if (
+            error.status === HttpStatusCode.UNAUTHORIZED ||
+            error.status === HttpStatusCode.FORBIDDEN ||
+            error.status === HttpStatusCode.NOT_FOUND ||
+            error.status === HttpStatusCode.BAD_REQUEST
+          ) {
             break; // Don't retry client errors
           }
         }
@@ -281,7 +283,7 @@ export class GoRulesHttpService {
 
     // All attempts failed
     const duration = Date.now() - startTime;
-    
+
     this.logger.error('HTTP request failed after all retries', {
       url: config.url,
       method: config.method,
@@ -299,7 +301,7 @@ export class GoRulesHttpService {
   private async executeHttpRequest<T>(config: ApiRequestConfig): Promise<ApiResponse<T>> {
     // This is a placeholder implementation
     // In a real implementation, you would use a library like axios, node-fetch, or the built-in fetch
-    
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), config.timeout || 30000);
 
@@ -316,15 +318,15 @@ export class GoRulesHttpService {
 
       let data: T;
       const contentType = response.headers.get('content-type');
-      
+
       if (contentType?.includes('application/json')) {
-        data = await response.json() as T;
+        data = (await response.json()) as T;
       } else if (config.url.includes('/rules/') && !config.url.includes('/metadata')) {
         // For rule loading, expect binary data
         const arrayBuffer = await response.arrayBuffer();
         data = arrayBuffer as T;
       } else {
-        data = await response.text() as T;
+        data = (await response.text()) as T;
       }
 
       if (!response.ok) {
@@ -348,16 +350,16 @@ export class GoRulesHttpService {
       };
     } catch (error) {
       clearTimeout(timeoutId);
-      
+
       if (error instanceof Error && error.name === 'AbortError') {
         throw new GoRulesException(
           GoRulesErrorCode.TIMEOUT,
           `Request timeout after ${config.timeout}ms`,
           { url: config.url, timeout: config.timeout },
-          true
+          true,
         );
       }
-      
+
       throw error;
     }
   }
@@ -376,7 +378,9 @@ export class GoRulesHttpService {
   /**
    * Check if error is an HTTP error
    */
-  private isHttpError(error: unknown): error is { status: number; statusText: string; data: unknown } {
+  private isHttpError(
+    error: unknown,
+  ): error is { status: number; statusText: string; data: unknown } {
     return (
       typeof error === 'object' &&
       error !== null &&
@@ -401,34 +405,34 @@ export class GoRulesHttpService {
             GoRulesErrorCode.AUTHENTICATION_FAILED,
             `Authentication failed: ${message}`,
             { httpStatus: error.status, httpData: error.data },
-            false
+            false,
           );
-        
+
         case HttpStatusCode.NOT_FOUND:
           return new GoRulesException(
             GoRulesErrorCode.RULE_NOT_FOUND,
             `Resource not found: ${message}`,
             { httpStatus: error.status, httpData: error.data },
-            false
+            false,
           );
-        
+
         case HttpStatusCode.BAD_REQUEST:
         case HttpStatusCode.UNPROCESSABLE_ENTITY:
           return new GoRulesException(
             GoRulesErrorCode.INVALID_INPUT,
             `Invalid request: ${message}`,
             { httpStatus: error.status, httpData: error.data },
-            false
+            false,
           );
-        
+
         case HttpStatusCode.TOO_MANY_REQUESTS:
           return new GoRulesException(
             GoRulesErrorCode.RATE_LIMIT_EXCEEDED,
             `Rate limit exceeded: ${message}`,
             { httpStatus: error.status, httpData: error.data },
-            true
+            true,
           );
-        
+
         case HttpStatusCode.INTERNAL_SERVER_ERROR:
         case HttpStatusCode.BAD_GATEWAY:
         case HttpStatusCode.SERVICE_UNAVAILABLE:
@@ -437,15 +441,15 @@ export class GoRulesHttpService {
             GoRulesErrorCode.NETWORK_ERROR,
             `Server error: ${message}`,
             { httpStatus: error.status, httpData: error.data },
-            true
+            true,
           );
-        
+
         default:
           return new GoRulesException(
             GoRulesErrorCode.INTERNAL_ERROR,
             `HTTP error: ${message}`,
             { httpStatus: error.status, httpData: error.data },
-            error.status >= 500
+            error.status >= 500,
           );
       }
     }
@@ -454,7 +458,7 @@ export class GoRulesHttpService {
       GoRulesErrorCode.INTERNAL_ERROR,
       message,
       { originalError: error },
-      false
+      false,
     );
   }
 
@@ -462,6 +466,6 @@ export class GoRulesHttpService {
    * Sleep for specified milliseconds
    */
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

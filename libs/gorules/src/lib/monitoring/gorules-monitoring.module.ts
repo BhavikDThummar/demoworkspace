@@ -7,15 +7,7 @@ import { GoRulesMonitoringService } from './gorules-monitoring.service.js';
  * Module for GoRules monitoring and logging services
  */
 @Module({
-  providers: [
-    GoRulesLoggerService,
-    GoRulesMetricsService,
-    GoRulesMonitoringService,
-  ],
-  exports: [
-    GoRulesLoggerService,
-    GoRulesMetricsService,
-    GoRulesMonitoringService,
-  ],
+  providers: [GoRulesLoggerService, GoRulesMetricsService, GoRulesMonitoringService],
+  exports: [GoRulesLoggerService, GoRulesMetricsService, GoRulesMonitoringService],
 })
 export class GoRulesMonitoringModule {}

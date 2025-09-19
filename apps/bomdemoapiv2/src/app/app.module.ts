@@ -15,15 +15,10 @@ import { MinimalGoRulesController } from './examples/minimal-gorules.controller'
     // Minimal GoRules Engine with environment-based configuration
     MinimalGoRulesModule.forRootWithConfig({
       autoInitialize: true, // Auto-initialize on app startup
-      configKey: 'minimalGoRules' // Look for config under this key, fallback to env vars
+      configKey: 'minimalGoRules', // Look for config under this key, fallback to env vars
     }),
   ],
-  controllers: [
-    AppController,
-    MinimalGoRulesController
-  ],
-  providers: [
-    AppService,
-  ],
+  controllers: [AppController, MinimalGoRulesController],
+  providers: [AppService],
 })
 export class AppModule {}

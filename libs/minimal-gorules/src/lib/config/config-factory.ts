@@ -25,7 +25,7 @@ export const ENV_VARS = {
   ENABLE_CONNECTION_POOLING: 'GORULES_ENABLE_CONNECTION_POOLING',
   ENABLE_REQUEST_BATCHING: 'GORULES_ENABLE_REQUEST_BATCHING',
   ENABLE_COMPRESSION: 'GORULES_ENABLE_COMPRESSION',
-  COMPRESSION_ALGORITHM: 'GORULES_COMPRESSION_ALGORITHM'
+  COMPRESSION_ALGORITHM: 'GORULES_COMPRESSION_ALGORITHM',
 } as const;
 
 /**
@@ -44,7 +44,7 @@ export const DEFAULT_CONFIG: Partial<MinimalGoRulesConfig> = {
   enableConnectionPooling: true,
   enableRequestBatching: true,
   enableCompression: true,
-  compressionAlgorithm: 'gzip'
+  compressionAlgorithm: 'gzip',
 } as const;
 
 /**
@@ -172,16 +172,13 @@ export class ConfigFactory {
     const config = {
       ...DEFAULT_CONFIG,
       ...envConfig,
-      ...overrides
+      ...overrides,
     } as MinimalGoRulesConfig;
 
     // Validate the final configuration
     const validation = this.validate(config);
     if (!validation.isValid) {
-      throw new ConfigValidationError(
-        'Configuration validation failed',
-        validation.errors
-      );
+      throw new ConfigValidationError('Configuration validation failed', validation.errors);
     }
 
     return config;
@@ -198,7 +195,7 @@ export class ConfigFactory {
       batchSize: 10,
       enablePerformanceOptimizations: false,
       enablePerformanceMetrics: true,
-      ...overrides
+      ...overrides,
     };
 
     return this.fromEnvironment(devConfig);
@@ -218,7 +215,7 @@ export class ConfigFactory {
       enableRequestBatching: true,
       enableCompression: true,
       compressionAlgorithm: 'gzip',
-      ...overrides
+      ...overrides,
     };
 
     return this.fromEnvironment(prodConfig);
@@ -237,21 +234,18 @@ export class ConfigFactory {
       batchSize: 5,
       enablePerformanceOptimizations: false,
       enablePerformanceMetrics: false,
-      ...overrides
+      ...overrides,
     };
 
     const config = {
       ...DEFAULT_CONFIG,
-      ...testConfig
+      ...testConfig,
     } as MinimalGoRulesConfig;
 
     // Skip environment loading for testing
     const validation = this.validate(config);
     if (!validation.isValid) {
-      throw new ConfigValidationError(
-        'Test configuration validation failed',
-        validation.errors
-      );
+      throw new ConfigValidationError('Test configuration validation failed', validation.errors);
     }
 
     return config;
@@ -281,7 +275,10 @@ export class ConfigFactory {
       errors.push('API key must be a non-empty string');
     }
 
-    if (!config.projectId || (typeof config.projectId === 'string' && config.projectId.trim().length === 0)) {
+    if (
+      !config.projectId ||
+      (typeof config.projectId === 'string' && config.projectId.trim().length === 0)
+    ) {
       errors.push('Project ID is required');
     } else if (typeof config.projectId !== 'string') {
       errors.push('Project ID must be a non-empty string');
@@ -315,24 +312,30 @@ export class ConfigFactory {
 
     // Memory threshold validations
     if (config.memoryWarningThreshold !== undefined) {
-      if (typeof config.memoryWarningThreshold !== 'number' || 
-          config.memoryWarningThreshold <= 0 || 
-          config.memoryWarningThreshold >= 1) {
+      if (
+        typeof config.memoryWarningThreshold !== 'number' ||
+        config.memoryWarningThreshold <= 0 ||
+        config.memoryWarningThreshold >= 1
+      ) {
         errors.push('Memory warning threshold must be a number between 0 and 1');
       }
     }
 
     if (config.memoryCriticalThreshold !== undefined) {
-      if (typeof config.memoryCriticalThreshold !== 'number' || 
-          config.memoryCriticalThreshold <= 0 || 
-          config.memoryCriticalThreshold >= 1) {
+      if (
+        typeof config.memoryCriticalThreshold !== 'number' ||
+        config.memoryCriticalThreshold <= 0 ||
+        config.memoryCriticalThreshold >= 1
+      ) {
         errors.push('Memory critical threshold must be a number between 0 and 1');
       }
     }
 
     // Ensure critical threshold is higher than warning threshold
-    if (config.memoryWarningThreshold !== undefined && 
-        config.memoryCriticalThreshold !== undefined) {
+    if (
+      config.memoryWarningThreshold !== undefined &&
+      config.memoryCriticalThreshold !== undefined
+    ) {
       if (config.memoryCriticalThreshold <= config.memoryWarningThreshold) {
         errors.push('Memory critical threshold must be higher than warning threshold');
       }
@@ -353,7 +356,7 @@ export class ConfigFactory {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 

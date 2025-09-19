@@ -1,15 +1,15 @@
 import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { 
-  GoRulesConfig, 
-  GoRulesAsyncOptions, 
-  GoRulesOptionsFactory
+import {
+  GoRulesConfig,
+  GoRulesAsyncOptions,
+  GoRulesOptionsFactory,
 } from './config/gorules-config.interface.js';
 import { GoRulesConfigService } from './config/gorules.config.js';
-import { 
-  GoRulesConfigFactory, 
-  GoRulesAsyncConfigFactory, 
-  GoRulesEnvironmentConfigFactory 
+import {
+  GoRulesConfigFactory,
+  GoRulesAsyncConfigFactory,
+  GoRulesEnvironmentConfigFactory,
 } from './config/gorules-config.factory.js';
 import { GoRulesService } from './services/gorules.service.js';
 import { GoRulesZenService } from './services/gorules-zen.service.js';
@@ -67,7 +67,7 @@ export class GoRulesModule {
       useFactory: (
         goRulesConfig: GoRulesConfig,
         loggerService: GoRulesLoggerService,
-        metricsService: GoRulesMetricsService
+        metricsService: GoRulesMetricsService,
       ) => {
         return new GoRulesMonitoringService(goRulesConfig, loggerService, metricsService);
       },
@@ -89,14 +89,14 @@ export class GoRulesModule {
         resilienceService: GoRulesResilienceService,
         loggerService: GoRulesLoggerService,
         metricsService: GoRulesMetricsService,
-        monitoringService: GoRulesMonitoringService
+        monitoringService: GoRulesMonitoringService,
       ) => {
         return new GoRulesService(
           configService,
           resilienceService,
           loggerService,
           metricsService,
-          monitoringService
+          monitoringService,
         );
       },
       inject: [
@@ -180,7 +180,7 @@ export class GoRulesModule {
       useFactory: (
         goRulesConfig: GoRulesConfig,
         loggerService: GoRulesLoggerService,
-        metricsService: GoRulesMetricsService
+        metricsService: GoRulesMetricsService,
       ) => {
         return new GoRulesMonitoringService(goRulesConfig, loggerService, metricsService);
       },
@@ -202,14 +202,14 @@ export class GoRulesModule {
         resilienceService: GoRulesResilienceService,
         loggerService: GoRulesLoggerService,
         metricsService: GoRulesMetricsService,
-        monitoringService: GoRulesMonitoringService
+        monitoringService: GoRulesMonitoringService,
       ) => {
         return new GoRulesService(
           configService,
           resilienceService,
           loggerService,
           metricsService,
-          monitoringService
+          monitoringService,
         );
       },
       inject: [
@@ -363,7 +363,7 @@ export class GoRulesFeatureModule {
    */
   static forFeature(config: GoRulesConfig): DynamicModule {
     const module = GoRulesModule.forRoot(config);
-    
+
     // Remove @Global decorator behavior by creating a new module
     return {
       module: GoRulesFeatureModule,
@@ -378,7 +378,7 @@ export class GoRulesFeatureModule {
    */
   static forFeatureAsync(options: GoRulesAsyncOptions): DynamicModule {
     const module = GoRulesModule.forRootAsync(options);
-    
+
     // Remove @Global decorator behavior by creating a new module
     return {
       module: GoRulesFeatureModule,

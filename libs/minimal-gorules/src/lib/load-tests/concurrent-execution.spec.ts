@@ -14,7 +14,7 @@ global.fetch = mockFetch;
 describe('Concurrent Execution Load Tests', () => {
   let engine: MinimalGoRulesEngine;
   let benchmark: PerformanceBenchmark;
-  
+
   const config: MinimalGoRulesConfig = {
     apiUrl: 'https://api.gorules.io',
     apiKey: 'test-api-key',
@@ -23,7 +23,7 @@ describe('Concurrent Execution Load Tests', () => {
     httpTimeout: 10000,
     batchSize: 50,
     enablePerformanceOptimizations: true,
-    enablePerformanceMetrics: true
+    enablePerformanceMetrics: true,
   };
 
   beforeAll(() => {
@@ -33,14 +33,14 @@ describe('Concurrent Execution Load Tests', () => {
         warmupIterations: 10,
         concurrency: 20,
         timeout: 60000,
-        sampleDataSize: 1024
+        sampleDataSize: 1024,
       },
       {
         maxLatency: 100, // 100ms
         minThroughput: 500, // 500 ops/sec
         maxMemoryPerOperation: 2 * 1024 * 1024, // 2MB
-        maxMemoryGrowthRate: 1024 // 1KB per operation
-      }
+        maxMemoryGrowthRate: 1024, // 1KB per operation
+      },
     );
   });
 
@@ -51,25 +51,28 @@ describe('Concurrent Execution Load Tests', () => {
     // Mock initialization with multiple test rules
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({
-        rules: Array.from({ length: 50 }, (_, i) => ({
-          id: `load-rule-${i + 1}`,
-          name: `Load Test Rule ${i + 1}`,
-          version: '1.0.0',
-          tags: [`group-${i % 5}`, 'load-test'],
-          lastModified: new Date().toISOString(),
-          content: Buffer.from(JSON.stringify({
-            conditions: [
-              { field: 'value', operator: 'gte', value: i },
-              { field: 'category', operator: 'eq', value: `cat-${i % 3}` }
-            ],
-            actions: [
-              { type: 'set', field: 'result', value: i * 10 },
-              { type: 'set', field: 'processed', value: true }
-            ]
-          })).toString('base64')
-        }))
-      })
+      json: () =>
+        Promise.resolve({
+          rules: Array.from({ length: 50 }, (_, i) => ({
+            id: `load-rule-${i + 1}`,
+            name: `Load Test Rule ${i + 1}`,
+            version: '1.0.0',
+            tags: [`group-${i % 5}`, 'load-test'],
+            lastModified: new Date().toISOString(),
+            content: Buffer.from(
+              JSON.stringify({
+                conditions: [
+                  { field: 'value', operator: 'gte', value: i },
+                  { field: 'category', operator: 'eq', value: `cat-${i % 3}` },
+                ],
+                actions: [
+                  { type: 'set', field: 'result', value: i * 10 },
+                  { type: 'set', field: 'processed', value: true },
+                ],
+              }),
+            ).toString('base64'),
+          })),
+        }),
     });
 
     await engine.initialize();
@@ -82,11 +85,11 @@ describe('Concurrent Execution Load Tests', () => {
           result: {
             result: ruleIndex * 10,
             processed: true,
-            ruleId
+            ruleId,
           },
-          performance: `${Math.random() * 10 + 5}ms`
+          performance: `${Math.random() * 10 + 5}ms`,
         });
-      })
+      }),
     };
 
     (engine as any).executionEngine.zenEngine = mockZenEngine;
@@ -102,9 +105,9 @@ describe('Concurrent Execution Load Tests', () => {
         const ruleId = `load-rule-${Math.floor(Math.random() * 50) + 1}`;
         const input = {
           value: Math.floor(Math.random() * 100),
-          category: `cat-${Math.floor(Math.random() * 3)}`
+          category: `cat-${Math.floor(Math.random() * 3)}`,
         };
-        
+
         await engine.executeRule(ruleId, input);
       });
 
@@ -115,7 +118,7 @@ describe('Concurrent Execution Load Tests', () => {
 
     it('should maintain performance under sustained load', async () => {
       const results = [];
-      
+
       // Run multiple benchmark cycles
       for (let cycle = 0; cycle < 3; cycle++) {
         const result = await benchmark.runTest(`sustained-load-cycle-${cycle}`, async () => {
@@ -124,21 +127,21 @@ describe('Concurrent Execution Load Tests', () => {
             const input = { value: Math.random() * 100 };
             return engine.executeRule(ruleId, input);
           });
-          
+
           await Promise.all(promises);
         });
-        
+
         results.push(result);
       }
 
       // Performance should not degrade significantly across cycles
-      const throughputs = results.map(r => r.throughput);
+      const throughputs = results.map((r) => r.throughput);
       const avgThroughput = throughputs.reduce((sum, t) => sum + t, 0) / throughputs.length;
-      
+
       expect(avgThroughput).toBeGreaterThan(50);
-      
+
       // Variance should be reasonable (within 50% of average)
-      throughputs.forEach(throughput => {
+      throughputs.forEach((throughput) => {
         expect(throughput).toBeGreaterThan(avgThroughput * 0.5);
         expect(throughput).toBeLessThan(avgThroughput * 1.5);
       });
@@ -151,9 +154,9 @@ describe('Concurrent Execution Load Tests', () => {
         const ruleIds = Array.from({ length: 5 }, (_, i) => `load-rule-${i + 1}`);
         const input = {
           value: Math.floor(Math.random() * 100),
-          category: `cat-${Math.floor(Math.random() * 3)}`
+          category: `cat-${Math.floor(Math.random() * 3)}`,
         };
-        
+
         await engine.executeRules(ruleIds, input);
       });
 
@@ -168,11 +171,9 @@ describe('Concurrent Execution Load Tests', () => {
 
       for (const batchSize of batchSizes) {
         const result = await benchmark.runTest(`batch-size-${batchSize}`, async () => {
-          const ruleIds = Array.from({ length: batchSize }, (_, i) => 
-            `load-rule-${(i % 50) + 1}`
-          );
+          const ruleIds = Array.from({ length: batchSize }, (_, i) => `load-rule-${(i % 50) + 1}`);
           const input = { value: Math.random() * 100 };
-          
+
           await engine.executeRules(ruleIds, input);
         });
 
@@ -183,7 +184,7 @@ describe('Concurrent Execution Load Tests', () => {
       for (let i = 1; i < results.length; i++) {
         const prev = results[i - 1];
         const curr = results[i];
-        
+
         // Total rule throughput should increase
         const prevRuleThroughput = prev.throughput * prev.batchSize;
         const currRuleThroughput = curr.throughput * curr.batchSize;
@@ -198,9 +199,9 @@ describe('Concurrent Execution Load Tests', () => {
         const tag = `group-${Math.floor(Math.random() * 5)}`;
         const input = {
           value: Math.floor(Math.random() * 100),
-          category: `cat-${Math.floor(Math.random() * 3)}`
+          category: `cat-${Math.floor(Math.random() * 3)}`,
         };
-        
+
         await engine.executeByTags([tag], input);
       });
 
@@ -211,7 +212,7 @@ describe('Concurrent Execution Load Tests', () => {
     it('should handle mixed tag and ID executions', async () => {
       const result = await benchmark.runThroughputTest('mixed-execution-types', async () => {
         const executionType = Math.random();
-        
+
         if (executionType < 0.33) {
           // Single rule execution
           const ruleId = `load-rule-${Math.floor(Math.random() * 50) + 1}`;
@@ -235,16 +236,16 @@ describe('Concurrent Execution Load Tests', () => {
   describe('Memory Usage Under Load', () => {
     it('should not leak memory during sustained execution', async () => {
       const initialMemory = process.memoryUsage().heapUsed;
-      
+
       // Perform many operations
       for (let batch = 0; batch < 10; batch++) {
         const promises = Array.from({ length: 20 }, () => {
           const ruleId = `load-rule-${Math.floor(Math.random() * 50) + 1}`;
           return engine.executeRule(ruleId, { value: Math.random() * 100 });
         });
-        
+
         await Promise.all(promises);
-        
+
         // Force garbage collection periodically
         if (global.gc && batch % 3 === 0) {
           global.gc();
@@ -258,7 +259,7 @@ describe('Concurrent Execution Load Tests', () => {
 
       const finalMemory = process.memoryUsage().heapUsed;
       const memoryGrowth = finalMemory - initialMemory;
-      
+
       // Memory growth should be reasonable (less than 10MB for 200 operations)
       expect(memoryGrowth).toBeLessThan(10 * 1024 * 1024);
     });
@@ -266,25 +267,24 @@ describe('Concurrent Execution Load Tests', () => {
     it('should handle memory pressure gracefully', async () => {
       // Create memory pressure by allocating large objects
       const largeObjects: Buffer[] = [];
-      
+
       try {
         // Allocate memory while executing rules
         for (let i = 0; i < 5; i++) {
           largeObjects.push(Buffer.alloc(10 * 1024 * 1024)); // 10MB each
-          
+
           // Execute some rules under memory pressure
           const promises = Array.from({ length: 5 }, () => {
             const ruleId = `load-rule-${Math.floor(Math.random() * 50) + 1}`;
             return engine.executeRule(ruleId, { value: Math.random() * 100 });
           });
-          
+
           await Promise.all(promises);
         }
-        
+
         // Should still be able to execute rules
         const result = await engine.executeRule('load-rule-1', { value: 50 });
         expect(result).toBeDefined();
-        
       } finally {
         // Clean up large objects
         largeObjects.length = 0;
@@ -329,21 +329,23 @@ describe('Concurrent Execution Load Tests', () => {
     it('should handle partial failures in concurrent executions', async () => {
       // Mock some rules to fail
       const originalEvaluate = (engine as any).executionEngine.zenEngine.evaluate;
-      (engine as any).executionEngine.zenEngine.evaluate = jest.fn().mockImplementation((ruleId, input) => {
-        // Make every 5th rule fail
-        const ruleIndex = parseInt(ruleId.split('-')[2]);
-        if (ruleIndex % 5 === 0) {
-          return Promise.reject(new Error(`Rule ${ruleId} failed`));
-        }
-        return originalEvaluate(ruleId, input);
-      });
+      (engine as any).executionEngine.zenEngine.evaluate = jest
+        .fn()
+        .mockImplementation((ruleId, input) => {
+          // Make every 5th rule fail
+          const ruleIndex = parseInt(ruleId.split('-')[2]);
+          if (ruleIndex % 5 === 0) {
+            return Promise.reject(new Error(`Rule ${ruleId} failed`));
+          }
+          return originalEvaluate(ruleId, input);
+        });
 
       const result = await benchmark.runTest('partial-failure-handling', async () => {
         const promises = Array.from({ length: 10 }, (_, i) => {
           const ruleId = `load-rule-${i + 1}`;
           return engine.executeRule(ruleId, { value: i }).catch(() => null);
         });
-        
+
         await Promise.all(promises);
       });
 
@@ -358,16 +360,18 @@ describe('Concurrent Execution Load Tests', () => {
 
       // Mock temporary failures
       const originalEvaluate = (engine as any).executionEngine.zenEngine.evaluate;
-      (engine as any).executionEngine.zenEngine.evaluate = jest.fn().mockImplementation((ruleId, input) => {
-        if (failureCount < maxFailures) {
-          failureCount++;
-          return Promise.reject(new Error('Temporary failure'));
-        }
-        return originalEvaluate(ruleId, input);
-      });
+      (engine as any).executionEngine.zenEngine.evaluate = jest
+        .fn()
+        .mockImplementation((ruleId, input) => {
+          if (failureCount < maxFailures) {
+            failureCount++;
+            return Promise.reject(new Error('Temporary failure'));
+          }
+          return originalEvaluate(ruleId, input);
+        });
 
       const results = [];
-      
+
       // Execute rules, some will fail initially
       for (let i = 0; i < 20; i++) {
         try {
@@ -391,30 +395,31 @@ describe('Concurrent Execution Load Tests', () => {
           test: async () => {
             await engine.executeRule('load-rule-1', { value: Math.random() * 100 });
           },
-          type: 'throughput'
+          type: 'throughput',
         },
         {
           name: 'Parallel Rule Execution',
           test: async () => {
-            await engine.executeRules(['load-rule-1', 'load-rule-2', 'load-rule-3'], 
-              { value: Math.random() * 100 });
+            await engine.executeRules(['load-rule-1', 'load-rule-2', 'load-rule-3'], {
+              value: Math.random() * 100,
+            });
           },
-          type: 'latency'
+          type: 'latency',
         },
         {
           name: 'Tag-based Execution',
           test: async () => {
             await engine.executeByTags(['group-0'], { value: Math.random() * 100 });
           },
-          type: 'latency'
+          type: 'latency',
         },
         {
           name: 'Cache Access',
           test: async () => {
             await engine.getRuleMetadata('load-rule-1');
           },
-          type: 'throughput'
-        }
+          type: 'throughput',
+        },
       ]);
 
       expect(suiteResult.passed).toBe(suiteResult.tests.length);
@@ -431,11 +436,11 @@ describe('Concurrent Execution Load Tests', () => {
       const testResults = [
         await benchmark.runTest('baseline-performance', async () => {
           await engine.executeRule('load-rule-1', { value: 50 });
-        })
+        }),
       ];
 
       const validation = benchmark.validateRequirements(testResults);
-      
+
       // Should provide recommendations if performance is suboptimal
       expect(validation.recommendations).toBeDefined();
       expect(Array.isArray(validation.recommendations)).toBe(true);

@@ -9,29 +9,29 @@ import { ReactGoRulesService } from '../react-gorules-service.js';
 // Mock ReactGoRulesService
 const mockService = {
   getAllRuleMetadata: jest.fn(),
-  getRuleMetadata: jest.fn()
+  getRuleMetadata: jest.fn(),
 } as unknown as ReactGoRulesService;
 
 describe('useRuleMetadata', () => {
   const mockMetadata = {
-    'rule1': {
+    rule1: {
       id: 'rule1',
       version: '1.0.0',
       tags: ['tag1', 'tag2'],
-      lastModified: Date.now()
+      lastModified: Date.now(),
     },
-    'rule2': {
+    rule2: {
       id: 'rule2',
       version: '1.0.1',
       tags: ['tag2', 'tag3'],
-      lastModified: Date.now()
+      lastModified: Date.now(),
     },
-    'rule3': {
+    rule3: {
       id: 'rule3',
       version: '1.0.2',
       tags: ['tag1'],
-      lastModified: Date.now()
-    }
+      lastModified: Date.now(),
+    },
   };
 
   beforeEach(() => {
@@ -51,7 +51,7 @@ describe('useRuleMetadata', () => {
     const mockResponse = {
       success: true,
       metadata: mockMetadata,
-      count: 3
+      count: 3,
     };
 
     (mockService.getAllRuleMetadata as jest.Mock).mockResolvedValueOnce(mockResponse);
@@ -60,7 +60,7 @@ describe('useRuleMetadata', () => {
 
     // Wait for auto-load
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockService.getAllRuleMetadata).toHaveBeenCalledTimes(1);
@@ -75,7 +75,7 @@ describe('useRuleMetadata', () => {
 
     // Wait a bit to ensure no auto-load
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
     });
 
     expect(mockService.getAllRuleMetadata).not.toHaveBeenCalled();
@@ -86,7 +86,7 @@ describe('useRuleMetadata', () => {
     const mockResponse = {
       success: true,
       metadata: mockMetadata,
-      count: 3
+      count: 3,
     };
 
     (mockService.getAllRuleMetadata as jest.Mock).mockResolvedValueOnce(mockResponse);
@@ -122,7 +122,7 @@ describe('useRuleMetadata', () => {
   it('should handle unsuccessful API response', async () => {
     const mockResponse = {
       success: false,
-      message: 'API error'
+      message: 'API error',
     };
 
     (mockService.getAllRuleMetadata as jest.Mock).mockResolvedValueOnce(mockResponse);
@@ -142,7 +142,7 @@ describe('useRuleMetadata', () => {
     const singleRuleMetadata = mockMetadata['rule1'];
     const mockResponse = {
       success: true,
-      metadata: singleRuleMetadata
+      metadata: singleRuleMetadata,
     };
 
     (mockService.getRuleMetadata as jest.Mock).mockResolvedValueOnce(mockResponse);
@@ -177,7 +177,7 @@ describe('useRuleMetadata', () => {
     const mockResponse = {
       success: true,
       metadata: mockMetadata,
-      count: 3
+      count: 3,
     };
 
     (mockService.getAllRuleMetadata as jest.Mock).mockResolvedValueOnce(mockResponse);
@@ -213,7 +213,7 @@ describe('useRuleMetadata', () => {
     const mockResponse = {
       success: true,
       metadata: mockMetadata,
-      count: 3
+      count: 3,
     };
 
     (mockService.getAllRuleMetadata as jest.Mock).mockResolvedValueOnce(mockResponse);
@@ -233,7 +233,7 @@ describe('useRuleMetadata', () => {
     const mockResponse = {
       success: true,
       metadata: mockMetadata,
-      count: 3
+      count: 3,
     };
 
     (mockService.getAllRuleMetadata as jest.Mock).mockResolvedValueOnce(mockResponse);
@@ -266,7 +266,7 @@ describe('useRuleMetadata', () => {
     const mockResponse = {
       success: true,
       metadata: mockMetadata,
-      count: 3
+      count: 3,
     };
 
     (mockService.getAllRuleMetadata as jest.Mock).mockResolvedValueOnce(mockResponse);
@@ -295,7 +295,7 @@ describe('useRuleMetadata', () => {
     const mockResponse = {
       success: true,
       metadata: mockMetadata,
-      count: 3
+      count: 3,
     };
 
     (mockService.getAllRuleMetadata as jest.Mock).mockResolvedValue(mockResponse);

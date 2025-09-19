@@ -16,6 +16,7 @@ The examples are organized into two main categories:
 The `BusinessRulesService` demonstrates practical business rule implementations for common enterprise scenarios:
 
 #### Features:
+
 - **Purchase Approval Rules** - Automated approval workflows based on amount, department, and urgency
 - **Supplier Risk Assessment** - Multi-factor risk evaluation for supplier onboarding
 - **Dynamic Pricing Rules** - Complex pricing calculations with discounts and adjustments
@@ -33,7 +34,7 @@ const approvalResult = await businessRulesService.evaluatePurchaseApproval({
   urgency: 'medium',
   category: 'software',
   supplier: 'TechCorp Inc',
-  justification: 'New development tools for the team'
+  justification: 'New development tools for the team',
 });
 
 // Supplier Risk Assessment
@@ -46,7 +47,7 @@ const riskResult = await businessRulesService.assessSupplierRisk({
   previousOrderCount: 25,
   averageDeliveryTime: 7,
   qualityScore: 92,
-  complianceCertifications: ['ISO9001', 'ISO14001']
+  complianceCertifications: ['ISO9001', 'ISO14001'],
 });
 
 // Dynamic Pricing
@@ -57,7 +58,7 @@ const pricingResult = await businessRulesService.calculatePricing({
   productCategory: 'electronics',
   seasonalFactor: 1.1,
   promotionCode: 'SUMMER2024',
-  contractDiscount: 0.05
+  contractDiscount: 0.05,
 });
 ```
 
@@ -112,6 +113,7 @@ curl -X POST http://localhost:3000/business-rules/supplier-risk \
 The `SimpleRulesService` demonstrates fundamental GoRules usage patterns:
 
 #### Features:
+
 - **Basic Rule Execution** - Simple rule execution with error handling
 - **Rule Execution with Tracing** - Debug rule execution with detailed traces
 - **Rule Validation** - Check if rules exist before execution
@@ -128,25 +130,25 @@ The `SimpleRulesService` demonstrates fundamental GoRules usage patterns:
 const result = await simpleRulesService.executeSimpleRule({
   value: 42,
   category: 'test',
-  metadata: { source: 'api-example' }
+  metadata: { source: 'api-example' },
 });
 
 // Rule Execution with Tracing
 const tracedResult = await simpleRulesService.executeRuleWithTracing({
   value: 100,
-  category: 'debug-test'
+  category: 'debug-test',
 });
 
 // Validate and Execute
-const validatedResult = await simpleRulesService.validateAndExecuteRule(
-  'my-rule-id',
-  { value: 50, category: 'validation' }
-);
+const validatedResult = await simpleRulesService.validateAndExecuteRule('my-rule-id', {
+  value: 50,
+  category: 'validation',
+});
 
 // Sequential Execution
 const sequentialResults = await simpleRulesService.executeRulesSequentially([
   { ruleId: 'rule1', input: { value: 10, category: 'seq1' } },
-  { ruleId: 'rule2', input: { value: 20, category: 'seq2' } }
+  { ruleId: 'rule2', input: { value: 20, category: 'seq2' } },
 ]);
 ```
 
@@ -172,6 +174,7 @@ The `SimpleRulesController` provides REST API endpoints for basic rule operation
 Both services use comprehensive input validation with class-validator:
 
 ### Validation Features:
+
 - **Type Safety** - TypeScript interfaces ensure compile-time type checking
 - **Runtime Validation** - class-validator decorators provide runtime validation
 - **Custom Validation Messages** - Clear, actionable error messages
@@ -204,6 +207,7 @@ export class PurchaseApprovalDto {
 The examples demonstrate comprehensive error handling patterns:
 
 ### Error Handling Features:
+
 - **GoRules Exception Handling** - Proper handling of GoRules-specific errors
 - **HTTP Status Code Mapping** - Appropriate HTTP status codes for different error types
 - **Error Response Formatting** - Consistent error response structure
@@ -232,6 +236,7 @@ The examples demonstrate comprehensive error handling patterns:
 Comprehensive test suites are provided for all services:
 
 ### Test Coverage:
+
 - **Unit Tests** - Complete unit test coverage for all service methods
 - **Mock Integration** - Proper mocking of GoRules service dependencies
 - **Error Scenario Testing** - Tests for all error conditions
@@ -256,6 +261,7 @@ npm run test:watch
 The examples use the GoRules library configuration:
 
 ### Environment Variables:
+
 ```env
 GORULES_API_URL=https://triveni.gorules.io
 GORULES_API_KEY=your-api-key-here
@@ -266,6 +272,7 @@ GORULES_ENABLE_LOGGING=true
 ```
 
 ### Module Configuration:
+
 ```typescript
 @Module({
   imports: [
@@ -289,18 +296,21 @@ export class AppModule {}
 The examples demonstrate several best practices:
 
 ### Service Design:
+
 - **Single Responsibility** - Each service has a clear, focused purpose
 - **Dependency Injection** - Proper use of NestJS dependency injection
 - **Error Boundaries** - Clear error handling boundaries
 - **Logging Integration** - Comprehensive logging for monitoring and debugging
 
 ### API Design:
+
 - **RESTful Endpoints** - Following REST conventions
 - **Consistent Response Format** - Standardized response structure
 - **Input Validation** - Comprehensive input validation
 - **Documentation** - Self-documenting endpoints with examples
 
 ### Testing:
+
 - **Comprehensive Coverage** - High test coverage for all scenarios
 - **Mock Isolation** - Proper isolation of units under test
 - **Error Testing** - Testing all error conditions
@@ -309,27 +319,31 @@ The examples demonstrate several best practices:
 ## Getting Started
 
 1. **Install Dependencies**:
+
    ```bash
    npm install
    ```
 
 2. **Configure Environment**:
+
    ```bash
    cp .env.example .env
    # Edit .env with your GoRules configuration
    ```
 
 3. **Start the Application**:
+
    ```bash
    npm run start:dev
    ```
 
 4. **Test the Examples**:
+
    ```bash
    # Get example requests
    curl http://localhost:3000/business-rules/examples
    curl http://localhost:3000/simple-rules/examples
-   
+
    # Test health endpoints
    curl http://localhost:3000/business-rules/health
    curl http://localhost:3000/simple-rules/health
@@ -340,14 +354,17 @@ The examples demonstrate several best practices:
 ### Common Issues:
 
 1. **Rule Not Found Errors**:
+
    - Verify rule IDs match those in your GoRules project
    - Check that rules are published and accessible
 
 2. **Authentication Errors**:
+
    - Verify API key is correct and has proper permissions
    - Check that project ID matches your GoRules project
 
 3. **Timeout Errors**:
+
    - Increase timeout values for complex rules
    - Check network connectivity to GoRules API
 

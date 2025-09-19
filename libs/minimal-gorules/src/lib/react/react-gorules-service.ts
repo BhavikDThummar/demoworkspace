@@ -1,6 +1,6 @@
 /**
  * React service wrapper for API-based rule execution
- * 
+ *
  * This service provides HTTP client functionality for calling NestJS backend endpoints
  * that host the Minimal GoRules Engine.
  */
@@ -15,7 +15,7 @@ import {
   ValidateRuleResponse,
   VersionCheckResponse,
   CacheRefreshResponse,
-  ForceRefreshResponse
+  ForceRefreshResponse,
 } from './interfaces.js';
 
 /**
@@ -25,7 +25,7 @@ export class ReactGoRulesError extends Error {
   constructor(
     message: string,
     public readonly status?: number,
-    public readonly response?: unknown
+    public readonly response?: unknown,
   ) {
     super(message);
     this.name = 'ReactGoRulesError';
@@ -44,24 +44,21 @@ export class ReactGoRulesService {
       withCredentials: false,
       headers: {},
       ...config,
-      apiKey: config.apiKey || undefined
+      apiKey: config.apiKey || undefined,
     } as Required<ReactGoRulesConfig>;
   }
 
   /**
    * Make HTTP request with error handling
    */
-  private async makeRequest<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.config.apiBaseUrl}${endpoint}`;
-    
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...this.config.headers
+      ...this.config.headers,
     };
-    
+
     if (options.headers) {
       Object.assign(headers, options.headers);
     }
@@ -78,7 +75,7 @@ export class ReactGoRulesService {
         ...options,
         headers,
         credentials: this.config.withCredentials ? 'include' : 'same-origin',
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
@@ -88,7 +85,7 @@ export class ReactGoRulesService {
         throw new ReactGoRulesError(
           `HTTP ${response.status}: ${errorText}`,
           response.status,
-          errorText
+          errorText,
         );
       }
 
@@ -96,18 +93,18 @@ export class ReactGoRulesService {
       return data as T;
     } catch (error) {
       clearTimeout(timeoutId);
-      
+
       if (error instanceof ReactGoRulesError) {
         throw error;
       }
-      
+
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
           throw new ReactGoRulesError(`Request timeout after ${this.config.timeout}ms`);
         }
         throw new ReactGoRulesError(`Network error: ${error.message}`);
       }
-      
+
       throw new ReactGoRulesError('Unknown error occurred');
     }
   }
@@ -117,28 +114,26 @@ export class ReactGoRulesService {
    */
   async executeRule<T = unknown>(
     ruleId: string,
-    input: Record<string, unknown>
+    input: Record<string, unknown>,
   ): Promise<ExecuteRuleResponse<T>> {
     const request: ExecuteRuleRequest = {
       ruleId,
-      input
+      input,
     };
 
     return this.makeRequest<ExecuteRuleResponse<T>>('/minimal-gorules/execute-rule', {
       method: 'POST',
-      body: JSON.stringify(request)
+      body: JSON.stringify(request),
     });
   }
 
   /**
    * Execute multiple rules with selector
    */
-  async execute<T = unknown>(
-    request: ExecuteRuleRequest
-  ): Promise<ExecuteRuleResponse<T>> {
+  async execute<T = unknown>(request: ExecuteRuleRequest): Promise<ExecuteRuleResponse<T>> {
     return this.makeRequest<ExecuteRuleResponse<T>>('/minimal-gorules/execute', {
       method: 'POST',
-      body: JSON.stringify(request)
+      body: JSON.stringify(request),
     });
   }
 
@@ -148,17 +143,17 @@ export class ReactGoRulesService {
   async executeByTags<T = unknown>(
     tags: string[],
     input: Record<string, unknown>,
-    mode: 'parallel' | 'sequential' | 'mixed' = 'parallel'
+    mode: 'parallel' | 'sequential' | 'mixed' = 'parallel',
   ): Promise<ExecuteRuleResponse<T>> {
     const request: ExecuteRuleRequest = {
       tags,
       input,
-      mode
+      mode,
     };
 
     return this.makeRequest<ExecuteRuleResponse<T>>('/minimal-gorules/execute-by-tags', {
       method: 'POST',
-      body: JSON.stringify(request)
+      body: JSON.stringify(request),
     });
   }
 
@@ -168,17 +163,17 @@ export class ReactGoRulesService {
   async executeByIds<T = unknown>(
     ruleIds: string[],
     input: Record<string, unknown>,
-    mode: 'parallel' | 'sequential' | 'mixed' = 'parallel'
+    mode: 'parallel' | 'sequential' | 'mixed' = 'parallel',
   ): Promise<ExecuteRuleResponse<T>> {
     const request: ExecuteRuleRequest = {
       ruleIds,
       input,
-      mode
+      mode,
     };
 
     return this.makeRequest<ExecuteRuleResponse<T>>('/minimal-gorules/execute', {
       method: 'POST',
-      body: JSON.stringify(request)
+      body: JSON.stringify(request),
     });
   }
 
@@ -209,7 +204,7 @@ export class ReactGoRulesService {
   async getRulesByTags(tags: string[]): Promise<RulesByTagsResponse> {
     return this.makeRequest<RulesByTagsResponse>('/minimal-gorules/rules/by-tags', {
       method: 'POST',
-      body: JSON.stringify({ tags })
+      body: JSON.stringify({ tags }),
     });
   }
 
@@ -225,7 +220,7 @@ export class ReactGoRulesService {
    */
   async checkVersions(): Promise<VersionCheckResponse> {
     return this.makeRequest<VersionCheckResponse>('/minimal-gorules/cache/check-versions', {
-      method: 'POST'
+      method: 'POST',
     });
   }
 
@@ -234,10 +229,10 @@ export class ReactGoRulesService {
    */
   async refreshCache(ruleIds?: string[]): Promise<CacheRefreshResponse> {
     const body = ruleIds ? { ruleIds } : {};
-    
+
     return this.makeRequest<CacheRefreshResponse>('/minimal-gorules/cache/refresh', {
       method: 'POST',
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     });
   }
 
@@ -246,7 +241,7 @@ export class ReactGoRulesService {
    */
   async forceRefreshCache(): Promise<ForceRefreshResponse> {
     return this.makeRequest<ForceRefreshResponse>('/minimal-gorules/cache/force-refresh', {
-      method: 'POST'
+      method: 'POST',
     });
   }
 

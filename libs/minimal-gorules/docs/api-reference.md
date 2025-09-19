@@ -23,16 +23,18 @@ constructor(config: MinimalGoRulesConfig)
 Creates a new instance of the Minimal GoRules Engine.
 
 **Parameters:**
+
 - `config: MinimalGoRulesConfig` - Engine configuration object
 
 **Example:**
+
 ```typescript
 const engine = new MinimalGoRulesEngine({
   apiUrl: 'https://api.gorules.io',
   apiKey: 'your-api-key',
   projectId: 'your-project-id',
   cacheMaxSize: 1000,
-  httpTimeout: 5000
+  httpTimeout: 5000,
 });
 ```
 
@@ -43,11 +45,13 @@ const engine = new MinimalGoRulesEngine({
 Initialize the engine by loading all project rules at startup.
 
 **Parameters:**
+
 - `projectId?: string` - Optional project ID to override config
 
 **Returns:** `Promise<EngineStatus>` - Engine status after initialization
 
 **Example:**
+
 ```typescript
 const status = await engine.initialize();
 console.log(`Loaded ${status.rulesLoaded} rules`);
@@ -58,36 +62,47 @@ console.log(`Loaded ${status.rulesLoaded} rules`);
 Execute rules based on selector criteria with flexible execution modes.
 
 **Parameters:**
+
 - `selector: RuleSelector` - Rule selection and execution configuration
 - `input: Record<string, unknown>` - Input data for rule execution
 
 **Returns:** `Promise<MinimalExecutionResult<T>>` - Execution results
 
 **Example:**
+
 ```typescript
 // Parallel execution by IDs
-const result = await engine.execute({
-  ids: ['rule1', 'rule2'],
-  mode: { type: 'parallel' }
-}, { userId: 123, amount: 100 });
+const result = await engine.execute(
+  {
+    ids: ['rule1', 'rule2'],
+    mode: { type: 'parallel' },
+  },
+  { userId: 123, amount: 100 },
+);
 
 // Sequential execution by tags
-const result = await engine.execute({
-  tags: ['validation', 'business-logic'],
-  mode: { type: 'sequential' }
-}, { data: 'input' });
+const result = await engine.execute(
+  {
+    tags: ['validation', 'business-logic'],
+    mode: { type: 'sequential' },
+  },
+  { data: 'input' },
+);
 
 // Mixed execution mode
-const result = await engine.execute({
-  ids: ['rule1', 'rule2', 'rule3', 'rule4'],
-  mode: {
-    type: 'mixed',
-    groups: [
-      { rules: ['rule1', 'rule2'], mode: 'parallel' },
-      { rules: ['rule3', 'rule4'], mode: 'sequential' }
-    ]
-  }
-}, { input: 'data' });
+const result = await engine.execute(
+  {
+    ids: ['rule1', 'rule2', 'rule3', 'rule4'],
+    mode: {
+      type: 'mixed',
+      groups: [
+        { rules: ['rule1', 'rule2'], mode: 'parallel' },
+        { rules: ['rule3', 'rule4'], mode: 'sequential' },
+      ],
+    },
+  },
+  { input: 'data' },
+);
 ```
 
 #### executeRule<T>(ruleId: string, input: Record<string, unknown>): Promise<T>
@@ -95,16 +110,18 @@ const result = await engine.execute({
 Execute a single rule by ID.
 
 **Parameters:**
+
 - `ruleId: string` - Rule identifier
 - `input: Record<string, unknown>` - Input data
 
 **Returns:** `Promise<T>` - Rule execution result
 
 **Example:**
+
 ```typescript
 const result = await engine.executeRule('user-validation', {
   email: 'user@example.com',
-  age: 25
+  age: 25,
 });
 ```
 
@@ -113,17 +130,16 @@ const result = await engine.executeRule('user-validation', {
 Execute multiple rules by IDs in parallel.
 
 **Parameters:**
+
 - `ruleIds: string[]` - Array of rule identifiers
 - `input: Record<string, unknown>` - Input data
 
 **Returns:** `Promise<MinimalExecutionResult<T>>` - Execution results
 
 **Example:**
+
 ```typescript
-const results = await engine.executeRules(
-  ['rule1', 'rule2', 'rule3'],
-  { userId: 123 }
-);
+const results = await engine.executeRules(['rule1', 'rule2', 'rule3'], { userId: 123 });
 
 // Access individual results
 const rule1Result = results.results.get('rule1');
@@ -135,6 +151,7 @@ const errors = results.errors; // Map of any errors
 Execute rules by tags with specified execution mode.
 
 **Parameters:**
+
 - `tags: string[]` - Array of tags to match
 - `input: Record<string, unknown>` - Input data
 - `mode?: 'parallel' | 'sequential'` - Execution mode (default: 'parallel')
@@ -142,12 +159,13 @@ Execute rules by tags with specified execution mode.
 **Returns:** `Promise<MinimalExecutionResult<T>>` - Execution results
 
 **Example:**
+
 ```typescript
 // Execute all rules with 'validation' or 'security' tags in parallel
 const results = await engine.executeByTags(
   ['validation', 'security'],
   { userId: 123, action: 'login' },
-  'parallel'
+  'parallel',
 );
 ```
 
@@ -160,6 +178,7 @@ Check rule versions against GoRules Cloud and identify outdated rules.
 **Returns:** `Promise<VersionCheckResult>` - Version check results
 
 **Example:**
+
 ```typescript
 const versionCheck = await engine.checkVersions();
 console.log(`${versionCheck.outdatedRules.length} rules need updating`);
@@ -170,11 +189,13 @@ console.log(`${versionCheck.outdatedRules.length} rules need updating`);
 Refresh cache by reloading outdated rules.
 
 **Parameters:**
+
 - `ruleIds?: string[]` - Optional specific rules to refresh
 
 **Returns:** `Promise<CacheRefreshResult>` - Refresh results
 
 **Example:**
+
 ```typescript
 // Refresh all outdated rules
 const refreshResult = await engine.refreshCache();
@@ -190,6 +211,7 @@ Force refresh entire cache by reloading all rules.
 **Returns:** `Promise<EngineStatus>` - Engine status after refresh
 
 **Example:**
+
 ```typescript
 const status = await engine.forceRefreshCache();
 ```
@@ -201,11 +223,13 @@ const status = await engine.forceRefreshCache();
 Validate that a rule exists and is executable.
 
 **Parameters:**
+
 - `ruleId: string` - Rule identifier
 
 **Returns:** `Promise<boolean>` - True if rule is valid
 
 **Example:**
+
 ```typescript
 const isValid = await engine.validateRule('my-rule');
 if (!isValid) {
@@ -218,11 +242,13 @@ if (!isValid) {
 Get rule metadata by ID.
 
 **Parameters:**
+
 - `ruleId: string` - Rule identifier
 
 **Returns:** `Promise<MinimalRuleMetadata | null>` - Rule metadata or null
 
 **Example:**
+
 ```typescript
 const metadata = await engine.getRuleMetadata('my-rule');
 if (metadata) {
@@ -238,6 +264,7 @@ Get all available rule metadata.
 **Returns:** `Promise<Map<string, MinimalRuleMetadata>>` - All rule metadata
 
 **Example:**
+
 ```typescript
 const allMetadata = await engine.getAllRuleMetadata();
 for (const [ruleId, metadata] of allMetadata) {
@@ -250,11 +277,13 @@ for (const [ruleId, metadata] of allMetadata) {
 Get rule IDs that match the specified tags.
 
 **Parameters:**
+
 - `tags: string[]` - Tags to match
 
 **Returns:** `Promise<string[]>` - Array of matching rule IDs
 
 **Example:**
+
 ```typescript
 const validationRules = await engine.getRulesByTags(['validation']);
 const businessRules = await engine.getRulesByTags(['business', 'logic']);
@@ -269,6 +298,7 @@ Get current engine status.
 **Returns:** `Promise<EngineStatus>` - Current engine status
 
 **Example:**
+
 ```typescript
 const status = await engine.getStatus();
 console.log(`Initialized: ${status.initialized}`);
@@ -283,6 +313,7 @@ Get current configuration.
 **Returns:** `MinimalGoRulesConfig` - Current configuration
 
 **Example:**
+
 ```typescript
 const config = engine.getConfig();
 console.log(`Project ID: ${config.projectId}`);
@@ -293,13 +324,15 @@ console.log(`Project ID: ${config.projectId}`);
 Update configuration (may require reinitialization for some changes).
 
 **Parameters:**
+
 - `newConfig: Partial<MinimalGoRulesConfig>` - Configuration updates
 
 **Example:**
+
 ```typescript
 engine.updateConfig({
   httpTimeout: 10000,
-  cacheMaxSize: 2000
+  cacheMaxSize: 2000,
 });
 
 // Reinitialize if project changed
@@ -315,6 +348,7 @@ if (newConfig.projectId) {
 Clear all cached rules and reset engine state.
 
 **Example:**
+
 ```typescript
 await engine.reset();
 await engine.initialize(); // Reinitialize after reset
@@ -327,6 +361,7 @@ Get cache statistics for monitoring.
 **Returns:** Cache statistics object
 
 **Example:**
+
 ```typescript
 const stats = engine.getCacheStats();
 console.log(`Cache: ${stats.size}/${stats.maxSize} rules`);
@@ -337,6 +372,7 @@ console.log(`Cache: ${stats.size}/${stats.maxSize} rules`);
 Cleanup engine resources (call before application shutdown).
 
 **Example:**
+
 ```typescript
 // In application shutdown handler
 await engine.cleanup();
@@ -349,27 +385,27 @@ await engine.cleanup();
 ```typescript
 interface MinimalGoRulesConfig {
   // Required
-  apiUrl: string;                    // GoRules API URL
-  apiKey: string;                    // API authentication key
-  projectId: string;                 // GoRules project identifier
-  
+  apiUrl: string; // GoRules API URL
+  apiKey: string; // API authentication key
+  projectId: string; // GoRules project identifier
+
   // Optional performance settings
-  cacheMaxSize?: number;             // Max cached rules (default: 1000)
-  httpTimeout?: number;              // HTTP timeout in ms (default: 5000)
-  batchSize?: number;                // Batch size for operations (default: 50)
-  
+  cacheMaxSize?: number; // Max cached rules (default: 1000)
+  httpTimeout?: number; // HTTP timeout in ms (default: 5000)
+  batchSize?: number; // Batch size for operations (default: 50)
+
   // Cross-platform settings
-  platform?: 'node' | 'browser';    // Target platform
-  
+  platform?: 'node' | 'browser'; // Target platform
+
   // Performance optimizations
-  enablePerformanceOptimizations?: boolean;  // Enable advanced optimizations
-  enablePerformanceMetrics?: boolean;        // Enable metrics collection
-  memoryWarningThreshold?: number;           // Memory warning threshold (0.7)
-  memoryCriticalThreshold?: number;          // Memory critical threshold (0.85)
-  memoryCleanupInterval?: number;            // Cleanup interval in ms (30000)
-  enableConnectionPooling?: boolean;         // Enable HTTP connection pooling
-  enableRequestBatching?: boolean;           // Enable request batching
-  enableCompression?: boolean;               // Enable response compression
+  enablePerformanceOptimizations?: boolean; // Enable advanced optimizations
+  enablePerformanceMetrics?: boolean; // Enable metrics collection
+  memoryWarningThreshold?: number; // Memory warning threshold (0.7)
+  memoryCriticalThreshold?: number; // Memory critical threshold (0.85)
+  memoryCleanupInterval?: number; // Cleanup interval in ms (30000)
+  enableConnectionPooling?: boolean; // Enable HTTP connection pooling
+  enableRequestBatching?: boolean; // Enable request batching
+  enableCompression?: boolean; // Enable response compression
   compressionAlgorithm?: 'gzip' | 'deflate' | 'none'; // Compression algorithm
 }
 ```
@@ -377,15 +413,17 @@ interface MinimalGoRulesConfig {
 ### Configuration Examples
 
 #### Basic Configuration
+
 ```typescript
 const config: MinimalGoRulesConfig = {
   apiUrl: 'https://api.gorules.io',
   apiKey: process.env.GORULES_API_KEY!,
-  projectId: 'my-project-id'
+  projectId: 'my-project-id',
 };
 ```
 
 #### High-Performance Configuration
+
 ```typescript
 const config: MinimalGoRulesConfig = {
   apiUrl: 'https://api.gorules.io',
@@ -398,11 +436,12 @@ const config: MinimalGoRulesConfig = {
   enablePerformanceMetrics: true,
   enableConnectionPooling: true,
   enableRequestBatching: true,
-  enableCompression: true
+  enableCompression: true,
 };
 ```
 
 #### Browser Configuration
+
 ```typescript
 const config: MinimalGoRulesConfig = {
   apiUrl: 'https://api.gorules.io',
@@ -410,7 +449,7 @@ const config: MinimalGoRulesConfig = {
   projectId: 'my-project-id',
   platform: 'browser',
   cacheMaxSize: 500, // Smaller cache for browser
-  httpTimeout: 8000
+  httpTimeout: 8000,
 };
 ```
 
@@ -419,25 +458,28 @@ const config: MinimalGoRulesConfig = {
 ### Core Interfaces
 
 #### MinimalRuleMetadata
+
 ```typescript
 interface MinimalRuleMetadata {
-  id: string;           // Rule identifier
-  version: string;      // Rule version
-  tags: string[];       // Rule tags
+  id: string; // Rule identifier
+  version: string; // Rule version
+  tags: string[]; // Rule tags
   lastModified: number; // Last modified timestamp
 }
 ```
 
 #### RuleSelector
+
 ```typescript
 interface RuleSelector {
-  ids?: string[];       // Specific rule IDs to execute
-  tags?: string[];      // Tags to match for rule selection
-  mode: ExecutionMode;  // Execution mode configuration
+  ids?: string[]; // Specific rule IDs to execute
+  tags?: string[]; // Tags to match for rule selection
+  mode: ExecutionMode; // Execution mode configuration
 }
 ```
 
 #### ExecutionMode
+
 ```typescript
 interface ExecutionMode {
   type: 'parallel' | 'sequential' | 'mixed';
@@ -445,55 +487,59 @@ interface ExecutionMode {
 }
 
 interface ExecutionGroup {
-  rules: string[];                    // Rule IDs in this group
-  mode: 'parallel' | 'sequential';   // Execution mode for this group
+  rules: string[]; // Rule IDs in this group
+  mode: 'parallel' | 'sequential'; // Execution mode for this group
 }
 ```
 
 #### MinimalExecutionResult
+
 ```typescript
 interface MinimalExecutionResult<T = unknown> {
-  results: Map<string, T>;      // Rule ID -> execution result
-  executionTime: number;        // Total execution time in ms
-  errors?: Map<string, Error>;  // Rule ID -> error (if any)
+  results: Map<string, T>; // Rule ID -> execution result
+  executionTime: number; // Total execution time in ms
+  errors?: Map<string, Error>; // Rule ID -> error (if any)
 }
 ```
 
 ### Status Interfaces
 
 #### EngineStatus
+
 ```typescript
 interface EngineStatus {
-  initialized: boolean;     // Whether engine is initialized
-  rulesLoaded: number;      // Number of rules loaded
-  lastUpdate: number;       // Last update timestamp
-  projectId: string;        // Current project ID
-  version: string;          // Engine version
+  initialized: boolean; // Whether engine is initialized
+  rulesLoaded: number; // Number of rules loaded
+  lastUpdate: number; // Last update timestamp
+  projectId: string; // Current project ID
+  version: string; // Engine version
   performance?: {
-    memoryUsage: number;           // Memory usage in MB
-    cacheHitRate?: number;         // Cache hit rate (0-1)
+    memoryUsage: number; // Memory usage in MB
+    cacheHitRate?: number; // Cache hit rate (0-1)
     averageExecutionTime?: number; // Average execution time in ms
   };
 }
 ```
 
 #### VersionCheckResult
+
 ```typescript
 interface VersionCheckResult {
-  outdatedRules: string[];  // Rules that need updating
-  upToDateRules: string[];  // Rules that are current
-  totalChecked: number;     // Total rules checked
-  checkTime: number;        // Check duration in ms
+  outdatedRules: string[]; // Rules that need updating
+  upToDateRules: string[]; // Rules that are current
+  totalChecked: number; // Total rules checked
+  checkTime: number; // Check duration in ms
 }
 ```
 
 #### CacheRefreshResult
+
 ```typescript
 interface CacheRefreshResult {
-  refreshedRules: string[];           // Successfully refreshed rules
-  failedRules: Map<string, Error>;    // Failed refreshes with errors
-  totalProcessed: number;             // Total rules processed
-  refreshTime: number;                // Refresh duration in ms
+  refreshedRules: string[]; // Successfully refreshed rules
+  failedRules: Map<string, Error>; // Failed refreshes with errors
+  totalProcessed: number; // Total rules processed
+  refreshTime: number; // Refresh duration in ms
 }
 ```
 
@@ -508,8 +554,8 @@ class MinimalGoRulesError extends Error {
   constructor(
     public readonly code: MinimalErrorCode,
     message: string,
-    public readonly ruleId?: string
-  )
+    public readonly ruleId?: string,
+  );
 }
 ```
 
@@ -517,11 +563,11 @@ class MinimalGoRulesError extends Error {
 
 ```typescript
 enum MinimalErrorCode {
-  RULE_NOT_FOUND = 'RULE_NOT_FOUND',     // Rule doesn't exist
-  NETWORK_ERROR = 'NETWORK_ERROR',       // Network/API error
-  TIMEOUT = 'TIMEOUT',                   // Operation timeout
-  INVALID_INPUT = 'INVALID_INPUT',       // Invalid configuration/input
-  EXECUTION_ERROR = 'EXECUTION_ERROR'    // Rule execution error
+  RULE_NOT_FOUND = 'RULE_NOT_FOUND', // Rule doesn't exist
+  NETWORK_ERROR = 'NETWORK_ERROR', // Network/API error
+  TIMEOUT = 'TIMEOUT', // Operation timeout
+  INVALID_INPUT = 'INVALID_INPUT', // Invalid configuration/input
+  EXECUTION_ERROR = 'EXECUTION_ERROR', // Rule execution error
 }
 ```
 
@@ -562,42 +608,29 @@ import { React } from '@your-org/minimal-gorules';
 
 const service = new React.ReactGoRulesService({
   baseUrl: 'http://localhost:3000/api',
-  timeout: 5000
+  timeout: 5000,
 });
 ```
 
 ### React Hooks
 
 #### useRuleExecution
+
 ```typescript
-const {
-  executeRule,
-  executeRules,
-  executeByTags,
-  loading,
-  error,
-  lastResult
-} = useRuleExecution(service);
+const { executeRule, executeRules, executeByTags, loading, error, lastResult } =
+  useRuleExecution(service);
 ```
 
 #### useEngineStatus
+
 ```typescript
-const {
-  status,
-  loading,
-  error,
-  refresh
-} = useEngineStatus(service);
+const { status, loading, error, refresh } = useEngineStatus(service);
 ```
 
 #### useRuleMetadata
+
 ```typescript
-const {
-  metadata,
-  loading,
-  error,
-  refresh
-} = useRuleMetadata(service, ruleId);
+const { metadata, loading, error, refresh } = useRuleMetadata(service, ruleId);
 ```
 
 ### React Components

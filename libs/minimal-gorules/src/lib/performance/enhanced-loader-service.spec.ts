@@ -39,8 +39,8 @@ describe('EnhancedLoaderService', () => {
         totalLoads: 0,
         cacheHits: 0,
         cacheMisses: 0,
-        averageLoadTime: 0
-      })
+        averageLoadTime: 0,
+      }),
     } as any;
 
     mockCacheManager = {
@@ -53,8 +53,8 @@ describe('EnhancedLoaderService', () => {
         size: 0,
         hits: 0,
         misses: 0,
-        hitRate: 0
-      })
+        hitRate: 0,
+      }),
     } as any;
 
     mockCompressionManager = {
@@ -66,8 +66,8 @@ describe('EnhancedLoaderService', () => {
         totalOperations: 0,
         totalOriginalBytes: 0,
         totalCompressedBytes: 0,
-        averageCompressionRatio: 0
-      })
+        averageCompressionRatio: 0,
+      }),
     } as any;
 
     mockConnectionPool = {
@@ -75,9 +75,9 @@ describe('EnhancedLoaderService', () => {
       getStats: jest.fn().mockReturnValue({
         totalConnections: 0,
         activeConnections: 0,
-        completedRequests: 0
+        completedRequests: 0,
       }),
-      close: jest.fn()
+      close: jest.fn(),
     } as any;
 
     mockBatcher = {
@@ -87,8 +87,8 @@ describe('EnhancedLoaderService', () => {
       getStats: jest.fn().mockReturnValue({
         totalRequests: 0,
         totalBatches: 0,
-        averageBatchSize: 0
-      })
+        averageBatchSize: 0,
+      }),
     } as any;
 
     mockMemoryManager = {
@@ -96,25 +96,21 @@ describe('EnhancedLoaderService', () => {
       removeCleanupCallback: jest.fn(),
       getMemoryReport: jest.fn().mockReturnValue({
         usage: { status: 'normal' },
-        recommendations: []
-      })
+        recommendations: [],
+      }),
     };
 
     (getGlobalMemoryManager as jest.Mock).mockReturnValue(mockMemoryManager);
 
-    enhancedLoader = new EnhancedLoaderService(
-      mockBaseLoader,
-      mockCacheManager,
-      {
-        enableCompression: true,
-        enableBatching: true,
-        enableConnectionPooling: true,
-        compressionThreshold: 1024,
-        batchSize: 10,
-        batchTimeout: 100,
-        connectionPoolSize: 5
-      }
-    );
+    enhancedLoader = new EnhancedLoaderService(mockBaseLoader, mockCacheManager, {
+      enableCompression: true,
+      enableBatching: true,
+      enableConnectionPooling: true,
+      compressionThreshold: 1024,
+      batchSize: 10,
+      batchTimeout: 100,
+      connectionPoolSize: 5,
+    });
   });
 
   afterEach(() => {
@@ -133,15 +129,11 @@ describe('EnhancedLoaderService', () => {
     });
 
     it('should disable features when configured', () => {
-      const disabledLoader = new EnhancedLoaderService(
-        mockBaseLoader,
-        mockCacheManager,
-        {
-          enableCompression: false,
-          enableBatching: false,
-          enableConnectionPooling: false
-        }
-      );
+      const disabledLoader = new EnhancedLoaderService(mockBaseLoader, mockCacheManager, {
+        enableCompression: false,
+        enableBatching: false,
+        enableConnectionPooling: false,
+      });
       expect(disabledLoader).toBeDefined();
     });
   });
@@ -153,8 +145,8 @@ describe('EnhancedLoaderService', () => {
         id: 'test-rule',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: Date.now()
-      }
+        lastModified: Date.now(),
+      },
     };
 
     it('should load rule with compression enabled', async () => {
@@ -167,11 +159,9 @@ describe('EnhancedLoaderService', () => {
     });
 
     it('should fallback to base loader when batching disabled', async () => {
-      const noBatchLoader = new EnhancedLoaderService(
-        mockBaseLoader,
-        mockCacheManager,
-        { enableBatching: false }
-      );
+      const noBatchLoader = new EnhancedLoaderService(mockBaseLoader, mockCacheManager, {
+        enableBatching: false,
+      });
 
       mockBaseLoader.loadRule.mockResolvedValue(mockRuleData);
 
@@ -184,14 +174,13 @@ describe('EnhancedLoaderService', () => {
     it('should handle rule loading errors', async () => {
       mockBatcher.loadRule.mockRejectedValue(new Error('Load failed'));
 
-      await expect(enhancedLoader.loadRule('test-rule', 'project1'))
-        .rejects.toThrow('Load failed');
+      await expect(enhancedLoader.loadRule('test-rule', 'project1')).rejects.toThrow('Load failed');
     });
 
     it('should apply compression to loaded rules', async () => {
       const largeRuleData = {
         data: Buffer.from('x'.repeat(2000)), // Larger than compression threshold
-        metadata: mockRuleData.metadata
+        metadata: mockRuleData.metadata,
       };
 
       mockBatcher.loadRule.mockResolvedValue(largeRuleData);
@@ -203,8 +192,8 @@ describe('EnhancedLoaderService', () => {
           totalCompressedSize: 100,
           totalCompressionRatio: 0.05,
           dataCompression: { algorithm: 'gzip' as const },
-          metadataCompression: { algorithm: 'gzip' as const }
-        }
+          metadataCompression: { algorithm: 'gzip' as const },
+        },
       });
 
       const result = await enhancedLoader.loadRule('large-rule', 'project1');
@@ -215,14 +204,20 @@ describe('EnhancedLoaderService', () => {
 
   describe('loadRules', () => {
     const mockRulesData = new Map([
-      ['rule1', {
-        data: Buffer.from(JSON.stringify({ conditions: [], actions: [] })),
-        metadata: { id: 'rule1', version: '1.0.0', tags: [], lastModified: Date.now() }
-      }],
-      ['rule2', {
-        data: Buffer.from(JSON.stringify({ conditions: [], actions: [] })),
-        metadata: { id: 'rule2', version: '1.0.0', tags: [], lastModified: Date.now() }
-      }]
+      [
+        'rule1',
+        {
+          data: Buffer.from(JSON.stringify({ conditions: [], actions: [] })),
+          metadata: { id: 'rule1', version: '1.0.0', tags: [], lastModified: Date.now() },
+        },
+      ],
+      [
+        'rule2',
+        {
+          data: Buffer.from(JSON.stringify({ conditions: [], actions: [] })),
+          metadata: { id: 'rule2', version: '1.0.0', tags: [], lastModified: Date.now() },
+        },
+      ],
     ]);
 
     it('should load multiple rules with batching', async () => {
@@ -235,11 +230,9 @@ describe('EnhancedLoaderService', () => {
     });
 
     it('should fallback to base loader when batching disabled', async () => {
-      const noBatchLoader = new EnhancedLoaderService(
-        mockBaseLoader,
-        mockCacheManager,
-        { enableBatching: false }
-      );
+      const noBatchLoader = new EnhancedLoaderService(mockBaseLoader, mockCacheManager, {
+        enableBatching: false,
+      });
 
       mockBaseLoader.loadRules.mockResolvedValue(mockRulesData);
 
@@ -250,9 +243,7 @@ describe('EnhancedLoaderService', () => {
     });
 
     it('should handle partial loading failures', async () => {
-      const partialData = new Map([
-        ['rule1', mockRulesData.get('rule1')!]
-      ]);
+      const partialData = new Map([['rule1', mockRulesData.get('rule1')!]]);
 
       mockBatcher.loadRules.mockResolvedValue(partialData);
 
@@ -269,7 +260,7 @@ describe('EnhancedLoaderService', () => {
       id: 'test-rule',
       version: '1.0.0',
       tags: ['test'],
-      lastModified: Date.now()
+      lastModified: Date.now(),
     };
 
     it('should get metadata from base loader', async () => {
@@ -284,8 +275,9 @@ describe('EnhancedLoaderService', () => {
     it('should handle metadata retrieval errors', async () => {
       mockBaseLoader.getMetadata.mockRejectedValue(new Error('Metadata not found'));
 
-      await expect(enhancedLoader.getMetadata('test-rule', 'project1'))
-        .rejects.toThrow('Metadata not found');
+      await expect(enhancedLoader.getMetadata('test-rule', 'project1')).rejects.toThrow(
+        'Metadata not found',
+      );
     });
   });
 
@@ -293,7 +285,7 @@ describe('EnhancedLoaderService', () => {
     const mockValidationResult = {
       valid: true,
       errors: [],
-      warnings: []
+      warnings: [],
     };
 
     it('should validate rule using base loader', async () => {
@@ -310,9 +302,8 @@ describe('EnhancedLoaderService', () => {
       mockBaseLoader.validateRule.mockRejectedValue(new Error('Validation failed'));
 
       const ruleData = Buffer.from('invalid rule');
-      
-      await expect(enhancedLoader.validateRule(ruleData))
-        .rejects.toThrow('Validation failed');
+
+      await expect(enhancedLoader.validateRule(ruleData)).rejects.toThrow('Validation failed');
     });
   });
 
@@ -320,7 +311,7 @@ describe('EnhancedLoaderService', () => {
     it('should flush batches when memory pressure is high', async () => {
       mockMemoryManager.getMemoryReport.mockReturnValue({
         usage: { status: 'critical' },
-        recommendations: ['Immediate cleanup required']
+        recommendations: ['Immediate cleanup required'],
       });
 
       // Trigger memory cleanup
@@ -353,7 +344,7 @@ describe('EnhancedLoaderService', () => {
     it('should include memory recommendations in stats', () => {
       mockMemoryManager.getMemoryReport.mockReturnValue({
         usage: { status: 'warning' },
-        recommendations: ['Consider cleanup']
+        recommendations: ['Consider cleanup'],
       });
 
       const stats = enhancedLoader.getPerformanceStats();
@@ -382,7 +373,7 @@ describe('EnhancedLoaderService', () => {
     it('should update compression settings', () => {
       enhancedLoader.updateConfiguration({
         enableCompression: false,
-        compressionThreshold: 2048
+        compressionThreshold: 2048,
       });
 
       // Configuration should be updated internally
@@ -393,7 +384,7 @@ describe('EnhancedLoaderService', () => {
       enhancedLoader.updateConfiguration({
         enableBatching: false,
         batchSize: 20,
-        batchTimeout: 200
+        batchTimeout: 200,
       });
 
       expect(() => enhancedLoader.updateConfiguration({})).not.toThrow();
@@ -402,7 +393,7 @@ describe('EnhancedLoaderService', () => {
     it('should update connection pool settings', () => {
       enhancedLoader.updateConfiguration({
         enableConnectionPooling: false,
-        connectionPoolSize: 10
+        connectionPoolSize: 10,
       });
 
       expect(() => enhancedLoader.updateConfiguration({})).not.toThrow();
@@ -412,10 +403,10 @@ describe('EnhancedLoaderService', () => {
   describe('error handling and resilience', () => {
     it('should handle compression failures gracefully', async () => {
       mockCompressionManager.compressRuleData.mockRejectedValue(new Error('Compression failed'));
-      
+
       const ruleData = {
         data: Buffer.from('x'.repeat(2000)),
-        metadata: { id: 'test', version: '1.0.0', tags: [], lastModified: Date.now() }
+        metadata: { id: 'test', version: '1.0.0', tags: [], lastModified: Date.now() },
       };
 
       mockBatcher.loadRule.mockResolvedValue(ruleData);
@@ -432,7 +423,7 @@ describe('EnhancedLoaderService', () => {
       // Should fallback to base loader
       const ruleData = {
         data: Buffer.from(JSON.stringify({ conditions: [], actions: [] })),
-        metadata: { id: 'test', version: '1.0.0', tags: [], lastModified: Date.now() }
+        metadata: { id: 'test', version: '1.0.0', tags: [], lastModified: Date.now() },
       };
 
       mockBaseLoader.loadRule.mockResolvedValue(ruleData);
@@ -448,7 +439,7 @@ describe('EnhancedLoaderService', () => {
       // Should fallback to base loader
       const ruleData = {
         data: Buffer.from(JSON.stringify({ conditions: [], actions: [] })),
-        metadata: { id: 'test', version: '1.0.0', tags: [], lastModified: Date.now() }
+        metadata: { id: 'test', version: '1.0.0', tags: [], lastModified: Date.now() },
       };
 
       mockBaseLoader.loadRule.mockResolvedValue(ruleData);
@@ -464,7 +455,7 @@ describe('EnhancedLoaderService', () => {
       const promises = [];
       const ruleData = {
         data: Buffer.from(JSON.stringify({ conditions: [], actions: [] })),
-        metadata: { id: 'test', version: '1.0.0', tags: [], lastModified: Date.now() }
+        metadata: { id: 'test', version: '1.0.0', tags: [], lastModified: Date.now() },
       };
 
       mockBatcher.loadRule.mockResolvedValue(ruleData);
@@ -477,7 +468,7 @@ describe('EnhancedLoaderService', () => {
       const results = await Promise.all(promises);
 
       expect(results).toHaveLength(100);
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result).toEqual(ruleData);
       });
     });
@@ -485,7 +476,7 @@ describe('EnhancedLoaderService', () => {
     it('should optimize for repeated rule access', async () => {
       const ruleData = {
         data: Buffer.from(JSON.stringify({ conditions: [], actions: [] })),
-        metadata: { id: 'popular-rule', version: '1.0.0', tags: [], lastModified: Date.now() }
+        metadata: { id: 'popular-rule', version: '1.0.0', tags: [], lastModified: Date.now() },
       };
 
       mockBatcher.loadRule.mockResolvedValue(ruleData);

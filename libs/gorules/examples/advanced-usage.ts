@@ -1,20 +1,20 @@
 /**
  * Advanced Usage Examples for GoRules NestJS Integration
- * 
+ *
  * This file demonstrates advanced patterns and complex scenarios for the GoRules library.
  */
 
 import { Injectable, Module, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule, Cron, CronExpression } from '@nestjs/schedule';
-import { 
-  GoRulesModule, 
-  GoRulesService, 
+import {
+  GoRulesModule,
+  GoRulesService,
   GoRulesMonitoringService,
   GoRulesLoggerService,
   GoRulesMetricsService,
   GoRulesException,
-  GoRulesErrorCode 
+  GoRulesErrorCode,
 } from '@org/gorules';
 
 // ============================================================================
@@ -31,7 +31,7 @@ export class GoRulesConfigFactory {
   async createGoRulesConfig() {
     // Load configuration from database or external service
     const dbConfig = await this.loadConfigFromDatabase();
-    
+
     return {
       apiUrl: this.configService.get('GORULES_API_URL') || dbConfig.apiUrl,
       apiKey: this.configService.get('GORULES_API_KEY') || dbConfig.apiKey,
@@ -137,17 +137,17 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
   private performanceMonitor?: NodeJS.Timeout;
   private readonly ruleChain = [
     'identity-verification',
-    'income-verification', 
+    'income-verification',
     'credit-score-analysis',
     'risk-assessment',
     'pricing-calculation',
-    'final-approval'
+    'final-approval',
   ];
 
   constructor(
     private readonly goRulesService: GoRulesService,
     private readonly monitoringService: GoRulesMonitoringService,
-    private readonly loggerService: GoRulesLoggerService
+    private readonly loggerService: GoRulesLoggerService,
   ) {}
 
   onModuleInit() {
@@ -171,7 +171,7 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
       fastTrack?: boolean;
       userId?: string;
       sessionId?: string;
-    } = {}
+    } = {},
   ): Promise<CreditDecision> {
     const executionId = `credit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const startTime = Date.now();
@@ -185,9 +185,9 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
 
       // Step 1: Parallel validation rules
       const validationResults = await this.executeValidationRules(
-        applicationData, 
+        applicationData,
         executionId,
-        options
+        options,
       );
 
       // Step 2: Risk assessment based on validation results
@@ -195,7 +195,7 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
         applicationData,
         validationResults,
         executionId,
-        options
+        options,
       );
 
       // Step 3: Pricing calculation
@@ -203,7 +203,7 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
         applicationData,
         riskAssessment,
         executionId,
-        options
+        options,
       );
 
       // Step 4: Final approval decision
@@ -213,34 +213,33 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
         riskAssessment,
         pricing,
         executionId,
-        options
+        options,
       );
 
       const executionTime = Date.now() - startTime;
-      
+
       this.loggerService.logExecutionSuccess(executionId, finalDecision);
       this.monitoringService.completeExecution(
         'credit-processing',
         executionId,
         finalDecision,
-        executionTime
+        executionTime,
       );
 
       return finalDecision;
-
     } catch (error) {
       const executionTime = Date.now() - startTime;
-      
+
       this.loggerService.logExecutionError(
         executionId,
-        error instanceof Error ? error : new Error(String(error))
+        error instanceof Error ? error : new Error(String(error)),
       );
-      
+
       this.monitoringService.failExecution(
         'credit-processing',
         executionId,
         error instanceof Error ? error : new Error(String(error)),
-        executionTime
+        executionTime,
       );
 
       throw error;
@@ -253,7 +252,7 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
   private async executeValidationRules(
     applicationData: CreditApplicationData,
     executionId: string,
-    options: any
+    options: any,
   ) {
     const validationRules = [
       {
@@ -279,7 +278,7 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
 
     // Filter out skipped steps
     const filteredRules = validationRules.filter(
-      rule => !options.skipSteps?.includes(rule.ruleId)
+      (rule) => !options.skipSteps?.includes(rule.ruleId),
     );
 
     const results = await this.goRulesService.executeBatch(filteredRules);
@@ -296,7 +295,7 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
       throw new GoRulesException(
         GoRulesErrorCode.VALIDATION_ERROR,
         'Identity verification failed',
-        { executionId, step: 'identity-verification' }
+        { executionId, step: 'identity-verification' },
       );
     }
 
@@ -310,7 +309,7 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
     applicationData: CreditApplicationData,
     validationResults: any,
     executionId: string,
-    options: any
+    options: any,
   ) {
     const riskInput = {
       personalInfo: applicationData.applicant.personalInfo,
@@ -322,7 +321,7 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
 
     // Use different risk models based on application characteristics
     let riskRuleId = 'standard-risk-assessment';
-    
+
     if (applicationData.application.requestedAmount > 100000) {
       riskRuleId = 'high-value-risk-assessment';
     } else if (applicationData.applicant.creditHistory.score < 600) {
@@ -331,16 +330,12 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
       riskRuleId = 'fast-track-risk-assessment';
     }
 
-    const result = await this.goRulesService.executeRule(
-      riskRuleId,
-      riskInput,
-      {
-        trace: true,
-        timeout: 15000,
-        userId: options.userId,
-        sessionId: options.sessionId,
-      }
-    );
+    const result = await this.goRulesService.executeRule(riskRuleId, riskInput, {
+      trace: true,
+      timeout: 15000,
+      userId: options.userId,
+      sessionId: options.sessionId,
+    });
 
     return result.result;
   }
@@ -352,7 +347,7 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
     applicationData: CreditApplicationData,
     riskAssessment: any,
     executionId: string,
-    options: any
+    options: any,
   ) {
     const pricingInput = {
       baseAmount: applicationData.application.requestedAmount,
@@ -402,7 +397,7 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
     riskAssessment: any,
     pricing: any,
     executionId: string,
-    options: any
+    options: any,
   ): Promise<CreditDecision> {
     const approvalInput = {
       application: applicationData.application,
@@ -416,16 +411,12 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
       },
     };
 
-    const result = await this.goRulesService.executeRule(
-      'final-approval-decision',
-      approvalInput,
-      {
-        trace: true,
-        timeout: 10000,
-        userId: options.userId,
-        sessionId: options.sessionId,
-      }
-    );
+    const result = await this.goRulesService.executeRule('final-approval-decision', approvalInput, {
+      trace: true,
+      timeout: 10000,
+      userId: options.userId,
+      sessionId: options.sessionId,
+    });
 
     // Construct comprehensive decision
     return {
@@ -452,14 +443,17 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
    * Helper methods
    */
   private extractResult(results: any[], executionId: string) {
-    const result = results.find(r => r.executionId === executionId);
+    const result = results.find((r) => r.executionId === executionId);
     return result?.error ? null : result?.result?.decision;
   }
 
   private determineCustomerTier(applicationData: CreditApplicationData): string {
     const income = applicationData.applicant.personalInfo.income;
     const creditScore = applicationData.applicant.creditHistory.score;
-    const assets = Object.values(applicationData.applicant.assets).reduce((sum, val) => sum + val, 0);
+    const assets = Object.values(applicationData.applicant.assets).reduce(
+      (sum, val) => sum + val,
+      0,
+    );
 
     if (income > 100000 && creditScore > 750 && assets > 50000) return 'platinum';
     if (income > 75000 && creditScore > 700 && assets > 25000) return 'gold';
@@ -483,11 +477,15 @@ export class AdvancedCreditService implements OnModuleInit, OnModuleDestroy {
 
       // Log performance metrics
       Object.entries(stats).forEach(([ruleId, stat]) => {
-        if (stat.errorRate > 0.1) { // 10% error rate threshold
-          console.warn(`High error rate detected for rule ${ruleId}: ${(stat.errorRate * 100).toFixed(2)}%`);
+        if (stat.errorRate > 0.1) {
+          // 10% error rate threshold
+          console.warn(
+            `High error rate detected for rule ${ruleId}: ${(stat.errorRate * 100).toFixed(2)}%`,
+          );
         }
-        
-        if (stat.averageTime > 5000) { // 5 second threshold
+
+        if (stat.averageTime > 5000) {
+          // 5 second threshold
           console.warn(`Slow execution detected for rule ${ruleId}: ${stat.averageTime}ms average`);
         }
       });
@@ -514,7 +512,7 @@ export class ResilientRuleService {
 
   constructor(
     private readonly goRulesService: GoRulesService,
-    private readonly monitoringService: GoRulesMonitoringService
+    private readonly monitoringService: GoRulesMonitoringService,
   ) {}
 
   /**
@@ -528,7 +526,7 @@ export class ResilientRuleService {
       retryCondition?: (error: any) => boolean;
       fallbackResult?: R;
       circuitBreakerKey?: string;
-    } = {}
+    } = {},
   ): Promise<R> {
     const maxRetries = options.maxRetries || this.maxRetries;
     const circuitBreakerKey = options.circuitBreakerKey || `rule-${ruleId}`;
@@ -544,16 +542,15 @@ export class ResilientRuleService {
           circuitBreakerKey,
           'CLOSED',
           'CLOSED',
-          'Successful execution'
+          'Successful execution',
         );
 
         return result.result;
-
       } catch (error) {
         const isLastAttempt = attempt === maxRetries;
-        const shouldRetry = options.retryCondition ? 
-          options.retryCondition(error) : 
-          this.isRetryableError(error);
+        const shouldRetry = options.retryCondition
+          ? options.retryCondition(error)
+          : this.isRetryableError(error);
 
         // Update circuit breaker
         this.monitoringService.updateCircuitBreakerState(
@@ -561,7 +558,7 @@ export class ResilientRuleService {
           'CLOSED',
           attempt >= 3 ? 'OPEN' : 'CLOSED',
           `Attempt ${attempt} failed`,
-          true
+          true,
         );
 
         if (isLastAttempt || !shouldRetry) {
@@ -576,7 +573,7 @@ export class ResilientRuleService {
         // Calculate delay with exponential backoff and jitter
         const delay = Math.min(
           this.baseDelay * Math.pow(2, attempt - 1) + Math.random() * 1000,
-          this.maxDelay
+          this.maxDelay,
         );
 
         console.warn(`Rule ${ruleId} attempt ${attempt} failed, retrying in ${delay}ms`, {
@@ -599,14 +596,16 @@ export class ResilientRuleService {
       input: T;
       required?: boolean;
       fallback?: R;
+    }>,
+  ): Promise<
+    Array<{
+      ruleId: string;
+      success: boolean;
+      result?: R;
+      error?: string;
+      usedFallback?: boolean;
     }>
-  ): Promise<Array<{
-    ruleId: string;
-    success: boolean;
-    result?: R;
-    error?: string;
-    usedFallback?: boolean;
-  }>> {
+  > {
     const batchExecutions = executions.map((exec, index) => ({
       executionId: `partial-${index}`,
       ruleId: exec.ruleId,
@@ -617,7 +616,7 @@ export class ResilientRuleService {
 
     return results.map((result, index) => {
       const execution = executions[index];
-      
+
       if (result.error) {
         // Handle failure
         if (execution.required) {
@@ -652,12 +651,15 @@ export class ResilientRuleService {
 
   private isRetryableError(error: any): boolean {
     if (error instanceof GoRulesException) {
-      return error.retryable || [
-        GoRulesErrorCode.TIMEOUT,
-        GoRulesErrorCode.NETWORK_ERROR,
-        GoRulesErrorCode.RATE_LIMIT_EXCEEDED,
-        GoRulesErrorCode.SERVICE_UNAVAILABLE,
-      ].includes(error.code);
+      return (
+        error.retryable ||
+        [
+          GoRulesErrorCode.TIMEOUT,
+          GoRulesErrorCode.NETWORK_ERROR,
+          GoRulesErrorCode.RATE_LIMIT_EXCEEDED,
+          GoRulesErrorCode.SERVICE_UNAVAILABLE,
+        ].includes(error.code)
+      );
     }
     return false;
   }
@@ -667,7 +669,7 @@ export class ResilientRuleService {
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 
@@ -686,7 +688,7 @@ export class AdvancedMonitoringService {
   constructor(
     private readonly goRulesService: GoRulesService,
     private readonly monitoringService: GoRulesMonitoringService,
-    private readonly metricsService: GoRulesMetricsService
+    private readonly metricsService: GoRulesMetricsService,
   ) {}
 
   /**
@@ -716,12 +718,14 @@ export class AdvancedMonitoringService {
     // Check execution statistics
     const stats = this.goRulesService.getExecutionStatistics();
     const highErrorRateRules = Object.entries(stats).filter(
-      ([_, stat]) => stat.errorRate > this.alertThresholds.errorRate
+      ([_, stat]) => stat.errorRate > this.alertThresholds.errorRate,
     );
 
     if (highErrorRateRules.length > 0) {
       checks.errorRates = false;
-      alerts.push(`High error rates detected for rules: ${highErrorRateRules.map(([id]) => id).join(', ')}`);
+      alerts.push(
+        `High error rates detected for rules: ${highErrorRateRules.map(([id]) => id).join(', ')}`,
+      );
       recommendations.push('Review rule configurations and input data validation');
     } else {
       checks.errorRates = true;
@@ -729,12 +733,14 @@ export class AdvancedMonitoringService {
 
     // Check response times
     const slowRules = Object.entries(stats).filter(
-      ([_, stat]) => stat.averageTime > this.alertThresholds.averageResponseTime
+      ([_, stat]) => stat.averageTime > this.alertThresholds.averageResponseTime,
     );
 
     if (slowRules.length > 0) {
       checks.responseTimes = false;
-      alerts.push(`Slow response times detected for rules: ${slowRules.map(([id]) => id).join(', ')}`);
+      alerts.push(
+        `Slow response times detected for rules: ${slowRules.map(([id]) => id).join(', ')}`,
+      );
       recommendations.push('Consider optimizing rule logic or increasing timeout values');
     } else {
       checks.responseTimes = true;
@@ -743,7 +749,7 @@ export class AdvancedMonitoringService {
     // Check circuit breakers
     const cbStats = this.goRulesService.getCircuitBreakerStatistics();
     const openCircuitBreakers = Object.entries(cbStats).filter(
-      ([_, stats]) => stats.state === 'OPEN'
+      ([_, stats]) => stats.state === 'OPEN',
     );
 
     if (openCircuitBreakers.length > 0) {
@@ -755,7 +761,7 @@ export class AdvancedMonitoringService {
     }
 
     // Determine overall status
-    const failedChecks = Object.values(checks).filter(check => !check).length;
+    const failedChecks = Object.values(checks).filter((check) => !check).length;
     let status: 'healthy' | 'degraded' | 'unhealthy';
 
     if (failedChecks === 0) {
@@ -794,27 +800,33 @@ export class AdvancedMonitoringService {
 
     // Calculate summary metrics
     const totalExecutions = Object.values(stats).reduce((sum, stat) => sum + stat.count, 0);
-    const totalErrors = Object.values(stats).reduce((sum, stat) => sum + (stat.count * stat.errorRate), 0);
+    const totalErrors = Object.values(stats).reduce(
+      (sum, stat) => sum + stat.count * stat.errorRate,
+      0,
+    );
     const overallErrorRate = totalExecutions > 0 ? totalErrors / totalExecutions : 0;
-    const averageResponseTime = Object.values(stats).reduce((sum, stat) => sum + stat.averageTime, 0) / Object.keys(stats).length;
+    const averageResponseTime =
+      Object.values(stats).reduce((sum, stat) => sum + stat.averageTime, 0) /
+      Object.keys(stats).length;
 
     // Identify performance issues
     const recommendations: string[] = [];
-    
+
     if (overallErrorRate > 0.05) {
       recommendations.push('Overall error rate is high - review input validation and rule logic');
     }
-    
+
     if (averageResponseTime > 3000) {
       recommendations.push('Average response time is high - consider rule optimization');
     }
 
     // Find top performing and problematic rules
     const rulePerformance = allRuleMetrics
-      .map(metric => ({
+      .map((metric) => ({
         ruleId: metric.ruleId,
         executions: metric.totalExecutions,
-        successRate: metric.totalExecutions > 0 ? metric.successfulExecutions / metric.totalExecutions : 0,
+        successRate:
+          metric.totalExecutions > 0 ? metric.successfulExecutions / metric.totalExecutions : 0,
         averageTime: metric.averageExecutionTime,
         errorRate: metric.errorRate,
         performance: this.calculatePerformanceScore(metric),
@@ -840,11 +852,14 @@ export class AdvancedMonitoringService {
     const speedWeight = 0.3;
     const reliabilityWeight = 0.3;
 
-    const successScore = metric.totalExecutions > 0 ? metric.successfulExecutions / metric.totalExecutions : 0;
-    const speedScore = Math.max(0, 1 - (metric.averageExecutionTime / 10000)); // Normalize to 10 seconds
+    const successScore =
+      metric.totalExecutions > 0 ? metric.successfulExecutions / metric.totalExecutions : 0;
+    const speedScore = Math.max(0, 1 - metric.averageExecutionTime / 10000); // Normalize to 10 seconds
     const reliabilityScore = 1 - metric.errorRate;
 
-    return (successScore * successWeight) + (speedScore * speedWeight) + (reliabilityScore * reliabilityWeight);
+    return (
+      successScore * successWeight + speedScore * speedWeight + reliabilityScore * reliabilityWeight
+    );
   }
 
   private calculateTrends(metrics: any[]): any {
@@ -863,13 +878,13 @@ export class AdvancedMonitoringService {
   @Cron(CronExpression.EVERY_5_MINUTES)
   async monitorPerformance() {
     const health = await this.performHealthCheck();
-    
+
     if (health.status === 'unhealthy') {
       console.error('GoRules service is unhealthy', {
         alerts: health.alerts,
         recommendations: health.recommendations,
       });
-      
+
       // Here you would typically send alerts to monitoring systems
       // await this.sendAlert('GoRules service unhealthy', health);
     } else if (health.status === 'degraded') {

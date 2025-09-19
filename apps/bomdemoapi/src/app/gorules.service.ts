@@ -44,14 +44,10 @@ export class BomDemoGoRulesService {
         supplier: bomData.supplier,
       });
 
-      const result = await this.goRulesService.executeRule(
-        'bom-validation',
-        bomData,
-        {
-          trace: true,
-          timeout: 10000,
-        }
-      );
+      const result = await this.goRulesService.executeRule('bom-validation', bomData, {
+        trace: true,
+        timeout: 10000,
+      });
 
       return {
         isValid: result.result.isValid || false,
@@ -61,16 +57,14 @@ export class BomDemoGoRulesService {
       };
     } catch (error) {
       this.logger.error('BOM validation failed', error);
-      
+
       if (error instanceof GoRulesException) {
         throw error;
       }
 
-      throw new GoRulesException(
-        GoRulesErrorCode.INTERNAL_ERROR,
-        'BOM validation failed',
-        { originalError: error }
-      );
+      throw new GoRulesException(GoRulesErrorCode.INTERNAL_ERROR, 'BOM validation failed', {
+        originalError: error,
+      });
     }
   }
 
@@ -105,14 +99,10 @@ export class BomDemoGoRulesService {
         orderVolume: pricingData.orderVolume,
       });
 
-      const result = await this.goRulesService.executeRule(
-        'bom-pricing',
-        pricingData,
-        {
-          trace: true,
-          timeout: 15000,
-        }
-      );
+      const result = await this.goRulesService.executeRule('bom-pricing', pricingData, {
+        trace: true,
+        timeout: 15000,
+      });
 
       return {
         totalPrice: result.result.totalPrice || 0,
@@ -121,7 +111,7 @@ export class BomDemoGoRulesService {
       };
     } catch (error) {
       this.logger.error('BOM pricing calculation failed', error);
-      
+
       if (error instanceof GoRulesException) {
         throw error;
       }
@@ -129,7 +119,7 @@ export class BomDemoGoRulesService {
       throw new GoRulesException(
         GoRulesErrorCode.INTERNAL_ERROR,
         'BOM pricing calculation failed',
-        { originalError: error }
+        { originalError: error },
       );
     }
   }
@@ -177,7 +167,7 @@ export class BomDemoGoRulesService {
         {
           trace: true,
           timeout: 12000,
-        }
+        },
       );
 
       return {
@@ -189,7 +179,7 @@ export class BomDemoGoRulesService {
       };
     } catch (error) {
       this.logger.error('Supplier risk assessment failed', error);
-      
+
       if (error instanceof GoRulesException) {
         throw error;
       }
@@ -197,7 +187,7 @@ export class BomDemoGoRulesService {
       throw new GoRulesException(
         GoRulesErrorCode.INTERNAL_ERROR,
         'Supplier risk assessment failed',
-        { originalError: error }
+        { originalError: error },
       );
     }
   }
@@ -230,14 +220,10 @@ export class BomDemoGoRulesService {
         urgency: approvalData.urgency,
       });
 
-      const result = await this.goRulesService.executeRule(
-        'approval-workflow',
-        approvalData,
-        {
-          trace: true,
-          timeout: 8000,
-        }
-      );
+      const result = await this.goRulesService.executeRule('approval-workflow', approvalData, {
+        trace: true,
+        timeout: 8000,
+      });
 
       return {
         workflowType: result.result.workflowType || 'standard',
@@ -248,7 +234,7 @@ export class BomDemoGoRulesService {
       };
     } catch (error) {
       this.logger.error('Approval workflow determination failed', error);
-      
+
       if (error instanceof GoRulesException) {
         throw error;
       }
@@ -256,7 +242,7 @@ export class BomDemoGoRulesService {
       throw new GoRulesException(
         GoRulesErrorCode.INTERNAL_ERROR,
         'Approval workflow determination failed',
-        { originalError: error }
+        { originalError: error },
       );
     }
   }

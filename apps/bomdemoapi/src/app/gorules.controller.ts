@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  HttpException,
-  HttpStatus,
-  Logger,
-} from '@nestjs/common';
+import { Controller, Post, Get, Body, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { BomDemoGoRulesService } from './gorules.service';
 import { GoRulesException, GoRulesErrorCode } from '@org/gorules';
 
@@ -99,7 +91,7 @@ export class GoRulesController {
       });
 
       const result = await this.goRulesService.validateBom(dto);
-      
+
       this.logger.log('BOM validation completed', {
         isValid: result.isValid,
         errorCount: result.errors?.length || 0,
@@ -112,7 +104,7 @@ export class GoRulesController {
       };
     } catch (error) {
       this.logger.error('BOM validation failed', error);
-      
+
       if (error instanceof GoRulesException) {
         throw new HttpException(
           {
@@ -124,7 +116,7 @@ export class GoRulesController {
             },
             timestamp: new Date().toISOString(),
           },
-          this.mapGoRulesErrorToHttpStatus(error.code)
+          this.mapGoRulesErrorToHttpStatus(error.code),
         );
       }
 
@@ -137,7 +129,7 @@ export class GoRulesController {
           },
           timestamp: new Date().toISOString(),
         },
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -155,7 +147,7 @@ export class GoRulesController {
       });
 
       const result = await this.goRulesService.calculatePricing(dto);
-      
+
       this.logger.log('Pricing calculation completed', {
         totalPrice: result.totalPrice,
         discountCount: result.appliedDiscounts.length,
@@ -168,7 +160,7 @@ export class GoRulesController {
       };
     } catch (error) {
       this.logger.error('Pricing calculation failed', error);
-      
+
       if (error instanceof GoRulesException) {
         throw new HttpException(
           {
@@ -180,7 +172,7 @@ export class GoRulesController {
             },
             timestamp: new Date().toISOString(),
           },
-          this.mapGoRulesErrorToHttpStatus(error.code)
+          this.mapGoRulesErrorToHttpStatus(error.code),
         );
       }
 
@@ -193,7 +185,7 @@ export class GoRulesController {
           },
           timestamp: new Date().toISOString(),
         },
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -210,7 +202,7 @@ export class GoRulesController {
       });
 
       const result = await this.goRulesService.assessSupplierRisk(dto);
-      
+
       this.logger.log('Supplier risk assessment completed', {
         riskLevel: result.riskLevel,
         riskScore: result.riskScore,
@@ -224,7 +216,7 @@ export class GoRulesController {
       };
     } catch (error) {
       this.logger.error('Supplier risk assessment failed', error);
-      
+
       if (error instanceof GoRulesException) {
         throw new HttpException(
           {
@@ -236,7 +228,7 @@ export class GoRulesController {
             },
             timestamp: new Date().toISOString(),
           },
-          this.mapGoRulesErrorToHttpStatus(error.code)
+          this.mapGoRulesErrorToHttpStatus(error.code),
         );
       }
 
@@ -249,7 +241,7 @@ export class GoRulesController {
           },
           timestamp: new Date().toISOString(),
         },
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -267,7 +259,7 @@ export class GoRulesController {
       });
 
       const result = await this.goRulesService.determineApprovalWorkflow(dto);
-      
+
       this.logger.log('Approval workflow determination completed', {
         workflowType: result.workflowType,
         approverCount: result.approvers.length,
@@ -281,7 +273,7 @@ export class GoRulesController {
       };
     } catch (error) {
       this.logger.error('Approval workflow determination failed', error);
-      
+
       if (error instanceof GoRulesException) {
         throw new HttpException(
           {
@@ -293,7 +285,7 @@ export class GoRulesController {
             },
             timestamp: new Date().toISOString(),
           },
-          this.mapGoRulesErrorToHttpStatus(error.code)
+          this.mapGoRulesErrorToHttpStatus(error.code),
         );
       }
 
@@ -306,7 +298,7 @@ export class GoRulesController {
           },
           timestamp: new Date().toISOString(),
         },
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -330,7 +322,7 @@ export class GoRulesController {
       };
     } catch (error) {
       this.logger.error('Failed to get statistics', error);
-      
+
       throw new HttpException(
         {
           success: false,
@@ -340,7 +332,7 @@ export class GoRulesController {
           },
           timestamp: new Date().toISOString(),
         },
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -352,9 +344,9 @@ export class GoRulesController {
   resetCircuitBreakers() {
     try {
       this.goRulesService.resetCircuitBreakers();
-      
+
       this.logger.log('Circuit breakers reset successfully');
-      
+
       return {
         success: true,
         message: 'Circuit breakers reset successfully',
@@ -362,7 +354,7 @@ export class GoRulesController {
       };
     } catch (error) {
       this.logger.error('Failed to reset circuit breakers', error);
-      
+
       throw new HttpException(
         {
           success: false,
@@ -372,7 +364,7 @@ export class GoRulesController {
           },
           timestamp: new Date().toISOString(),
         },
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

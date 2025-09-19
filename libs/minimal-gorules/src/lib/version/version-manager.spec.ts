@@ -3,7 +3,12 @@
  * Tests version detection, conflict resolution, and rollback capabilities
  */
 
-import { VersionManager, VersionComparisonResult, VersionConflict, CacheInvalidationOptions } from './version-manager.js';
+import {
+  VersionManager,
+  VersionComparisonResult,
+  VersionConflict,
+  CacheInvalidationOptions,
+} from './version-manager.js';
 import { IRuleCacheManager, IRuleLoaderService, MinimalRuleMetadata } from '../interfaces/index.js';
 import { MinimalGoRulesError } from '../errors/index.js';
 
@@ -36,7 +41,9 @@ class MockCacheManager implements IRuleCacheManager {
     return result;
   }
 
-  async setMultiple(rules: Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>): Promise<void> {
+  async setMultiple(
+    rules: Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>,
+  ): Promise<void> {
     for (const [ruleId, { data, metadata }] of rules) {
       await this.set(ruleId, data, metadata);
     }
@@ -45,7 +52,7 @@ class MockCacheManager implements IRuleCacheManager {
   async getRulesByTags(tags: string[]): Promise<string[]> {
     const result: string[] = [];
     for (const [ruleId, metadata] of this.metadata) {
-      if (tags.some(tag => metadata.tags.includes(tag))) {
+      if (tags.some((tag) => metadata.tags.includes(tag))) {
         result.push(ruleId);
       }
     }
@@ -94,7 +101,7 @@ class MockLoaderService implements IRuleLoaderService {
     if (this.shouldFailLoad.has(ruleId)) {
       throw new Error(`Failed to load rule ${ruleId}`);
     }
-    
+
     const rule = this.cloudRules.get(ruleId);
     if (!rule) {
       throw new Error(`Rule ${ruleId} not found`);
@@ -156,7 +163,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
       mockCache.setTestData('rule1', localData, localMetadata);
 
@@ -166,7 +173,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.1.0',
         tags: ['test'],
-        lastModified: 2000
+        lastModified: 2000,
       };
       mockLoader.setCloudRule('rule1', cloudData, cloudMetadata);
 
@@ -181,8 +188,8 @@ describe('VersionManager', () => {
         versionDiff: 'minor',
         lastModified: {
           local: 1000,
-          cloud: 2000
-        }
+          cloud: 2000,
+        },
       });
     });
 
@@ -192,9 +199,9 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
-      
+
       mockCache.setTestData('rule1', data, metadata);
       mockLoader.setCloudRule('rule1', data, metadata);
 
@@ -211,7 +218,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
       mockCache.setTestData('rule1', localData, localMetadata);
       // No cloud rule set
@@ -231,7 +238,7 @@ describe('VersionManager', () => {
           id: `rule${i}`,
           version: '1.0.0',
           tags: ['test'],
-          lastModified: 1000
+          lastModified: 1000,
         };
         mockCache.setTestData(`rule${i}`, data, metadata);
         mockLoader.setCloudRule(`rule${i}`, data, metadata);
@@ -240,7 +247,7 @@ describe('VersionManager', () => {
       const results = await versionManager.compareVersions();
 
       expect(results).toHaveLength(3);
-      expect(results.map(r => r.ruleId).sort()).toEqual(['rule1', 'rule2', 'rule3']);
+      expect(results.map((r) => r.ruleId).sort()).toEqual(['rule1', 'rule2', 'rule3']);
     });
   });
 
@@ -251,7 +258,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
       mockCache.setTestData('rule1', localData, localMetadata);
 
@@ -260,7 +267,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '2.0.0',
         tags: ['test'],
-        lastModified: 2000
+        lastModified: 2000,
       };
       mockLoader.setCloudRule('rule1', cloudData, cloudMetadata);
 
@@ -273,7 +280,7 @@ describe('VersionManager', () => {
         cloudVersion: '2.0.0',
         localLastModified: 1000,
         cloudLastModified: 2000,
-        conflictType: 'version-mismatch'
+        conflictType: 'version-mismatch',
       });
     });
 
@@ -283,7 +290,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
       mockCache.setTestData('rule1', localData, localMetadata);
       // No cloud rule (deleted)
@@ -300,9 +307,9 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
-      
+
       mockCache.setTestData('rule1', data, metadata);
       mockLoader.setCloudRule('rule1', data, metadata);
 
@@ -319,7 +326,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
       mockCache.setTestData('rule1', localData, localMetadata);
 
@@ -328,13 +335,13 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.1.0',
         tags: ['test'],
-        lastModified: 2000
+        lastModified: 2000,
       };
       mockLoader.setCloudRule('rule1', cloudData, cloudMetadata);
 
       const result = await versionManager.autoRefreshCache(['rule1'], {
         strategy: 'cloud-wins',
-        createSnapshot: false
+        createSnapshot: false,
       });
 
       expect(result.processed).toEqual(['rule1']);
@@ -355,7 +362,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 2000 // Local is newer
+        lastModified: 2000, // Local is newer
       };
       mockCache.setTestData('rule1', localData, localMetadata);
 
@@ -364,13 +371,13 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.1.0',
         tags: ['test'],
-        lastModified: 1000 // Cloud is older
+        lastModified: 1000, // Cloud is older
       };
       mockLoader.setCloudRule('rule1', cloudData, cloudMetadata);
 
       const result = await versionManager.autoRefreshCache(['rule1'], {
         strategy: 'newer-wins',
-        createSnapshot: false
+        createSnapshot: false,
       });
 
       expect(result.processed).toEqual(['rule1']);
@@ -388,7 +395,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
       mockCache.setTestData('rule1', localData, localMetadata);
 
@@ -397,14 +404,14 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.1.0',
         tags: ['test'],
-        lastModified: 2000
+        lastModified: 2000,
       };
       mockLoader.setCloudRule('rule1', cloudData, cloudMetadata);
       mockLoader.setLoadFailure('rule1', true); // Make load fail
 
       const result = await versionManager.autoRefreshCache(['rule1'], {
         strategy: 'cloud-wins',
-        createSnapshot: false
+        createSnapshot: false,
       });
 
       expect(result.processed).toEqual(['rule1']);
@@ -419,9 +426,9 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
-      
+
       mockCache.setTestData('rule1', data, metadata);
       mockLoader.setCloudRule('rule1', data, metadata);
 
@@ -441,7 +448,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
       mockCache.setTestData('rule1', oldData, oldMetadata);
 
@@ -450,13 +457,13 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.1.0',
         tags: ['test'],
-        lastModified: 2000
+        lastModified: 2000,
       };
       mockLoader.setCloudRule('rule1', newData, newMetadata);
 
       const result = await versionManager.invalidateRules(['rule1'], {
         createSnapshot: false,
-        validateAfterUpdate: true
+        validateAfterUpdate: true,
       });
 
       expect(result.processed).toEqual(['rule1']);
@@ -476,7 +483,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
       mockCache.setTestData('rule1', oldData, oldMetadata);
 
@@ -485,7 +492,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.1.0',
         tags: ['test'],
-        lastModified: 2000
+        lastModified: 2000,
       };
       mockLoader.setCloudRule('rule1', newData, newMetadata);
 
@@ -503,7 +510,7 @@ describe('VersionManager', () => {
       const result = await versionManager.invalidateRules(['rule1'], {
         createSnapshot: false,
         maxRetries: 2,
-        retryDelay: 10
+        retryDelay: 10,
       });
 
       expect(result.processed).toEqual(['rule1']);
@@ -518,7 +525,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
       mockCache.setTestData('rule1', oldData, oldMetadata);
 
@@ -527,7 +534,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.1.0',
         tags: ['test'],
-        lastModified: 2000
+        lastModified: 2000,
       };
       mockLoader.setCloudRule('rule1', newData, newMetadata);
 
@@ -544,7 +551,7 @@ describe('VersionManager', () => {
       const result = await versionManager.invalidateRules(['rule1'], {
         createSnapshot: false,
         validateAfterUpdate: true,
-        maxRetries: 1
+        maxRetries: 1,
       });
 
       expect(result.processed).toEqual(['rule1']);
@@ -561,7 +568,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
       mockCache.setTestData('rule1', originalData, originalMetadata);
 
@@ -574,7 +581,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.1.0',
         tags: ['test'],
-        lastModified: 2000
+        lastModified: 2000,
       };
       await mockCache.set('rule1', newData, newMetadata);
 
@@ -599,7 +606,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
       mockCache.setTestData('rule1', data1, metadata1);
 
@@ -612,7 +619,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.1.0',
         tags: ['test'],
-        lastModified: 2000
+        lastModified: 2000,
       };
       await mockCache.set('rule1', data2, metadata2);
       await versionManager.createRollbackSnapshot('rule1', 'snapshot-2');
@@ -623,7 +630,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.2.0',
         tags: ['test'],
-        lastModified: 3000
+        lastModified: 3000,
       };
       await mockCache.set('rule1', data3, metadata3);
 
@@ -635,7 +642,7 @@ describe('VersionManager', () => {
 
       // Rollback to second snapshot (index 1)
       await versionManager.rollbackRule('rule1', 1);
-      
+
       const currentData = await mockCache.get('rule1');
       const currentMetadata = await mockCache.getMetadata('rule1');
       expect(currentData?.toString()).toBe('{"version": "1"}');
@@ -644,9 +651,7 @@ describe('VersionManager', () => {
 
     it('should handle rollback failures gracefully', async () => {
       // Try to rollback non-existent rule
-      await expect(versionManager.rollbackRule('nonexistent')).rejects.toThrow(
-        MinimalGoRulesError
-      );
+      await expect(versionManager.rollbackRule('nonexistent')).rejects.toThrow(MinimalGoRulesError);
 
       // Try to rollback with invalid snapshot index
       const data = Buffer.from('{"test": "data"}');
@@ -654,14 +659,12 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
       mockCache.setTestData('rule1', data, metadata);
       await versionManager.createRollbackSnapshot('rule1', 'test');
 
-      await expect(versionManager.rollbackRule('rule1', 5)).rejects.toThrow(
-        MinimalGoRulesError
-      );
+      await expect(versionManager.rollbackRule('rule1', 5)).rejects.toThrow(MinimalGoRulesError);
     });
 
     it('should clear snapshots correctly', async () => {
@@ -670,7 +673,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
       mockCache.setTestData('rule1', data, metadata);
       await versionManager.createRollbackSnapshot('rule1', 'test');
@@ -704,7 +707,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       };
 
       mockCache.setTestData('rule1', data, metadata);
@@ -740,7 +743,7 @@ describe('VersionManager', () => {
         id: 'rule1',
         version: '1.0.0',
         tags: ['test'],
-        lastModified: 1000
+        lastModified: 1000,
       });
 
       // Mock loader to throw network error
@@ -748,9 +751,7 @@ describe('VersionManager', () => {
         throw new Error('Network error');
       };
 
-      await expect(versionManager.compareVersions(['rule1'])).rejects.toThrow(
-        MinimalGoRulesError
-      );
+      await expect(versionManager.compareVersions(['rule1'])).rejects.toThrow(MinimalGoRulesError);
     });
 
     it('should handle cache errors gracefully', async () => {
@@ -759,9 +760,7 @@ describe('VersionManager', () => {
         throw new Error('Cache error');
       };
 
-      await expect(versionManager.compareVersions(['rule1'])).rejects.toThrow(
-        MinimalGoRulesError
-      );
+      await expect(versionManager.compareVersions(['rule1'])).rejects.toThrow(MinimalGoRulesError);
     });
   });
 });

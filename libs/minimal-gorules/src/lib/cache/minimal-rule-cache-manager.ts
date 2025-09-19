@@ -12,7 +12,7 @@ class LRUNode {
   constructor(
     public key: string,
     public prev: LRUNode | null = null,
-    public next: LRUNode | null = null
+    public next: LRUNode | null = null,
   ) {}
 }
 
@@ -89,11 +89,11 @@ export class MinimalRuleCacheManager implements IRuleCacheManager {
   private readonly tagIndex = new Map<string, Set<string>>(); // tag -> ruleIds
   private readonly lruNodes = new Map<string, LRUNode>();
   private readonly lock = new ReadWriteLock();
-  
+
   // LRU doubly-linked list
   private readonly head = new LRUNode('HEAD');
   private readonly tail = new LRUNode('TAIL');
-  
+
   private readonly maxSize: number;
 
   constructor(maxSize = 1000) {
@@ -139,10 +139,10 @@ export class MinimalRuleCacheManager implements IRuleCacheManager {
       // Add/update rule
       this.rules.set(ruleId, data);
       this.metadata.set(ruleId, metadata);
-      
+
       // Update tag index
       this.addToTagIndex(ruleId, metadata.tags);
-      
+
       // Update LRU
       this.moveToFront(ruleId);
     } finally {
@@ -186,7 +186,9 @@ export class MinimalRuleCacheManager implements IRuleCacheManager {
   /**
    * Set multiple rules at once
    */
-  async setMultiple(rules: Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>): Promise<void> {
+  async setMultiple(
+    rules: Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>,
+  ): Promise<void> {
     await this.lock.acquireWrite();
     try {
       for (const [ruleId, { data, metadata }] of rules) {
@@ -203,10 +205,10 @@ export class MinimalRuleCacheManager implements IRuleCacheManager {
         // Add/update rule
         this.rules.set(ruleId, data);
         this.metadata.set(ruleId, metadata);
-        
+
         // Update tag index
         this.addToTagIndex(ruleId, metadata.tags);
-        
+
         // Update LRU
         this.moveToFront(ruleId);
       }
@@ -227,13 +229,13 @@ export class MinimalRuleCacheManager implements IRuleCacheManager {
 
       // Get intersection of all tag sets
       let result: Set<string> | null = null;
-      
+
       for (const tag of tags) {
         const ruleIds = this.tagIndex.get(tag);
         if (!ruleIds || ruleIds.size === 0) {
           return []; // If any tag has no rules, intersection is empty
         }
-        
+
         if (result === null) {
           result = new Set(ruleIds);
         } else {
@@ -241,7 +243,7 @@ export class MinimalRuleCacheManager implements IRuleCacheManager {
           const resultArray: string[] = Array.from(result);
           result = new Set(resultArray.filter((id: string) => ruleIds.has(id)));
         }
-        
+
         if (result.size === 0) {
           return []; // Early exit if intersection becomes empty
         }
@@ -275,7 +277,7 @@ export class MinimalRuleCacheManager implements IRuleCacheManager {
       if (this.rules.has(ruleId)) {
         // Remove from tag index first (needs metadata)
         this.removeFromTagIndex(ruleId);
-        
+
         // Remove from all data structures
         this.rules.delete(ruleId);
         this.metadata.delete(ruleId);
@@ -296,7 +298,7 @@ export class MinimalRuleCacheManager implements IRuleCacheManager {
       this.metadata.clear();
       this.tagIndex.clear();
       this.lruNodes.clear();
-      
+
       // Reset LRU list
       this.head.next = this.tail;
       this.tail.prev = this.head;
@@ -335,7 +337,7 @@ export class MinimalRuleCacheManager implements IRuleCacheManager {
 
   private moveToFront(ruleId: string): void {
     let node = this.lruNodes.get(ruleId);
-    
+
     if (!node) {
       // Create new node
       node = new LRUNode(ruleId);
@@ -344,7 +346,7 @@ export class MinimalRuleCacheManager implements IRuleCacheManager {
       // Remove from current position
       this.removeNodeFromList(node);
     }
-    
+
     // Add to front
     this.addNodeToFront(node);
   }
@@ -362,10 +364,10 @@ export class MinimalRuleCacheManager implements IRuleCacheManager {
     const lru = this.tail.prev;
     if (lru && lru !== this.head) {
       const ruleId = lru.key;
-      
+
       // Remove from tag index first (needs metadata)
       this.removeFromTagIndex(ruleId);
-      
+
       // Remove from all data structures
       this.rules.delete(ruleId);
       this.metadata.delete(ruleId);
@@ -377,7 +379,7 @@ export class MinimalRuleCacheManager implements IRuleCacheManager {
   private addNodeToFront(node: LRUNode): void {
     node.prev = this.head;
     node.next = this.head.next;
-    
+
     if (this.head.next) {
       this.head.next.prev = node;
     }

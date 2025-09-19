@@ -1,6 +1,6 @@
 /**
  * Basic Rule Executor Example
- * 
+ *
  * This example demonstrates simple rule execution with the Minimal GoRules Engine
  * React integration. It shows how to execute a single rule and display results.
  */
@@ -11,7 +11,7 @@ import { RuleExecutor, GoRulesProvider } from '../index.js';
 // Configuration for the GoRules service
 const config = {
   apiBaseUrl: 'http://localhost:3000/api',
-  timeout: 10000
+  timeout: 10000,
 };
 
 /**
@@ -22,7 +22,7 @@ function BasicRuleExecutorExample(): JSX.Element {
   const [inputData, setInputData] = useState({
     age: 25,
     income: 50000,
-    creditScore: 750
+    creditScore: 750,
   });
 
   const handleSuccess = (results: Record<string, unknown> | unknown) => {
@@ -36,7 +36,7 @@ function BasicRuleExecutorExample(): JSX.Element {
   return (
     <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
       <h1>Basic Rule Executor Example</h1>
-      
+
       <div style={{ marginBottom: '20px' }}>
         <h3>Configuration</h3>
         <div style={{ marginBottom: '10px' }}>
@@ -50,7 +50,7 @@ function BasicRuleExecutorExample(): JSX.Element {
             />
           </label>
         </div>
-        
+
         <div style={{ marginBottom: '10px' }}>
           <label>
             Input Data (JSON):
@@ -68,7 +68,7 @@ function BasicRuleExecutorExample(): JSX.Element {
                 padding: '10px',
                 width: '300px',
                 height: '100px',
-                fontFamily: 'monospace'
+                fontFamily: 'monospace',
               }}
             />
           </label>

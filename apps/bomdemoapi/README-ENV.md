@@ -5,25 +5,27 @@ It ensures **secure handling of secrets** and provides a **clear workflow for de
 
 ---
 
-## 📁 Root Level Environment Files  
+## 📁 Root Level Environment Files
+
 **Location:** `apps/bomdemoapi/`
 
-| File               | Purpose                                        | Usage                                         | Git Status         | Contains                            |
-|--------------------|------------------------------------------------|------------------------------------------------|----------------------|---------------------------------------|
-| `.env`              | Personal development environment               | Your local overrides & secrets during development | ❌ Ignored (in `.gitignore`) | Real credentials (DB URLs, API keys) |
-| `.env.example`      | Documentation template                         | Reference for new developers                  | ✅ Committed         | Placeholder values & comments         |
-| `.env.development`  | Team-shared development defaults                | Loaded when `NODE_ENV=development`            | ✅ Committed         | Safe dev URLs, debug flags            |
-| `.env.production`   | Production configuration template               | Reference for production deployment           | ✅ Committed         | Empty placeholders (no secrets)       |
+| File               | Purpose                           | Usage                                             | Git Status                   | Contains                             |
+| ------------------ | --------------------------------- | ------------------------------------------------- | ---------------------------- | ------------------------------------ |
+| `.env`             | Personal development environment  | Your local overrides & secrets during development | ❌ Ignored (in `.gitignore`) | Real credentials (DB URLs, API keys) |
+| `.env.example`     | Documentation template            | Reference for new developers                      | ✅ Committed                 | Placeholder values & comments        |
+| `.env.development` | Team-shared development defaults  | Loaded when `NODE_ENV=development`                | ✅ Committed                 | Safe dev URLs, debug flags           |
+| `.env.production`  | Production configuration template | Reference for production deployment               | ✅ Committed                 | Empty placeholders (no secrets)      |
 
 ---
 
-## 📁 TypeScript Environment Modules  
+## 📁 TypeScript Environment Modules
+
 **Location:** `apps/bomdemoapi/src/environments/`
 
-| File                   | Purpose                                             | Usage                                           | Key Features                                                  |
-|--------------------------|------------------------------------------------------|---------------------------------------------------|-----------------------------------------------------------------|
-| `environment.ts`          | Development environment configuration module          | Imported during `nx serve bomdemoapi`             | Type-safe access, fallback defaults, value parsing              |
-| `environment.prod.ts`     | Production environment configuration module             | Imported during `nx build bomdemoapi` (prod)      | Strict validation, no fallbacks, production-optimized settings |
+| File                  | Purpose                                      | Usage                                        | Key Features                                                   |
+| --------------------- | -------------------------------------------- | -------------------------------------------- | -------------------------------------------------------------- |
+| `environment.ts`      | Development environment configuration module | Imported during `nx serve bomdemoapi`        | Type-safe access, fallback defaults, value parsing             |
+| `environment.prod.ts` | Production environment configuration module  | Imported during `nx build bomdemoapi` (prod) | Strict validation, no fallbacks, production-optimized settings |
 
 ---
 
@@ -51,18 +53,21 @@ graph TD
 ## 🎯 Usage Scenarios
 
 ### 🧑‍💻 Development Workflow
+
 ```bash
 nx serve bomdemoapi
 # Loads: .env → .env.development → environment.ts
 ```
 
 ### 🚀 Production Deployment
+
 ```bash
 NODE_ENV=production nx build bomdemoapi
 # Loads: real production environment variables → environment.prod.ts
 ```
 
 ### 👥 Team Onboarding
+
 ```bash
 cp .env.example .env
 # Then customize .env with your local database credentials
@@ -81,11 +86,12 @@ This multi-layered approach gives you:
 
 ✅ Security of sensitive data  
 ✅ Flexibility for multiple environments  
-✅ A smooth onboarding experience for new developers  
+✅ A smooth onboarding experience for new developers
 
 ---
 
 ## 📌 Tips
+
 - Always **create/update `.env.example`** when you add new environment variables.
 - Keep `.env` files **out of version control** (`.gitignore` protected).
 - Ensure **deployment platform sets production secrets** via environment variables.

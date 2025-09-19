@@ -18,7 +18,7 @@ export async function demonstrateVersionManagement() {
     apiKey: 'demo-api-key',
     projectId: 'demo-project',
     cacheMaxSize: 100,
-    httpTimeout: 5000
+    httpTimeout: 5000,
   };
 
   // const engine = new MinimalGoRulesEngine(config);
@@ -28,12 +28,12 @@ export async function demonstrateVersionManagement() {
     console.log('   - Compare local cache versions with cloud versions');
     console.log('   - Identify rules that need updates');
     console.log('   - Analyze version differences (major, minor, patch)');
-    console.log('   Usage: await engine.compareVersions([\'rule1\', \'rule2\']);\n');
+    console.log("   Usage: await engine.compareVersions(['rule1', 'rule2']);\n");
 
     console.log('2. Conflict Detection');
     console.log('   - Detect version conflicts that require resolution');
     console.log('   - Identify rule deletions, version mismatches, timestamp conflicts');
-    console.log('   Usage: await engine.detectVersionConflicts([\'rule1\']);\n');
+    console.log("   Usage: await engine.detectVersionConflicts(['rule1']);\n");
 
     console.log('3. Automatic Cache Refresh');
     console.log('   - Automatically resolve conflicts using strategies:');
@@ -41,21 +41,23 @@ export async function demonstrateVersionManagement() {
     console.log('     * local-wins: Keep local version');
     console.log('     * newer-wins: Use version with later timestamp');
     console.log('     * manual: Require manual resolution');
-    console.log('   Usage: await engine.autoRefreshCache([\'rule1\'], { strategy: \'cloud-wins\' });\n');
+    console.log(
+      "   Usage: await engine.autoRefreshCache(['rule1'], { strategy: 'cloud-wins' });\n",
+    );
 
     console.log('4. Manual Cache Invalidation');
     console.log('   - Manually invalidate and reload specific rules');
     console.log('   - Useful for development scenarios');
     console.log('   - Supports retries and validation');
-    console.log('   Usage: await engine.invalidateRules([\'rule1\'], { maxRetries: 3 });\n');
+    console.log("   Usage: await engine.invalidateRules(['rule1'], { maxRetries: 3 });\n");
 
     console.log('5. Rollback Capabilities');
     console.log('   - Create snapshots before rule updates');
     console.log('   - Rollback to previous versions when needed');
     console.log('   - Manage multiple snapshots per rule');
     console.log('   Usage:');
-    console.log('     await engine.createRollbackSnapshot(\'rule1\', \'before-update\');');
-    console.log('     await engine.rollbackRule(\'rule1\', 0); // Rollback to latest snapshot\n');
+    console.log("     await engine.createRollbackSnapshot('rule1', 'before-update');");
+    console.log("     await engine.rollbackRule('rule1', 0); // Rollback to latest snapshot\n");
 
     console.log('6. Version Statistics');
     console.log('   - Track rollback snapshots');
@@ -74,7 +76,6 @@ export async function demonstrateVersionManagement() {
 
     console.log('\n=== Demo Complete ===');
     console.log('Version management functionality is ready for use!');
-
   } catch (error) {
     console.error('Demo failed:', error);
   }
@@ -146,7 +147,7 @@ export const versionManagementExamples = {
       const age = Date.now() - stats.oldestSnapshot;
       console.log(\`Oldest snapshot age: \${Math.round(age / 1000 / 60)} minutes\`);
     }
-  `
+  `,
 };
 
 // Export for use in other modules

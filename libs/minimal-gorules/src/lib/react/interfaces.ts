@@ -12,22 +12,22 @@ export interface ReactGoRulesConfig {
    * Base URL for the NestJS backend API
    */
   apiBaseUrl: string;
-  
+
   /**
    * Optional API key for authentication
    */
   apiKey?: string;
-  
+
   /**
    * Request timeout in milliseconds
    */
   timeout?: number;
-  
+
   /**
    * Whether to include credentials in requests
    */
   withCredentials?: boolean;
-  
+
   /**
    * Custom headers to include in all requests
    */
@@ -163,22 +163,22 @@ export interface UseRuleExecutionState<T = unknown> {
    * Whether a request is currently in progress
    */
   loading: boolean;
-  
+
   /**
    * Execution results
    */
   results: Record<string, T> | T | null;
-  
+
   /**
    * Execution time in milliseconds
    */
   executionTime: number | null;
-  
+
   /**
    * Any errors that occurred
    */
   error: string | null;
-  
+
   /**
    * Success status
    */
@@ -193,17 +193,17 @@ export interface UseEngineStatusState {
    * Whether status is being fetched
    */
   loading: boolean;
-  
+
   /**
    * Engine status data
    */
   status: StatusResponse | null;
-  
+
   /**
    * Any errors that occurred
    */
   error: string | null;
-  
+
   /**
    * Last update timestamp
    */
@@ -218,17 +218,17 @@ export interface UseRuleMetadataState {
    * Whether metadata is being fetched
    */
   loading: boolean;
-  
+
   /**
    * Rule metadata
    */
   metadata: Record<string, MinimalRuleMetadata> | null;
-  
+
   /**
    * Any errors that occurred
    */
   error: string | null;
-  
+
   /**
    * Last update timestamp
    */
@@ -243,52 +243,52 @@ export interface RuleExecutorProps {
    * Rule ID to execute (for single rule execution)
    */
   ruleId?: string;
-  
+
   /**
    * Multiple rule IDs to execute
    */
   ruleIds?: string[];
-  
+
   /**
    * Tags to select rules by
    */
   tags?: string[];
-  
+
   /**
    * Execution mode
    */
   mode?: 'parallel' | 'sequential' | 'mixed';
-  
+
   /**
    * Input data for rule execution
    */
   input: Record<string, unknown>;
-  
+
   /**
    * Whether to execute automatically on mount
    */
   autoExecute?: boolean;
-  
+
   /**
    * Callback when execution completes successfully
    */
   onSuccess?: (results: Record<string, unknown> | unknown) => void;
-  
+
   /**
    * Callback when execution fails
    */
   onError?: (error: string) => void;
-  
+
   /**
    * Custom loading component
    */
   loadingComponent?: () => any;
-  
+
   /**
    * Custom error component
    */
   errorComponent?: (props: { error: string }) => any;
-  
+
   /**
    * Custom results component
    */
@@ -303,17 +303,17 @@ export interface EngineStatusProps {
    * Refresh interval in milliseconds (0 to disable auto-refresh)
    */
   refreshInterval?: number;
-  
+
   /**
    * Whether to show detailed information
    */
   detailed?: boolean;
-  
+
   /**
    * Custom styling classes
    */
   className?: string;
-  
+
   /**
    * Callback when status updates
    */
@@ -328,22 +328,22 @@ export interface RuleMetadataViewerProps {
    * Specific rule ID to show metadata for (optional)
    */
   ruleId?: string;
-  
+
   /**
    * Whether to show all rules metadata
    */
   showAll?: boolean;
-  
+
   /**
    * Filter rules by tags
    */
   filterTags?: string[];
-  
+
   /**
    * Custom styling classes
    */
   className?: string;
-  
+
   /**
    * Callback when rule is selected
    */

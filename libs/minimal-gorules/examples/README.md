@@ -5,7 +5,9 @@ This directory contains comprehensive examples demonstrating how to use the Mini
 ## Examples Overview
 
 ### [Basic Usage](./basic-usage.ts)
+
 Demonstrates fundamental operations:
+
 - Engine initialization
 - Single rule execution
 - Multiple rule execution (parallel)
@@ -15,12 +17,15 @@ Demonstrates fundamental operations:
 - Rule validation
 
 **Run the example:**
+
 ```bash
 npx ts-node examples/basic-usage.ts
 ```
 
 ### [Advanced Usage](./advanced-usage.ts)
+
 Shows advanced patterns and optimizations:
+
 - Mixed execution modes (parallel + sequential)
 - Advanced error handling with retry logic
 - Performance monitoring and metrics collection
@@ -30,12 +35,15 @@ Shows advanced patterns and optimizations:
 - Memory optimization techniques
 
 **Run the example:**
+
 ```bash
 npx ts-node examples/advanced-usage.ts
 ```
 
 ### [NestJS Integration](./nestjs-example.ts)
+
 Complete NestJS integration example:
+
 - Module configuration with dependency injection
 - Service implementation with lifecycle management
 - REST API endpoints for all engine operations
@@ -45,13 +53,16 @@ Complete NestJS integration example:
 - Performance monitoring
 
 **Key features:**
+
 - Environment-based configuration
 - Graceful startup and shutdown
 - Comprehensive API endpoints
 - Production-ready error handling
 
 ### [React Integration](./react-example.tsx)
+
 Full React application example:
+
 - Context provider for global state
 - Custom hooks for rule execution
 - Caching mechanisms for performance
@@ -61,6 +72,7 @@ Full React application example:
 - Error boundaries and loading states
 
 **Key components:**
+
 - `GoRulesProvider` - Context provider
 - `UserValidator` - User validation component
 - `BusinessRulesDashboard` - Multi-rule execution
@@ -100,14 +112,14 @@ import { MinimalGoRulesEngine } from '@your-org/minimal-gorules';
 const engine = new MinimalGoRulesEngine({
   apiUrl: 'https://api.gorules.io',
   apiKey: process.env.GORULES_API_KEY!,
-  projectId: 'your-project-id'
+  projectId: 'your-project-id',
 });
 
 // Initialize and execute
 await engine.initialize();
-const result = await engine.executeRule('my-rule', { 
-  userId: 123, 
-  amount: 100 
+const result = await engine.executeRule('my-rule', {
+  userId: 123,
+  amount: 100,
 });
 
 console.log('Result:', result);
@@ -120,7 +132,7 @@ import { Module } from '@nestjs/common';
 import { GoRulesModule } from './examples/nestjs-example';
 
 @Module({
-  imports: [GoRulesModule]
+  imports: [GoRulesModule],
 })
 export class AppModule {}
 ```
@@ -179,10 +191,10 @@ console.log('Memory usage:', perfStats.memoryUsage, 'MB');
 
 ```typescript
 // Execute multiple rules efficiently
-const results = await engine.executeRules(
-  ['rule1', 'rule2', 'rule3'],
-  { userId: 123, context: 'batch' }
-);
+const results = await engine.executeRules(['rule1', 'rule2', 'rule3'], {
+  userId: 123,
+  context: 'batch',
+});
 
 console.log(`Executed ${results.results.size} rules in ${results.executionTime}ms`);
 ```
@@ -197,9 +209,9 @@ const selector = {
     type: 'mixed',
     groups: [
       { rules: ['validation-1', 'validation-2'], mode: 'parallel' },
-      { rules: ['business-1', 'business-2'], mode: 'sequential' }
-    ]
-  }
+      { rules: ['business-1', 'business-2'], mode: 'sequential' },
+    ],
+  },
 };
 
 const result = await engine.execute(selector, input);
@@ -241,7 +253,7 @@ describe('GoRules API Integration', () => {
   it('should load rules from cloud', async () => {
     const engine = new MinimalGoRulesEngine(realConfig);
     const status = await engine.initialize();
-    
+
     expect(status.initialized).toBe(true);
     expect(status.rulesLoaded).toBeGreaterThan(0);
   });
@@ -264,6 +276,7 @@ advancedUsageExamples();
 ```
 
 Expected performance targets:
+
 - Single rule execution: < 1ms overhead
 - Throughput: > 10,000 rules/second
 - Memory usage: < 50MB for 1000 cached rules
@@ -274,16 +287,19 @@ Expected performance targets:
 ### Common Issues
 
 1. **Engine not initializing**
+
    - Check API key and project ID
    - Verify network connectivity
    - Review configuration validation errors
 
 2. **Rules not found**
+
    - Verify rule IDs match exactly
    - Check if rules are published in GoRules Cloud
    - Refresh cache if rules were recently updated
 
 3. **Performance issues**
+
    - Enable performance optimizations
    - Increase cache size for frequently used rules
    - Monitor memory usage and cleanup
@@ -302,7 +318,7 @@ const config = {
   // ... other config
   enablePerformanceMetrics: true,
   // Add debug flag if available in your environment
-  debug: process.env.NODE_ENV === 'development'
+  debug: process.env.NODE_ENV === 'development',
 };
 ```
 

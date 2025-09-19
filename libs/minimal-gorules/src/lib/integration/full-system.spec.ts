@@ -16,7 +16,12 @@ describe('Full System Integration Tests', () => {
   beforeAll(() => {
     benchmark = new PerformanceBenchmark(
       { iterations: 50, warmupIterations: 5, concurrency: 5, timeout: 30000 },
-      { maxLatency: 100, minThroughput: 50, maxMemoryPerOperation: 1024 * 1024, maxMemoryGrowthRate: 1024 }
+      {
+        maxLatency: 100,
+        minThroughput: 50,
+        maxMemoryPerOperation: 1024 * 1024,
+        maxMemoryGrowthRate: 1024,
+      },
     );
   });
 
@@ -24,21 +29,21 @@ describe('Full System Integration Tests', () => {
     // Create mock rules
     const mockRules = MockDataFactory.createMockRules(20, {
       tagGroups: ['validation', 'scoring', 'approval', 'risk'],
-      complexityLevel: 'medium'
+      complexityLevel: 'medium',
     });
 
     mockLoader = new MockRuleLoaderService(mockRules, {
       networkDelay: 10, // 10ms simulated network delay
-      failureRate: 0.05 // 5% failure rate
+      failureRate: 0.05, // 5% failure rate
     });
 
     const config = MockDataFactory.createMockConfig({
       enablePerformanceOptimizations: true,
-      enablePerformanceMetrics: true
+      enablePerformanceMetrics: true,
     });
 
     engine = new MinimalGoRulesEngine(config);
-    
+
     // Replace loader with mock
     (engine as any).loaderService = mockLoader;
   });
@@ -55,21 +60,23 @@ describe('Full System Integration Tests', () => {
       expect(initStatus.rulesLoaded).toBe(20);
 
       // Execute single rule
-      const singleResult = await engine.executeRule('mock-rule-1', 
-        MockDataFactory.createMockInput('valid'));
+      const singleResult = await engine.executeRule(
+        'mock-rule-1',
+        MockDataFactory.createMockInput('valid'),
+      );
       expect(singleResult).toBeDefined();
 
       // Execute multiple rules
       const multiResult = await engine.executeRules(
         ['mock-rule-1', 'mock-rule-2', 'mock-rule-3'],
-        MockDataFactory.createMockInput('valid')
+        MockDataFactory.createMockInput('valid'),
       );
       expect(multiResult.results.size).toBe(3);
 
       // Execute by tags
       const tagResult = await engine.executeByTags(
         ['validation'],
-        MockDataFactory.createMockInput('valid')
+        MockDataFactory.createMockInput('valid'),
       );
       expect(tagResult.results.size).toBeGreaterThan(0);
 
@@ -91,17 +98,25 @@ describe('Full System Integration Tests', () => {
       // Complex scenario: mixed execution types with error handling
       const scenarios = [
         () => engine.executeRule('mock-rule-1', MockDataFactory.createMockInput('valid')),
-        () => engine.executeRules(['mock-rule-2', 'mock-rule-3'], MockDataFactory.createMockInput('edge')),
+        () =>
+          engine.executeRules(
+            ['mock-rule-2', 'mock-rule-3'],
+            MockDataFactory.createMockInput('edge'),
+          ),
         () => engine.executeByTags(['scoring'], MockDataFactory.createMockInput('random')),
-        () => engine.executeByTags(['validation', 'approval'], MockDataFactory.createMockInput('valid')),
+        () =>
+          engine.executeByTags(
+            ['validation', 'approval'],
+            MockDataFactory.createMockInput('valid'),
+          ),
         () => engine.getRuleMetadata('mock-rule-5'),
-        () => engine.validateRule('mock-rule-10')
+        () => engine.validateRule('mock-rule-10'),
       ];
 
-      const results = await Promise.allSettled(scenarios.map(scenario => scenario()));
-      
+      const results = await Promise.allSettled(scenarios.map((scenario) => scenario()));
+
       // Most operations should succeed
-      const successful = results.filter(r => r.status === 'fulfilled').length;
+      const successful = results.filter((r) => r.status === 'fulfilled').length;
       expect(successful).toBeGreaterThan(scenarios.length * 0.8); // At least 80% success
     });
 
@@ -111,13 +126,18 @@ describe('Full System Integration Tests', () => {
       // Perform many concurrent operations
       const operations = Array.from({ length: 50 }, (_, i) => {
         const operationType = i % 4;
-        
+
         switch (operationType) {
           case 0:
-            return engine.executeRule(`mock-rule-${(i % 20) + 1}`, MockDataFactory.createMockInput());
+            return engine.executeRule(
+              `mock-rule-${(i % 20) + 1}`,
+              MockDataFactory.createMockInput(),
+            );
           case 1:
-            return engine.executeRules([`mock-rule-${(i % 20) + 1}`, `mock-rule-${((i + 1) % 20) + 1}`], 
-              MockDataFactory.createMockInput());
+            return engine.executeRules(
+              [`mock-rule-${(i % 20) + 1}`, `mock-rule-${((i + 1) % 20) + 1}`],
+              MockDataFactory.createMockInput(),
+            );
           case 2:
             return engine.executeByTags(['validation'], MockDataFactory.createMockInput());
           case 3:
@@ -128,9 +148,9 @@ describe('Full System Integration Tests', () => {
       });
 
       const results = await Promise.allSettled(operations);
-      
+
       // Check that operations completed successfully
-      const successful = results.filter(r => r.status === 'fulfilled').length;
+      const successful = results.filter((r) => r.status === 'fulfilled').length;
       expect(successful).toBeGreaterThan(40); // At least 80% success rate
 
       // Engine should still be in consistent state
@@ -153,7 +173,7 @@ describe('Full System Integration Tests', () => {
             const ruleId = `mock-rule-${TestUtils.randomNumber(1, 20)}`;
             await engine.executeRule(ruleId, MockDataFactory.createMockInput('random'));
           },
-          type: 'throughput'
+          type: 'throughput',
         },
         {
           name: 'Multi Rule Execution',
@@ -161,7 +181,7 @@ describe('Full System Integration Tests', () => {
             const ruleIds = Array.from({ length: 3 }, (_, i) => `mock-rule-${i + 1}`);
             await engine.executeRules(ruleIds, MockDataFactory.createMockInput('random'));
           },
-          type: 'latency'
+          type: 'latency',
         },
         {
           name: 'Tag-based Execution',
@@ -169,7 +189,7 @@ describe('Full System Integration Tests', () => {
             const tags = ['validation', 'scoring'];
             await engine.executeByTags(tags, MockDataFactory.createMockInput('random'));
           },
-          type: 'latency'
+          type: 'latency',
         },
         {
           name: 'Metadata Access',
@@ -177,8 +197,8 @@ describe('Full System Integration Tests', () => {
             const ruleId = `mock-rule-${TestUtils.randomNumber(1, 20)}`;
             await engine.getRuleMetadata(ruleId);
           },
-          type: 'throughput'
-        }
+          type: 'throughput',
+        },
       ]);
 
       expect(suiteResult.passed).toBe(suiteResult.tests.length);
@@ -196,7 +216,7 @@ describe('Full System Integration Tests', () => {
 
       for (const count of ruleCounts) {
         const ruleIds = Array.from({ length: count }, (_, i) => `mock-rule-${i + 1}`);
-        
+
         const result = await benchmark.runTest(`scale-test-${count}-rules`, async () => {
           await engine.executeRules(ruleIds, MockDataFactory.createMockInput('random'));
         });
@@ -208,11 +228,11 @@ describe('Full System Integration Tests', () => {
       for (let i = 1; i < results.length; i++) {
         const prev = results[i - 1];
         const curr = results[i];
-        
+
         // Time should not increase more than linearly
         const timeRatio = curr.averageTime / prev.averageTime;
         const countRatio = curr.count / prev.count;
-        
+
         expect(timeRatio).toBeLessThan(countRatio * 1.5); // Allow 50% overhead
       }
     });
@@ -226,10 +246,10 @@ describe('Full System Integration Tests', () => {
     it('should recover from temporary network failures', async () => {
       // Simulate network failures for cache refresh
       mockLoader.setNextOperationToFail();
-      
+
       // First refresh should fail
       await expect(engine.refreshCache(['mock-rule-1'])).rejects.toThrow();
-      
+
       // Second refresh should succeed
       const refreshResult = await engine.refreshCache(['mock-rule-1']);
       expect(refreshResult.refreshedRules).toContain('mock-rule-1');
@@ -252,7 +272,7 @@ describe('Full System Integration Tests', () => {
       // Should have some successful results
       expect(result.results.size).toBeGreaterThan(0);
       expect(result.errors?.size).toBeGreaterThan(0);
-      
+
       // Successful rules should have valid results
       for (const [ruleId, ruleResult] of result.results) {
         expect(ruleResult).toBeDefined();
@@ -268,7 +288,7 @@ describe('Full System Integration Tests', () => {
 
       // Simulate failures during cache operations
       mockLoader.setNextOperationToFail();
-      
+
       try {
         await engine.refreshCache();
       } catch {
@@ -280,7 +300,10 @@ describe('Full System Integration Tests', () => {
       expect(finalMetadata.size).toBe(initialSize);
 
       // Should still be able to execute rules
-      const result = await engine.executeRule('mock-rule-1', MockDataFactory.createMockInput('valid'));
+      const result = await engine.executeRule(
+        'mock-rule-1',
+        MockDataFactory.createMockInput('valid'),
+      );
       expect(result).toBeDefined();
     });
   });
@@ -290,16 +313,16 @@ describe('Full System Integration Tests', () => {
       await engine.initialize();
 
       const initialMemory = process.memoryUsage().heapUsed;
-      
+
       // Perform many operations to test memory management
       for (let batch = 0; batch < 20; batch++) {
         const operations = Array.from({ length: 10 }, () => {
           const ruleId = `mock-rule-${TestUtils.randomNumber(1, 20)}`;
           return engine.executeRule(ruleId, MockDataFactory.createMockInput('random'));
         });
-        
+
         await Promise.all(operations);
-        
+
         // Trigger cleanup periodically
         if (batch % 5 === 0) {
           const performanceReport = engine.getPerformanceReport();
@@ -314,10 +337,10 @@ describe('Full System Integration Tests', () => {
       if (global.gc) {
         global.gc();
       }
-      
+
       const finalMemory = process.memoryUsage().heapUsed;
       const memoryGrowth = finalMemory - initialMemory;
-      
+
       // Memory growth should be reasonable for 200 operations
       expect(memoryGrowth).toBeLessThan(20 * 1024 * 1024); // Less than 20MB growth
     });
@@ -327,21 +350,23 @@ describe('Full System Integration Tests', () => {
 
       // Create memory pressure
       const largeBuffers: Buffer[] = [];
-      
+
       try {
         // Allocate large amounts of memory while executing rules
         for (let i = 0; i < 10; i++) {
           largeBuffers.push(Buffer.alloc(5 * 1024 * 1024)); // 5MB each
-          
+
           // Execute rules under memory pressure
-          const result = await engine.executeRule('mock-rule-1', MockDataFactory.createMockInput('valid'));
+          const result = await engine.executeRule(
+            'mock-rule-1',
+            MockDataFactory.createMockInput('valid'),
+          );
           expect(result).toBeDefined();
         }
-        
+
         // Should still be able to perform operations
         const status = await engine.getStatus();
         expect(status.initialized).toBe(true);
-        
       } finally {
         // Clean up large buffers
         largeBuffers.length = 0;
@@ -356,10 +381,10 @@ describe('Full System Integration Tests', () => {
     it('should work with minimal configuration', async () => {
       const minimalConfig = MockDataFactory.createMockConfig();
       const minimalEngine = new MinimalGoRulesEngine(minimalConfig);
-      
+
       // Replace with mock loader
       (minimalEngine as any).loaderService = new MockRuleLoaderService([
-        MockDataFactory.createMockRules(5)[0]
+        MockDataFactory.createMockRules(5)[0],
       ]);
 
       const status = await minimalEngine.initialize();
@@ -375,14 +400,14 @@ describe('Full System Integration Tests', () => {
         enablePerformanceMetrics: true,
         enableConnectionPooling: true,
         enableRequestBatching: true,
-        enableCompression: true
+        enableCompression: true,
       });
 
       const optimizedEngine = new MinimalGoRulesEngine(optimizedConfig);
-      
+
       // Replace with mock loader
       (optimizedEngine as any).loaderService = new MockRuleLoaderService(
-        MockDataFactory.createMockRules(10)
+        MockDataFactory.createMockRules(10),
       );
 
       const status = await optimizedEngine.initialize();
@@ -405,7 +430,7 @@ describe('Full System Integration Tests', () => {
       // Update configuration
       engine.updateConfig({
         httpTimeout: 10000,
-        batchSize: 20
+        batchSize: 20,
       });
 
       const updatedConfig = engine.getConfig();
@@ -413,7 +438,10 @@ describe('Full System Integration Tests', () => {
       expect(updatedConfig.batchSize).toBe(20);
 
       // Should still work after configuration update
-      const result = await engine.executeRule('mock-rule-1', MockDataFactory.createMockInput('valid'));
+      const result = await engine.executeRule(
+        'mock-rule-1',
+        MockDataFactory.createMockInput('valid'),
+      );
       expect(result).toBeDefined();
     });
   });
@@ -433,7 +461,10 @@ describe('Full System Integration Tests', () => {
       expect(metadata?.id).toBe('mock-rule-1');
 
       // Test execution with cached rules
-      const result = await engine.executeRule('mock-rule-1', MockDataFactory.createMockInput('valid'));
+      const result = await engine.executeRule(
+        'mock-rule-1',
+        MockDataFactory.createMockInput('valid'),
+      );
       expect(result).toBeDefined();
 
       // Test tag manager integration
@@ -475,7 +506,10 @@ describe('Full System Integration Tests', () => {
 
       // Perform various operations
       await engine.executeRule('mock-rule-1', MockDataFactory.createMockInput('valid'));
-      await engine.executeRules(['mock-rule-2', 'mock-rule-3'], MockDataFactory.createMockInput('valid'));
+      await engine.executeRules(
+        ['mock-rule-2', 'mock-rule-3'],
+        MockDataFactory.createMockInput('valid'),
+      );
       await engine.executeByTags(['validation'], MockDataFactory.createMockInput('valid'));
 
       // Check that metadata is still consistent
@@ -483,7 +517,7 @@ describe('Full System Integration Tests', () => {
       const finalRuleIds = Array.from(finalMetadata.keys()).sort();
 
       expect(finalRuleIds).toEqual(initialRuleIds);
-      
+
       // Individual metadata should be unchanged
       for (const ruleId of initialRuleIds) {
         const initial = initialMetadata.get(ruleId);
@@ -499,14 +533,14 @@ describe('Full System Integration Tests', () => {
         engine.getRuleMetadata('mock-rule-2'),
         engine.getAllRuleMetadata(),
         engine.getRulesByTags(['validation']),
-        engine.validateRule('mock-rule-3')
+        engine.validateRule('mock-rule-3'),
       ];
 
       const results = await Promise.allSettled(operations);
-      
+
       // All operations should complete (successfully or with expected errors)
       expect(results.length).toBe(5);
-      
+
       // Cache should still be in consistent state
       const finalMetadata = await engine.getAllRuleMetadata();
       expect(finalMetadata.size).toBeGreaterThan(0);
@@ -526,16 +560,21 @@ describe('Full System Integration Tests', () => {
       for (let batch = 0; batch < operationCount / batchSize; batch++) {
         const batchOperations = Array.from({ length: batchSize }, () => {
           const ruleId = `mock-rule-${TestUtils.randomNumber(1, 20)}`;
-          return engine.executeRule(ruleId, MockDataFactory.createMockInput('random'))
-            .then(() => { successCount++; })
-            .catch(() => { errorCount++; });
+          return engine
+            .executeRule(ruleId, MockDataFactory.createMockInput('random'))
+            .then(() => {
+              successCount++;
+            })
+            .catch(() => {
+              errorCount++;
+            });
         });
 
         await Promise.all(batchOperations);
-        
+
         // Small delay between batches
         await TestUtils.delay(10);
-        
+
         // Check engine health periodically
         if (batch % 3 === 0) {
           const status = await engine.getStatus();
@@ -558,7 +597,10 @@ describe('Full System Integration Tests', () => {
 
       // Perform operations
       for (let i = 0; i < 50; i++) {
-        await engine.executeRule(`mock-rule-${(i % 20) + 1}`, MockDataFactory.createMockInput('random'));
+        await engine.executeRule(
+          `mock-rule-${(i % 20) + 1}`,
+          MockDataFactory.createMockInput('random'),
+        );
       }
 
       // Get performance stats before cleanup

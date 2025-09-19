@@ -1,4 +1,9 @@
-import { MINIMAL_GORULES_VERSION, MINIMAL_GORULES_NAME, MinimalErrorCode, MinimalGoRulesError } from './minimal-gorules.js';
+import {
+  MINIMAL_GORULES_VERSION,
+  MINIMAL_GORULES_NAME,
+  MinimalErrorCode,
+  MinimalGoRulesError,
+} from './minimal-gorules.js';
 
 describe('minimal-gorules', () => {
   it('should export version and name constants', () => {

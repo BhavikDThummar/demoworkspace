@@ -29,28 +29,43 @@ export interface ITagManager {
   /**
    * Resolve rules based on selector criteria
    */
-  resolveRules(selector: RuleSelector, availableRules: Map<string, MinimalRuleMetadata>): Promise<ResolvedRulePlan>;
-  
+  resolveRules(
+    selector: RuleSelector,
+    availableRules: Map<string, MinimalRuleMetadata>,
+  ): Promise<ResolvedRulePlan>;
+
   /**
    * Get rules by specific IDs
    */
-  getRulesByIds(ruleIds: string[], availableRules: Map<string, MinimalRuleMetadata>): Promise<string[]>;
-  
+  getRulesByIds(
+    ruleIds: string[],
+    availableRules: Map<string, MinimalRuleMetadata>,
+  ): Promise<string[]>;
+
   /**
    * Get rules by tags with fast lookup
    */
-  getRulesByTags(tags: string[], availableRules: Map<string, MinimalRuleMetadata>): Promise<string[]>;
-  
+  getRulesByTags(
+    tags: string[],
+    availableRules: Map<string, MinimalRuleMetadata>,
+  ): Promise<string[]>;
+
   /**
    * Analyze rule dependencies for execution ordering
    */
-  analyzeDependencies(ruleIds: string[], availableRules: Map<string, MinimalRuleMetadata>): Promise<Map<string, RuleDependency>>;
-  
+  analyzeDependencies(
+    ruleIds: string[],
+    availableRules: Map<string, MinimalRuleMetadata>,
+  ): Promise<Map<string, RuleDependency>>;
+
   /**
    * Create execution order based on dependencies
    */
-  createExecutionOrder(ruleIds: string[], dependencies: Map<string, RuleDependency>): Promise<string[][]>;
-  
+  createExecutionOrder(
+    ruleIds: string[],
+    dependencies: Map<string, RuleDependency>,
+  ): Promise<string[][]>;
+
   /**
    * Validate rule selector
    */

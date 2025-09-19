@@ -61,11 +61,11 @@ export class PerformanceTimer {
   duration(startMark: string, endMark: string): number {
     const start = this.marks.get(startMark);
     const end = this.marks.get(endMark);
-    
+
     if (!start || !end) {
       throw new Error(`Mark not found: ${!start ? startMark : endMark}`);
     }
-    
+
     return end - start;
   }
 
@@ -121,7 +121,7 @@ export class MemoryTracker {
     return {
       heapUsedBefore: this.initialMemory.heapUsed,
       heapUsedAfter: currentMemory.heapUsed,
-      heapDelta: currentMemory.heapUsed - this.initialMemory.heapUsed
+      heapDelta: currentMemory.heapUsed - this.initialMemory.heapUsed,
     };
   }
 }
@@ -205,7 +205,7 @@ export class ExecutionMetricsCollector {
   getMetrics(): ExecutionMetrics {
     const totalTime = this.timer.elapsed();
     const memoryStats = this.memoryTracker.getDelta();
-    
+
     // Calculate average batch size based on total rules and batches
 
     return {
@@ -215,9 +215,9 @@ export class ExecutionMetricsCollector {
       concurrencyStats: {
         maxConcurrentRules: this.maxConcurrentRules,
         averageBatchSize: this.ruleTimings.size / Math.max(this.totalBatches, 1),
-        totalBatches: this.totalBatches
+        totalBatches: this.totalBatches,
       },
-      memoryStats
+      memoryStats,
     };
   }
 }
@@ -229,7 +229,10 @@ export class PerformanceAnalyzer {
   /**
    * Calculate percentiles for a set of timing values
    */
-  static calculatePercentiles(values: number[], percentiles: number[] = [50, 90, 95, 99]): Map<number, number> {
+  static calculatePercentiles(
+    values: number[],
+    percentiles: number[] = [50, 90, 95, 99],
+  ): Map<number, number> {
     if (values.length === 0) {
       return new Map();
     }
@@ -264,7 +267,7 @@ export class PerformanceAnalyzer {
     const max = sorted[sorted.length - 1];
     const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
     const median = sorted[Math.floor(sorted.length / 2)];
-    
+
     const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
     const stdDev = Math.sqrt(variance);
 
@@ -281,19 +284,20 @@ export class PerformanceAnalyzer {
   } {
     const ruleTimings = Array.from(metrics.ruleTimings.values());
     const stats = this.calculateStats(ruleTimings);
-    
-    const efficiency = metrics.concurrencyStats.maxConcurrentRules > 1 
-      ? Math.min(1, metrics.concurrencyStats.averageBatchSize / metrics.concurrencyStats.maxConcurrentRules)
-      : 1;
+
+    const efficiency =
+      metrics.concurrencyStats.maxConcurrentRules > 1
+        ? Math.min(
+            1,
+            metrics.concurrencyStats.averageBatchSize / metrics.concurrencyStats.maxConcurrentRules,
+          )
+        : 1;
 
     const bottlenecks: string[] = [];
     const recommendations: string[] = [];
 
     // Identify slow rules (> 3x the median or > mean + 1 std dev, whichever is lower)
-    const slowThreshold = Math.min(
-      stats.median * 3,
-      stats.mean + stats.stdDev
-    );
+    const slowThreshold = Math.min(stats.median * 3, stats.mean + stats.stdDev);
     const slowRules = Array.from(metrics.ruleTimings.entries())
       .filter(([_, time]) => time > slowThreshold)
       .map(([ruleId]) => ruleId);
@@ -304,15 +308,21 @@ export class PerformanceAnalyzer {
     }
 
     // Check batch efficiency
-    if (metrics.concurrencyStats.averageBatchSize < metrics.concurrencyStats.maxConcurrentRules * 0.7) {
+    if (
+      metrics.concurrencyStats.averageBatchSize <
+      metrics.concurrencyStats.maxConcurrentRules * 0.7
+    ) {
       bottlenecks.push('Low batch utilization');
       recommendations.push('Consider adjusting concurrency limits or rule grouping');
     }
 
     // Memory usage analysis
-    if (metrics.memoryStats && metrics.memoryStats.heapDelta > 50 * 1024 * 1024) { // 50MB
+    if (metrics.memoryStats && metrics.memoryStats.heapDelta > 50 * 1024 * 1024) {
+      // 50MB
       bottlenecks.push('High memory usage detected');
-      recommendations.push('Consider implementing memory optimization or garbage collection tuning');
+      recommendations.push(
+        'Consider implementing memory optimization or garbage collection tuning',
+      );
     }
 
     return { efficiency, bottlenecks, recommendations };

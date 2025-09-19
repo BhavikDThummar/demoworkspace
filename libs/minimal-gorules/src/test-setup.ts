@@ -57,7 +57,7 @@ if (!global.fetch) {
 // Mock performance.now if not available
 if (!global.performance) {
   global.performance = {
-    now: (jest as any).fn(() => Date.now())
+    now: (jest as any).fn(() => Date.now()),
   } as any;
 }
 
@@ -68,7 +68,7 @@ if (!process.memoryUsage) {
     heapTotal: 50 * 1024 * 1024,
     heapUsed: 25 * 1024 * 1024,
     external: 5 * 1024 * 1024,
-    arrayBuffers: 1 * 1024 * 1024
+    arrayBuffers: 1 * 1024 * 1024,
   }));
 }
 
@@ -79,7 +79,7 @@ export const TEST_CONFIG = {
   PERFORMANCE_TIMEOUT: 60000,
   MOCK_API_URL: 'https://mock-api.gorules.io',
   MOCK_PROJECT_ID: 'test-project-123',
-  MOCK_API_KEY: 'test-api-key-456'
+  MOCK_API_KEY: 'test-api-key-456',
 };
 
 // Test data generators
@@ -89,28 +89,30 @@ export const generateMockRule = (id: string, overrides: Record<string, unknown> 
   version: '1.0.0',
   tags: ['test'],
   lastModified: new Date().toISOString(),
-  content: Buffer.from(JSON.stringify({
-    conditions: [{ field: 'test', operator: 'eq', value: true }],
-    actions: [{ type: 'set', field: 'result', value: 'approved' }],
-    ...overrides
-  })).toString('base64')
+  content: Buffer.from(
+    JSON.stringify({
+      conditions: [{ field: 'test', operator: 'eq', value: true }],
+      actions: [{ type: 'set', field: 'result', value: 'approved' }],
+      ...overrides,
+    }),
+  ).toString('base64'),
 });
 
 export const generateMockInput = (overrides: Record<string, unknown> = {}) => ({
   test: true,
   value: 100,
   category: 'test',
-  ...overrides
+  ...overrides,
 });
 
 // Cleanup utilities
 export const cleanupAfterTest = async () => {
   // Clear all timers
   (jest as any).clearAllTimers();
-  
+
   // Clear all mocks
   (jest as any).clearAllMocks();
-  
+
   // Force garbage collection if available
   if (global.gc) {
     global.gc();
@@ -120,38 +122,38 @@ export const cleanupAfterTest = async () => {
 // Performance test utilities
 export const measurePerformance = async <T>(
   operation: () => Promise<T>,
-  expectedMaxTime?: number
+  expectedMaxTime?: number,
 ): Promise<{ result: T; duration: number }> => {
   const startTime = performance.now();
   const result = await operation();
   const duration = performance.now() - startTime;
-  
+
   if (expectedMaxTime && duration > expectedMaxTime) {
     throw new Error(`Operation took ${duration}ms, expected < ${expectedMaxTime}ms`);
   }
-  
+
   return { result, duration };
 };
 
 // Memory test utilities
 export const measureMemoryUsage = async <T>(
-  operation: () => Promise<T>
+  operation: () => Promise<T>,
 ): Promise<{ result: T; memoryDelta: number }> => {
   // Force garbage collection before measurement
   if (global.gc) {
     global.gc();
   }
-  
+
   const initialMemory = process.memoryUsage().heapUsed;
   const result = await operation();
-  
+
   // Force garbage collection after operation
   if (global.gc) {
     global.gc();
   }
-  
+
   const finalMemory = process.memoryUsage().heapUsed;
   const memoryDelta = finalMemory - initialMemory;
-  
+
   return { result, memoryDelta };
 };

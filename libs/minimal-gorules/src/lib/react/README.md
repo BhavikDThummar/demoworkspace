@@ -26,15 +26,11 @@ import { GoRulesProvider } from '@org/minimal-gorules/React';
 const config = {
   apiBaseUrl: 'http://localhost:3000/api',
   apiKey: 'your-api-key', // optional
-  timeout: 10000
+  timeout: 10000,
 };
 
 function App() {
-  return (
-    <GoRulesProvider config={config}>
-      {/* Your components here */}
-    </GoRulesProvider>
-  );
+  return <GoRulesProvider config={config}>{/* Your components here */}</GoRulesProvider>;
 }
 ```
 
@@ -47,7 +43,7 @@ function MyComponent() {
   return (
     <div>
       <EngineStatus refreshInterval={5000} detailed={true} />
-      
+
       <RuleExecutor
         ruleId="my-rule"
         input={{ age: 25, income: 50000 }}
@@ -107,6 +103,7 @@ HTTP client for interacting with the Minimal GoRules Engine API.
 Hook for managing rule execution state.
 
 Returns:
+
 - `loading` - Whether execution is in progress
 - `results` - Execution results
 - `error` - Any error that occurred
@@ -119,6 +116,7 @@ Returns:
 Hook for monitoring engine status.
 
 Returns:
+
 - `loading` - Whether status is being fetched
 - `status` - Engine status data
 - `error` - Any error that occurred
@@ -129,6 +127,7 @@ Returns:
 Hook for managing rule metadata.
 
 Returns:
+
 - `loading` - Whether metadata is being fetched
 - `metadata` - Rule metadata
 - `error` - Any error that occurred
@@ -143,6 +142,7 @@ Returns:
 Component for executing rules with UI feedback.
 
 Props:
+
 - `ruleId?` - Single rule ID to execute
 - `ruleIds?` - Multiple rule IDs to execute
 - `tags?` - Tags to select rules by
@@ -157,6 +157,7 @@ Props:
 Component for displaying engine status and health information.
 
 Props:
+
 - `refreshInterval?` - Auto-refresh interval in milliseconds
 - `detailed?` - Whether to show detailed information
 - `onStatusUpdate?` - Callback when status updates
@@ -166,6 +167,7 @@ Props:
 Component for viewing and managing rule metadata.
 
 Props:
+
 - `ruleId?` - Specific rule ID to show metadata for
 - `showAll?` - Whether to show all rules metadata
 - `filterTags?` - Filter rules by tags

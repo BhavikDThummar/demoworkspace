@@ -47,7 +47,8 @@ describe('GoRulesResilienceService', () => {
     });
 
     it('should retry on retryable errors', async () => {
-      const operation = jest.fn()
+      const operation = jest
+        .fn()
         .mockRejectedValueOnce(new Error('network timeout'))
         .mockRejectedValueOnce(new Error('connection failed'))
         .mockResolvedValueOnce('success');
@@ -55,7 +56,7 @@ describe('GoRulesResilienceService', () => {
       const result = await service.withRetry(
         operation,
         { maxAttempts: 3, baseDelay: 10 },
-        'test-operation'
+        'test-operation',
       );
 
       expect(result).toBe('success');
@@ -67,12 +68,13 @@ describe('GoRulesResilienceService', () => {
         GoRulesErrorCode.INVALID_INPUT,
         'Invalid input',
         {},
-        false
+        false,
       );
       const operation = jest.fn().mockRejectedValue(nonRetryableError);
 
-      await expect(service.withRetry(operation, undefined, 'test-operation'))
-        .rejects.toThrow('Invalid input');
+      await expect(service.withRetry(operation, undefined, 'test-operation')).rejects.toThrow(
+        'Invalid input',
+      );
 
       expect(operation).toHaveBeenCalledTimes(1);
     });
@@ -80,11 +82,9 @@ describe('GoRulesResilienceService', () => {
     it('should fail after max attempts', async () => {
       const operation = jest.fn().mockRejectedValue(new Error('persistent error'));
 
-      await expect(service.withRetry(
-        operation,
-        { maxAttempts: 2, baseDelay: 10 },
-        'test-operation'
-      )).rejects.toThrow('Operation failed after 2 attempts');
+      await expect(
+        service.withRetry(operation, { maxAttempts: 2, baseDelay: 10 }, 'test-operation'),
+      ).rejects.toThrow('Operation failed after 2 attempts');
 
       expect(operation).toHaveBeenCalledTimes(2);
     });
@@ -93,33 +93,32 @@ describe('GoRulesResilienceService', () => {
       const operation = jest.fn().mockRejectedValue(new Error('custom error'));
       const shouldRetry = jest.fn().mockReturnValue(false);
 
-      await expect(service.withRetry(
-        operation,
-        { maxAttempts: 3, shouldRetry },
-        'test-operation'
-      )).rejects.toThrow('custom error');
+      await expect(
+        service.withRetry(operation, { maxAttempts: 3, shouldRetry }, 'test-operation'),
+      ).rejects.toThrow('custom error');
 
       expect(operation).toHaveBeenCalledTimes(1);
       expect(shouldRetry).toHaveBeenCalledWith(expect.any(Error), 1);
     });
 
     it('should calculate exponential backoff with jitter', async () => {
-      const operation = jest.fn()
+      const operation = jest
+        .fn()
         .mockRejectedValueOnce(new Error('error 1'))
         .mockRejectedValueOnce(new Error('error 2'))
         .mockResolvedValueOnce('success');
 
       const startTime = Date.now();
-      
+
       const result = await service.withRetry(
         operation,
-        { 
-          maxAttempts: 3, 
-          baseDelay: 100, 
-          backoffMultiplier: 2, 
-          jitterFactor: 0.1 
+        {
+          maxAttempts: 3,
+          baseDelay: 100,
+          backoffMultiplier: 2,
+          jitterFactor: 0.1,
         },
-        'test-operation'
+        'test-operation',
       );
 
       const endTime = Date.now();
@@ -135,11 +134,10 @@ describe('GoRulesResilienceService', () => {
     it('should execute successfully when circuit is closed', async () => {
       const operation = jest.fn().mockResolvedValue('success');
 
-      const result = await service.withCircuitBreaker(
-        operation,
-        'test-operation',
-        { failureThreshold: 3, requestTimeout: 1000 }
-      );
+      const result = await service.withCircuitBreaker(operation, 'test-operation', {
+        failureThreshold: 3,
+        requestTimeout: 1000,
+      });
 
       expect(result).toBe('success');
       expect(operation).toHaveBeenCalledTimes(1);
@@ -150,16 +148,19 @@ describe('GoRulesResilienceService', () => {
       const config = { failureThreshold: 2, requestTimeout: 1000 };
 
       // First failure
-      await expect(service.withCircuitBreaker(operation, 'test-operation', config))
-        .rejects.toThrow('service error');
+      await expect(service.withCircuitBreaker(operation, 'test-operation', config)).rejects.toThrow(
+        'service error',
+      );
 
       // Second failure - should open circuit
-      await expect(service.withCircuitBreaker(operation, 'test-operation', config))
-        .rejects.toThrow('service error');
+      await expect(service.withCircuitBreaker(operation, 'test-operation', config)).rejects.toThrow(
+        'service error',
+      );
 
       // Third attempt - circuit should be open
-      await expect(service.withCircuitBreaker(operation, 'test-operation', config))
-        .rejects.toThrow('Circuit breaker is OPEN');
+      await expect(service.withCircuitBreaker(operation, 'test-operation', config)).rejects.toThrow(
+        'Circuit breaker is OPEN',
+      );
 
       expect(operation).toHaveBeenCalledTimes(2);
 
@@ -170,26 +171,28 @@ describe('GoRulesResilienceService', () => {
 
     it('should transition to half-open after reset timeout', async () => {
       const operation = jest.fn().mockRejectedValue(new Error('service error'));
-      const config = { 
-        failureThreshold: 1, 
-        resetTimeout: 100, 
-        requestTimeout: 1000 
+      const config = {
+        failureThreshold: 1,
+        resetTimeout: 100,
+        requestTimeout: 1000,
       };
 
       // Trigger circuit open
-      await expect(service.withCircuitBreaker(operation, 'test-operation', config))
-        .rejects.toThrow('service error');
+      await expect(service.withCircuitBreaker(operation, 'test-operation', config)).rejects.toThrow(
+        'service error',
+      );
 
       // Verify circuit is open
-      await expect(service.withCircuitBreaker(operation, 'test-operation', config))
-        .rejects.toThrow('Circuit breaker is OPEN');
+      await expect(service.withCircuitBreaker(operation, 'test-operation', config)).rejects.toThrow(
+        'Circuit breaker is OPEN',
+      );
 
       // Wait for reset timeout
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Should now be in half-open state and allow one request
       operation.mockResolvedValueOnce('success');
-      
+
       const result = await service.withCircuitBreaker(operation, 'test-operation', config);
       expect(result).toBe('success');
 
@@ -198,15 +201,18 @@ describe('GoRulesResilienceService', () => {
     });
 
     it('should handle timeout errors', async () => {
-      const operation = jest.fn().mockImplementation(() => 
-        new Promise(resolve => setTimeout(() => resolve('too slow'), 2000))
-      );
+      const operation = jest
+        .fn()
+        .mockImplementation(
+          () => new Promise((resolve) => setTimeout(() => resolve('too slow'), 2000)),
+        );
 
-      await expect(service.withCircuitBreaker(
-        operation,
-        'test-operation',
-        { failureThreshold: 1, requestTimeout: 100 }
-      )).rejects.toThrow('Operation timeout after 100ms');
+      await expect(
+        service.withCircuitBreaker(operation, 'test-operation', {
+          failureThreshold: 1,
+          requestTimeout: 100,
+        }),
+      ).rejects.toThrow('Operation timeout after 100ms');
     });
 
     it('should reset circuit breaker manually', async () => {
@@ -214,8 +220,9 @@ describe('GoRulesResilienceService', () => {
       const config = { failureThreshold: 1, requestTimeout: 1000 };
 
       // Open the circuit
-      await expect(service.withCircuitBreaker(operation, 'test-operation', config))
-        .rejects.toThrow('service error');
+      await expect(service.withCircuitBreaker(operation, 'test-operation', config)).rejects.toThrow(
+        'service error',
+      );
 
       // Verify circuit is open
       let stats = service.getCircuitBreakerStats('test-operation');
@@ -235,15 +242,15 @@ describe('GoRulesResilienceService', () => {
       const operation = jest.fn().mockResolvedValue('success');
 
       const promises = Array.from({ length: 3 }, () =>
-        service.withRateLimit(
-          operation,
-          'test-operation',
-          { maxRequests: 5, windowSize: 1000, strategy: 'reject' }
-        )
+        service.withRateLimit(operation, 'test-operation', {
+          maxRequests: 5,
+          windowSize: 1000,
+          strategy: 'reject',
+        }),
       );
 
       const results = await Promise.all(promises);
-      
+
       expect(results).toEqual(['success', 'success', 'success']);
       expect(operation).toHaveBeenCalledTimes(3);
     });
@@ -257,8 +264,9 @@ describe('GoRulesResilienceService', () => {
       await service.withRateLimit(operation, 'test-operation', config);
 
       // Third request should be rejected
-      await expect(service.withRateLimit(operation, 'test-operation', config))
-        .rejects.toThrow('Rate limit exceeded');
+      await expect(service.withRateLimit(operation, 'test-operation', config)).rejects.toThrow(
+        'Rate limit exceeded',
+      );
 
       expect(operation).toHaveBeenCalledTimes(2);
     });
@@ -285,19 +293,16 @@ describe('GoRulesResilienceService', () => {
 
   describe('withResilience', () => {
     it('should combine retry, circuit breaker, and rate limiting', async () => {
-      const operation = jest.fn()
+      const operation = jest
+        .fn()
         .mockRejectedValueOnce(new Error('temporary error'))
         .mockResolvedValueOnce('success');
 
-      const result = await service.withResilience(
-        operation,
-        'test-operation',
-        {
-          retry: { maxAttempts: 2, baseDelay: 10 },
-          circuitBreaker: { failureThreshold: 5, requestTimeout: 1000 },
-          rateLimit: { maxRequests: 10, windowSize: 1000, strategy: 'reject' },
-        }
-      );
+      const result = await service.withResilience(operation, 'test-operation', {
+        retry: { maxAttempts: 2, baseDelay: 10 },
+        circuitBreaker: { failureThreshold: 5, requestTimeout: 1000 },
+        rateLimit: { maxRequests: 10, windowSize: 1000, strategy: 'reject' },
+      });
 
       expect(result).toBe('success');
       expect(operation).toHaveBeenCalledTimes(2);
@@ -306,14 +311,10 @@ describe('GoRulesResilienceService', () => {
     it('should work without rate limiting', async () => {
       const operation = jest.fn().mockResolvedValue('success');
 
-      const result = await service.withResilience(
-        operation,
-        'test-operation',
-        {
-          retry: { maxAttempts: 1 },
-          circuitBreaker: { failureThreshold: 5, requestTimeout: 1000 },
-        }
-      );
+      const result = await service.withResilience(operation, 'test-operation', {
+        retry: { maxAttempts: 1 },
+        circuitBreaker: { failureThreshold: 5, requestTimeout: 1000 },
+      });
 
       expect(result).toBe('success');
       expect(operation).toHaveBeenCalledTimes(1);
@@ -322,23 +323,24 @@ describe('GoRulesResilienceService', () => {
 
   describe('statistics and monitoring', () => {
     it('should track circuit breaker statistics', async () => {
-      const operation = jest.fn()
+      const operation = jest
+        .fn()
         .mockResolvedValueOnce('success')
         .mockRejectedValueOnce(new Error('error'))
         .mockResolvedValueOnce('success');
 
       await service.withCircuitBreaker(operation, 'test-op', { failureThreshold: 5 });
-      
+
       try {
         await service.withCircuitBreaker(operation, 'test-op', { failureThreshold: 5 });
       } catch {
         // Expected error
       }
-      
+
       await service.withCircuitBreaker(operation, 'test-op', { failureThreshold: 5 });
 
       const stats = service.getCircuitBreakerStats('test-op');
-      
+
       expect(stats).toEqual({
         state: CircuitBreakerState.CLOSED,
         failureCount: 0, // Reset on success
@@ -358,7 +360,7 @@ describe('GoRulesResilienceService', () => {
       await service.withCircuitBreaker(operation, 'op2', { failureThreshold: 5 });
 
       const allStats = service.getAllCircuitBreakerStats();
-      
+
       expect(Object.keys(allStats)).toContain('op1');
       expect(Object.keys(allStats)).toContain('op2');
       expect(allStats['op1'].totalRequests).toBe(1);

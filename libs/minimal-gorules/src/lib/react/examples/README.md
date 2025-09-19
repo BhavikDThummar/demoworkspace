@@ -33,15 +33,11 @@ import { GoRulesProvider } from '@org/minimal-gorules';
 const config = {
   apiBaseUrl: 'http://localhost:3000/api',
   apiKey: 'your-api-key', // optional
-  timeout: 10000
+  timeout: 10000,
 };
 
 function App() {
-  return (
-    <GoRulesProvider config={config}>
-      {/* Your components here */}
-    </GoRulesProvider>
-  );
+  return <GoRulesProvider config={config}>{/* Your components here */}</GoRulesProvider>;
 }
 ```
 

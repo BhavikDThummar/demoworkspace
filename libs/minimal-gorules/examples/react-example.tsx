@@ -1,17 +1,17 @@
 /**
  * React Integration Example
- * 
+ *
  * Complete example showing how to integrate the Minimal GoRules Engine
  * with React applications including hooks, components, and context providers.
  */
 
-import React, { 
-  useState, 
-  useEffect, 
-  useCallback, 
-  createContext, 
-  useContext, 
-  ReactNode 
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  createContext,
+  useContext,
+  ReactNode,
 } from 'react';
 
 // Import the React integration from the library
@@ -47,9 +47,10 @@ const goRulesService = new GoRulesReact.ReactGoRulesService({
   headers: {
     'Content-Type': 'application/json',
     // Add authentication if needed
-    'Authorization': localStorage.getItem('token') ? 
-      `Bearer ${localStorage.getItem('token')}` : undefined
-  }
+    Authorization: localStorage.getItem('token')
+      ? `Bearer ${localStorage.getItem('token')}`
+      : undefined,
+  },
 });
 
 // Context for global state management
@@ -84,7 +85,7 @@ export const GoRulesProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   useEffect(() => {
     refreshStatus();
-    
+
     // Refresh status every 30 seconds
     const interval = setInterval(refreshStatus, 30000);
     return () => clearInterval(interval);
@@ -95,14 +96,10 @@ export const GoRulesProvider: React.FC<{ children: ReactNode }> = ({ children })
     engineStatus,
     isOnline,
     lastError,
-    refreshStatus
+    refreshStatus,
   };
 
-  return (
-    <GoRulesContext.Provider value={contextValue}>
-      {children}
-    </GoRulesContext.Provider>
-  );
+  return <GoRulesContext.Provider value={contextValue}>{children}</GoRulesContext.Provider>;
 };
 
 // Custom hook to use GoRules context
@@ -117,10 +114,15 @@ export const useGoRules = () => {
 // Enhanced Rule Execution Hook with Caching
 export const useRuleExecutionWithCache = (cacheTtl: number = 300000) => {
   const { service } = useGoRules();
-  const [cache, setCache] = useState<Map<string, {
-    result: any;
-    timestamp: number;
-  }>>(new Map());
+  const [cache, setCache] = useState<
+    Map<
+      string,
+      {
+        result: any;
+        timestamp: number;
+      }
+    >
+  >(new Map());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -128,55 +130,60 @@ export const useRuleExecutionWithCache = (cacheTtl: number = 300000) => {
     return `${ruleId}:${JSON.stringify(input, Object.keys(input).sort())}`;
   }, []);
 
-  const executeRule = useCallback(async <T = unknown>(
-    ruleId: string,
-    input: Record<string, unknown>
-  ): Promise<T | null> => {
-    const cacheKey = createCacheKey(ruleId, input);
-    const cached = cache.get(cacheKey);
+  const executeRule = useCallback(
+    async <T = unknown,>(ruleId: string, input: Record<string, unknown>): Promise<T | null> => {
+      const cacheKey = createCacheKey(ruleId, input);
+      const cached = cache.get(cacheKey);
 
-    // Return cached result if valid
-    if (cached && Date.now() - cached.timestamp < cacheTtl) {
-      return cached.result;
-    }
+      // Return cached result if valid
+      if (cached && Date.now() - cached.timestamp < cacheTtl) {
+        return cached.result;
+      }
 
-    setLoading(true);
-    setError(null);
+      setLoading(true);
+      setError(null);
 
-    try {
-      const result = await service.executeRule<T>(ruleId, input);
-      
-      // Cache the result
-      setCache(prev => new Map(prev).set(cacheKey, {
-        result,
-        timestamp: Date.now()
-      }));
+      try {
+        const result = await service.executeRule<T>(ruleId, input);
 
-      return result;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(errorMessage);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [service, cache, cacheTtl, createCacheKey]);
+        // Cache the result
+        setCache((prev) =>
+          new Map(prev).set(cacheKey, {
+            result,
+            timestamp: Date.now(),
+          }),
+        );
+
+        return result;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        setError(errorMessage);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [service, cache, cacheTtl, createCacheKey],
+  );
 
   const clearCache = useCallback(() => {
     setCache(new Map());
   }, []);
 
-  const getCacheStats = useCallback(() => ({
-    size: cache.size,
-    entries: Array.from(cache.keys())
-  }), [cache]);
+  const getCacheStats = useCallback(
+    () => ({
+      size: cache.size,
+      entries: Array.from(cache.keys()),
+    }),
+    [cache],
+  );
 
   return {
     executeRule,
     loading,
     error,
     clearCache,
-    getCacheStats
+    getCacheStats,
   };
 };
 
@@ -193,7 +200,7 @@ export const UserValidator: React.FC<{
       email: user.email,
       age: user.age,
       country: user.country,
-      membershipType: user.membershipType
+      membershipType: user.membershipType,
     });
 
     if (result) {
@@ -250,7 +257,9 @@ export const UserValidator: React.FC<{
           <h5>Errors:</h5>
           <ul>
             {validationResult.errors.map((error, index) => (
-              <li key={index} className="error">{error}</li>
+              <li key={index} className="error">
+                {error}
+              </li>
             ))}
           </ul>
         </div>
@@ -261,7 +270,9 @@ export const UserValidator: React.FC<{
           <h5>Warnings:</h5>
           <ul>
             {validationResult.warnings.map((warning, index) => (
-              <li key={index} className="warning">{warning}</li>
+              <li key={index} className="warning">
+                {warning}
+              </li>
             ))}
           </ul>
         </div>
@@ -295,7 +306,7 @@ export const BusinessRulesDashboard: React.FC<{
       const result = await service.executeByTags<BusinessRuleResult>(
         selectedTags,
         input,
-        executionMode
+        executionMode,
       );
 
       setResults(result.results);
@@ -307,8 +318,14 @@ export const BusinessRulesDashboard: React.FC<{
   }, [service, userId, context, selectedTags, executionMode]);
 
   const availableTags = [
-    'business', 'approval', 'risk', 'compliance', 
-    'fraud', 'credit', 'validation', 'security'
+    'business',
+    'approval',
+    'risk',
+    'compliance',
+    'fraud',
+    'credit',
+    'validation',
+    'security',
   ];
 
   return (
@@ -319,16 +336,16 @@ export const BusinessRulesDashboard: React.FC<{
         <div className="tag-selection">
           <h4>Select Rule Tags:</h4>
           <div className="tag-checkboxes">
-            {availableTags.map(tag => (
+            {availableTags.map((tag) => (
               <label key={tag} className="tag-checkbox">
                 <input
                   type="checkbox"
                   checked={selectedTags.includes(tag)}
                   onChange={(e) => {
                     if (e.target.checked) {
-                      setSelectedTags(prev => [...prev, tag]);
+                      setSelectedTags((prev) => [...prev, tag]);
                     } else {
-                      setSelectedTags(prev => prev.filter(t => t !== tag));
+                      setSelectedTags((prev) => prev.filter((t) => t !== tag));
                     }
                   }}
                 />
@@ -340,8 +357,8 @@ export const BusinessRulesDashboard: React.FC<{
 
         <div className="execution-mode">
           <h4>Execution Mode:</h4>
-          <select 
-            value={executionMode} 
+          <select
+            value={executionMode}
             onChange={(e) => setExecutionMode(e.target.value as 'parallel' | 'sequential')}
           >
             <option value="parallel">Parallel</option>
@@ -349,8 +366,8 @@ export const BusinessRulesDashboard: React.FC<{
           </select>
         </div>
 
-        <button 
-          onClick={executeBusinessRules} 
+        <button
+          onClick={executeBusinessRules}
           disabled={loading || selectedTags.length === 0}
           className="execute-btn"
         >
@@ -370,7 +387,10 @@ export const BusinessRulesDashboard: React.FC<{
           <h4>Rule Results ({results.size} rules executed)</h4>
           <div className="results-grid">
             {Array.from(results.entries()).map(([ruleId, result]) => (
-              <div key={ruleId} className={`rule-result ${result.approved ? 'approved' : 'rejected'}`}>
+              <div
+                key={ruleId}
+                className={`rule-result ${result.approved ? 'approved' : 'rejected'}`}
+              >
                 <h5>{ruleId}</h5>
                 <div className="approval-status">
                   <span className={`status ${result.approved ? 'approved' : 'rejected'}`}>
@@ -378,7 +398,7 @@ export const BusinessRulesDashboard: React.FC<{
                   </span>
                 </div>
                 <p className="reason">{result.reason}</p>
-                
+
                 {Object.keys(result.conditions).length > 0 && (
                   <div className="conditions">
                     <h6>Conditions:</h6>
@@ -483,18 +503,14 @@ export const EngineStatusMonitor: React.FC = () => {
 
         <div className="status-item">
           <label>Last Update:</label>
-          <span className="value">
-            {new Date(engineStatus.lastUpdate).toLocaleString()}
-          </span>
+          <span className="value">{new Date(engineStatus.lastUpdate).toLocaleString()}</span>
         </div>
 
         {engineStatus.performance && (
           <>
             <div className="status-item">
               <label>Memory Usage:</label>
-              <span className="value">
-                {engineStatus.performance.memoryUsage.toFixed(2)} MB
-              </span>
+              <span className="value">{engineStatus.performance.memoryUsage.toFixed(2)} MB</span>
             </div>
 
             {engineStatus.performance.cacheHitRate !== undefined && (
@@ -531,7 +547,9 @@ export const EngineStatusMonitor: React.FC = () => {
 // Rule Metadata Explorer
 export const RuleMetadataExplorer: React.FC = () => {
   const { service } = useGoRules();
-  const [metadata, setMetadata] = useState<Map<string, GoRulesReact.MinimalRuleMetadata>>(new Map());
+  const [metadata, setMetadata] = useState<Map<string, GoRulesReact.MinimalRuleMetadata>>(
+    new Map(),
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -557,20 +575,18 @@ export const RuleMetadataExplorer: React.FC = () => {
 
   // Get all unique tags
   const allTags = Array.from(
-    new Set(
-      Array.from(metadata.values())
-        .flatMap(rule => rule.tags)
-    )
+    new Set(Array.from(metadata.values()).flatMap((rule) => rule.tags)),
   ).sort();
 
   // Filter rules based on search and tag
   const filteredRules = Array.from(metadata.entries()).filter(([ruleId, rule]) => {
-    const matchesSearch = !searchTerm || 
+    const matchesSearch =
+      !searchTerm ||
       ruleId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      rule.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+      rule.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+
     const matchesTag = !selectedTag || rule.tags.includes(selectedTag);
-    
+
     return matchesSearch && matchesTag;
   });
 
@@ -610,8 +626,10 @@ export const RuleMetadataExplorer: React.FC = () => {
             className="tag-select"
           >
             <option value="">All Tags</option>
-            {allTags.map(tag => (
-              <option key={tag} value={tag}>{tag}</option>
+            {allTags.map((tag) => (
+              <option key={tag} value={tag}>
+                {tag}
+              </option>
             ))}
           </select>
         </div>
@@ -625,7 +643,9 @@ export const RuleMetadataExplorer: React.FC = () => {
       )}
 
       <div className="metadata-stats">
-        <span>Showing {filteredRules.length} of {metadata.size} rules</span>
+        <span>
+          Showing {filteredRules.length} of {metadata.size} rules
+        </span>
       </div>
 
       <div className="rules-table">
@@ -644,13 +664,13 @@ export const RuleMetadataExplorer: React.FC = () => {
                 <td className="rule-id">{ruleId}</td>
                 <td className="version">{rule.version}</td>
                 <td className="tags">
-                  {rule.tags.map(tag => (
-                    <span key={tag} className="tag">{tag}</span>
+                  {rule.tags.map((tag) => (
+                    <span key={tag} className="tag">
+                      {tag}
+                    </span>
                   ))}
                 </td>
-                <td className="last-modified">
-                  {new Date(rule.lastModified).toLocaleString()}
-                </td>
+                <td className="last-modified">{new Date(rule.lastModified).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
@@ -667,14 +687,14 @@ export const GoRulesApp: React.FC = () => {
     email: 'user@example.com',
     age: 28,
     country: 'US',
-    membershipType: 'premium'
+    membershipType: 'premium',
   });
 
   const [businessContext] = useState({
     transactionAmount: 5000,
     currency: 'USD',
     merchantCategory: 'electronics',
-    riskScore: 0.3
+    riskScore: 0.3,
   });
 
   return (
@@ -688,7 +708,7 @@ export const GoRulesApp: React.FC = () => {
         <main className="app-main">
           <section className="user-section">
             <h2>User Validation</h2>
-            <UserValidator 
+            <UserValidator
               user={currentUser}
               onValidationComplete={(result) => {
                 console.log('Validation completed:', result);
@@ -698,10 +718,7 @@ export const GoRulesApp: React.FC = () => {
 
           <section className="business-rules-section">
             <h2>Business Rules</h2>
-            <BusinessRulesDashboard 
-              userId={currentUser.id}
-              context={businessContext}
-            />
+            <BusinessRulesDashboard userId={currentUser.id} context={businessContext} />
           </section>
 
           <section className="metadata-section">

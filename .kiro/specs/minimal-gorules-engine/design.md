@@ -22,18 +22,18 @@ graph TB
         A[NestJS Backend]
         B[React Frontend]
     end
-    
+
     subgraph "Minimal GoRules Engine"
         C[Rule Cache Manager]
         D[Rule Loader Service]
         E[Execution Engine]
         F[Tag Manager]
     end
-    
+
     subgraph "External Services"
         G[GoRules Cloud API]
     end
-    
+
     A --> C
     B --> A
     B -.-> C
@@ -41,7 +41,7 @@ graph TB
     D --> G
     C --> E
     C --> F
-    
+
     style C fill:#e1f5fe
     style E fill:#f3e5f5
     style D fill:#e8f5e8
@@ -50,21 +50,25 @@ graph TB
 ### Core Components
 
 #### 1. Rule Cache Manager
+
 - **Purpose**: Efficient in-memory caching with minimal overhead
 - **Features**: LRU eviction, version tracking, atomic updates
 - **Implementation**: Simple Map-based cache with read-write locks
 
-#### 2. Rule Loader Service  
+#### 2. Rule Loader Service
+
 - **Purpose**: Fetch ALL decision JSON files from GoRules Cloud project at startup
 - **Features**: Project-wide rule loading, version detection, minimal HTTP client
 - **Implementation**: Single API call to load entire project, then individual rule updates as needed
 
 #### 3. Execution Engine
+
 - **Purpose**: Execute rules with parallel/sequential modes
 - **Features**: Input-driven execution modes, minimal Zen Engine wrapper
 - **Implementation**: Direct ZenEngine integration with performance optimizations
 
 #### 4. Tag Manager
+
 - **Purpose**: Manage rule selection by tags and IDs
 - **Features**: Fast tag lookup, rule grouping, dependency resolution
 - **Implementation**: Optimized data structures for fast lookups
@@ -116,14 +120,14 @@ interface IRuleCacheManager {
   get(ruleId: string): Buffer | null;
   set(ruleId: string, data: Buffer, metadata: MinimalRuleMetadata): void;
   getMetadata(ruleId: string): MinimalRuleMetadata | null;
-  
+
   // Bulk operations
   getMultiple(ruleIds: string[]): Map<string, Buffer>;
   setMultiple(rules: Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>): void;
-  
+
   // Tag operations
   getRulesByTags(tags: string[]): string[];
-  
+
   // Version management
   isVersionCurrent(ruleId: string, version: string): boolean;
   invalidate(ruleId: string): void;
@@ -132,11 +136,13 @@ interface IRuleCacheManager {
 
 interface IRuleLoaderService {
   // Project-wide loading (primary method - called at startup)
-  loadAllRules(projectId: string): Promise<Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>>;
-  
+  loadAllRules(
+    projectId: string,
+  ): Promise<Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>>;
+
   // Individual rule loading (for updates)
   loadRule(ruleId: string): Promise<{ data: Buffer; metadata: MinimalRuleMetadata }>;
-  
+
   // Version management
   checkVersions(rules: Map<string, string>): Promise<Map<string, boolean>>; // ruleId -> needsUpdate
   refreshRule(ruleId: string): Promise<{ data: Buffer; metadata: MinimalRuleMetadata }>;
@@ -144,11 +150,14 @@ interface IRuleLoaderService {
 
 interface IExecutionEngine {
   // Core execution
-  execute<T>(selector: RuleSelector, input: Record<string, unknown>): Promise<MinimalExecutionResult<T>>;
-  
+  execute<T>(
+    selector: RuleSelector,
+    input: Record<string, unknown>,
+  ): Promise<MinimalExecutionResult<T>>;
+
   // Single rule execution
   executeRule<T>(ruleId: string, input: Record<string, unknown>): Promise<T>;
-  
+
   // Validation
   validateRule(ruleId: string): Promise<boolean>;
 }
@@ -177,12 +186,12 @@ interface MinimalGoRulesConfig {
   apiUrl: string;
   apiKey: string;
   projectId: string;
-  
+
   // Optional performance settings
   cacheMaxSize?: number; // default: 1000
   httpTimeout?: number; // default: 5000ms
   batchSize?: number; // default: 50
-  
+
   // Cross-platform settings
   platform?: 'node' | 'browser';
 }
@@ -195,17 +204,17 @@ interface MinimalGoRulesConfig {
 ```typescript
 enum MinimalErrorCode {
   RULE_NOT_FOUND = 'RULE_NOT_FOUND',
-  NETWORK_ERROR = 'NETWORK_ERROR', 
+  NETWORK_ERROR = 'NETWORK_ERROR',
   TIMEOUT = 'TIMEOUT',
   INVALID_INPUT = 'INVALID_INPUT',
-  EXECUTION_ERROR = 'EXECUTION_ERROR'
+  EXECUTION_ERROR = 'EXECUTION_ERROR',
 }
 
 class MinimalGoRulesError extends Error {
   constructor(
     public readonly code: MinimalErrorCode,
     message: string,
-    public readonly ruleId?: string
+    public readonly ruleId?: string,
   ) {
     super(message);
     this.name = 'MinimalGoRulesError';
@@ -230,7 +239,7 @@ describe('RuleCacheManager', () => {
   it('should cache rules efficiently', () => {
     // Test cache operations with performance assertions
   });
-  
+
   it('should handle LRU eviction correctly', () => {
     // Test memory management
   });
@@ -240,7 +249,7 @@ describe('ExecutionEngine', () => {
   it('should execute rules in parallel mode', () => {
     // Test parallel execution with timing assertions
   });
-  
+
   it('should execute rules in sequential mode', () => {
     // Test sequential execution order
   });
@@ -258,7 +267,7 @@ describe('Performance Tests', () => {
     const duration = performance.now() - startTime;
     expect(duration).toBeLessThan(100);
   });
-  
+
   it('should maintain memory usage under 50MB', () => {
     // Memory usage assertions
   });
@@ -273,7 +282,7 @@ describe('Integration Tests', () => {
   it('should load rules from GoRules Cloud', async () => {
     // Test actual API integration
   });
-  
+
   it('should handle version updates correctly', async () => {
     // Test version detection and cache updates
   });
@@ -285,6 +294,7 @@ describe('Integration Tests', () => {
 ### Rule Loading and Execution Flow
 
 #### Initial Project Loading (Startup)
+
 ```mermaid
 sequenceDiagram
     participant Engine as Minimal GoRules Engine
@@ -292,7 +302,7 @@ sequenceDiagram
     participant API as GoRules Cloud API
     participant Cache as Rule Cache Manager
     participant Zen as ZenEngine
-    
+
     Note over Engine: Engine Initialization
     Engine->>Loader: loadAllRules(projectId)
     Loader->>API: GET /projects/{projectId}/rules
@@ -304,17 +314,18 @@ sequenceDiagram
 ```
 
 #### Rule Execution Flow
+
 ```mermaid
 sequenceDiagram
     participant App as Application
     participant Engine as Execution Engine
     participant Cache as Rule Cache Manager
     participant Zen as ZenEngine
-    
+
     App->>Engine: execute(selector, input)
     Engine->>Cache: getRulesByTags(tags) or get(ruleIds)
     Cache-->>Engine: ruleIds[]
-    
+
     loop for each ruleId
         Engine->>Zen: evaluate(ruleId, input)
         Note over Zen: ZenEngine uses loader function
@@ -322,7 +333,7 @@ sequenceDiagram
         Cache-->>Zen: Buffer (decision JSON)
         Zen-->>Engine: evaluation result
     end
-    
+
     Engine-->>App: MinimalExecutionResult
 ```
 
@@ -331,23 +342,30 @@ sequenceDiagram
 ```typescript
 class ExecutionEngine {
   private zenEngine: ZenEngine;
-  
+
   constructor(private cacheManager: IRuleCacheManager) {
     // Initialize ZenEngine with loader function that uses our cache
     this.zenEngine = new ZenEngine({
       loader: async (ruleId: string) => {
         const ruleData = this.cacheManager.get(ruleId);
         if (!ruleData) {
-          throw new MinimalGoRulesError(MinimalErrorCode.RULE_NOT_FOUND, `Rule not found: ${ruleId}`, ruleId);
+          throw new MinimalGoRulesError(
+            MinimalErrorCode.RULE_NOT_FOUND,
+            `Rule not found: ${ruleId}`,
+            ruleId,
+          );
         }
         return ruleData; // Return cached Buffer containing decision JSON
-      }
+      },
     });
   }
-  
-  async execute<T>(selector: RuleSelector, input: Record<string, unknown>): Promise<MinimalExecutionResult<T>> {
+
+  async execute<T>(
+    selector: RuleSelector,
+    input: Record<string, unknown>,
+  ): Promise<MinimalExecutionResult<T>> {
     const ruleIds = this.resolveRules(selector);
-    
+
     switch (selector.mode.type) {
       case 'parallel':
         return this.executeParallel(ruleIds, input);
@@ -357,21 +375,27 @@ class ExecutionEngine {
         return this.executeMixed(ruleIds, input, selector.mode.groups);
     }
   }
-  
-  private async executeParallel<T>(ruleIds: string[], input: Record<string, unknown>): Promise<MinimalExecutionResult<T>> {
-    const promises = ruleIds.map(ruleId => 
-      this.zenEngine.evaluate(ruleId, input) // ZenEngine.evaluate uses our loader function
+
+  private async executeParallel<T>(
+    ruleIds: string[],
+    input: Record<string, unknown>,
+  ): Promise<MinimalExecutionResult<T>> {
+    const promises = ruleIds.map(
+      (ruleId) => this.zenEngine.evaluate(ruleId, input), // ZenEngine.evaluate uses our loader function
     );
-    
+
     const results = await Promise.allSettled(promises);
     return this.processResults(results, ruleIds);
   }
-  
-  private async executeSequential<T>(ruleIds: string[], input: Record<string, unknown>): Promise<MinimalExecutionResult<T>> {
+
+  private async executeSequential<T>(
+    ruleIds: string[],
+    input: Record<string, unknown>,
+  ): Promise<MinimalExecutionResult<T>> {
     const results = new Map<string, T>();
     const errors = new Map<string, Error>();
     let currentInput = { ...input };
-    
+
     for (const ruleId of ruleIds) {
       try {
         const result = await this.zenEngine.evaluate(ruleId, currentInput);
@@ -382,10 +406,10 @@ class ExecutionEngine {
         errors.set(ruleId, error as Error);
       }
     }
-    
+
     return { results, errors, executionTime: 0 }; // timing implementation omitted for brevity
   }
-  
+
   async executeRule<T>(ruleId: string, input: Record<string, unknown>): Promise<T> {
     const result = await this.zenEngine.evaluate(ruleId, input);
     return result.result;
@@ -406,12 +430,12 @@ class ExecutionEngine {
         apiUrl: process.env.GORULES_API_URL,
         apiKey: process.env.GORULES_API_KEY,
         projectId: process.env.GORULES_PROJECT_ID,
-        platform: 'node'
-      }
+        platform: 'node',
+      },
     },
-    MinimalGoRulesEngine
+    MinimalGoRulesEngine,
   ],
-  exports: [MinimalGoRulesEngine]
+  exports: [MinimalGoRulesEngine],
 })
 export class MinimalGoRulesModule {}
 ```
@@ -419,6 +443,7 @@ export class MinimalGoRulesModule {}
 #### React Integration Options
 
 **Option 1: API-based (Recommended)**
+
 ```typescript
 // React service that calls NestJS backend
 class ReactGoRulesService {
@@ -426,7 +451,7 @@ class ReactGoRulesService {
     const response = await fetch('/api/rules/execute', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ selector, input })
+      body: JSON.stringify({ selector, input }),
     });
     return response.json();
   }
@@ -434,6 +459,7 @@ class ReactGoRulesService {
 ```
 
 **Option 2: Direct Client-side (Future)**
+
 ```typescript
 // Direct browser integration (requires WebAssembly compilation)
 import { MinimalGoRulesEngine } from '@minimal-gorules/browser';
@@ -442,31 +468,35 @@ const engine = new MinimalGoRulesEngine({
   apiUrl: process.env.REACT_APP_GORULES_API_URL,
   apiKey: process.env.REACT_APP_GORULES_API_KEY,
   projectId: process.env.REACT_APP_GORULES_PROJECT_ID,
-  platform: 'browser'
+  platform: 'browser',
 });
 ```
 
 ## Performance Optimizations
 
 ### Memory Management
+
 - Use `Buffer` for rule storage to minimize memory overhead
 - Implement efficient LRU eviction with O(1) operations
 - Avoid object creation in hot paths
 - Use `Map` and `Set` for O(1) lookups
 
 ### Concurrency Optimizations
+
 - Read-write locks for cache access (multiple readers, single writer)
 - Lock-free operations where possible
 - Minimize critical sections
 - Use `Promise.allSettled` for parallel execution without blocking
 
 ### Network Optimizations
+
 - HTTP/2 connection reuse
 - Request batching for multiple rules
 - Minimal HTTP client without heavy abstractions
 - Compression for rule data transfer
 
 ### Execution Optimizations
+
 - Direct ZenEngine integration without middleware layers
 - Minimal result object creation
 - Fast-path for cached rules

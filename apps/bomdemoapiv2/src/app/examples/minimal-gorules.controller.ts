@@ -45,20 +45,17 @@ export class MinimalGoRulesController {
         throw new HttpException('ruleId is required', HttpStatus.BAD_REQUEST);
       }
 
-      const result = await this.minimalGoRulesService.executeRule(
-        request.ruleId,
-        request.input
-      );
+      const result = await this.minimalGoRulesService.executeRule(request.ruleId, request.input);
 
       return {
         success: true,
         results: result,
-        message: `Rule ${request.ruleId} executed successfully`
+        message: `Rule ${request.ruleId} executed successfully`,
       };
     } catch (error) {
       throw new HttpException(
         `Failed to execute rule: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -72,7 +69,7 @@ export class MinimalGoRulesController {
       const selector: RuleSelector = {
         ids: request.ruleIds,
         tags: request.tags,
-        mode: { type: request.mode || 'parallel' }
+        mode: { type: request.mode || 'parallel' },
       };
 
       const result = await this.minimalGoRulesService.execute(selector, request.input);
@@ -86,12 +83,12 @@ export class MinimalGoRulesController {
         results: resultsObj,
         executionTime: result.executionTime,
         errors: errorsObj,
-        message: `Executed ${result.results.size} rules successfully`
+        message: `Executed ${result.results.size} rules successfully`,
       };
     } catch (error) {
       throw new HttpException(
         `Failed to execute rules: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -109,7 +106,7 @@ export class MinimalGoRulesController {
       const result = await this.minimalGoRulesService.executeByTags(
         request.tags,
         request.input,
-        request.mode || 'parallel'
+        request.mode || 'parallel',
       );
 
       const resultsObj = Object.fromEntries(result.results);
@@ -120,12 +117,14 @@ export class MinimalGoRulesController {
         results: resultsObj,
         executionTime: result.executionTime,
         errors: errorsObj,
-        message: `Executed rules with tags [${request.tags.join(', ')}] successfully`
+        message: `Executed rules with tags [${request.tags.join(', ')}] successfully`,
       };
     } catch (error) {
       throw new HttpException(
-        `Failed to execute rules by tags: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        `Failed to execute rules by tags: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -139,19 +138,19 @@ export class MinimalGoRulesController {
       const [engineStatus, healthCheck, cacheStats] = await Promise.all([
         this.minimalGoRulesService.getStatus(),
         this.minimalGoRulesService.healthCheck(),
-        Promise.resolve(this.minimalGoRulesService.getCacheStats())
+        Promise.resolve(this.minimalGoRulesService.getCacheStats()),
       ]);
 
       return {
         engine: engineStatus,
         health: healthCheck,
         cache: cacheStats,
-        initialization: this.minimalGoRulesService.getInitializationStatus()
+        initialization: this.minimalGoRulesService.getInitializationStatus(),
       };
     } catch (error) {
       throw new HttpException(
         `Failed to get status: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -171,7 +170,7 @@ export class MinimalGoRulesController {
       return {
         success: true,
         metadata,
-        message: `Metadata for rule ${ruleId} retrieved successfully`
+        message: `Metadata for rule ${ruleId} retrieved successfully`,
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -179,7 +178,7 @@ export class MinimalGoRulesController {
       }
       throw new HttpException(
         `Failed to get rule metadata: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -199,12 +198,14 @@ export class MinimalGoRulesController {
         success: true,
         metadata: metadataObj,
         count: allMetadata.size,
-        message: `Retrieved metadata for ${allMetadata.size} rules`
+        message: `Retrieved metadata for ${allMetadata.size} rules`,
       };
     } catch (error) {
       throw new HttpException(
-        `Failed to get all rule metadata: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        `Failed to get all rule metadata: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -226,7 +227,7 @@ export class MinimalGoRulesController {
         ruleIds,
         count: ruleIds.length,
         tags: body.tags,
-        message: `Found ${ruleIds.length} rules with tags [${body.tags.join(', ')}]`
+        message: `Found ${ruleIds.length} rules with tags [${body.tags.join(', ')}]`,
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -234,7 +235,7 @@ export class MinimalGoRulesController {
       }
       throw new HttpException(
         `Failed to get rules by tags: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -251,12 +252,12 @@ export class MinimalGoRulesController {
         success: true,
         ruleId,
         isValid,
-        message: isValid ? `Rule ${ruleId} is valid` : `Rule ${ruleId} is not valid or not found`
+        message: isValid ? `Rule ${ruleId} is valid` : `Rule ${ruleId} is not valid or not found`,
       };
     } catch (error) {
       throw new HttpException(
         `Failed to validate rule: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -272,12 +273,12 @@ export class MinimalGoRulesController {
       return {
         success: true,
         versionCheck,
-        message: `Version check completed. ${versionCheck.outdatedRules.length} rules need updates`
+        message: `Version check completed. ${versionCheck.outdatedRules.length} rules need updates`,
       };
     } catch (error) {
       throw new HttpException(
         `Failed to check versions: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -293,12 +294,12 @@ export class MinimalGoRulesController {
       return {
         success: true,
         refreshResult,
-        message: `Cache refresh completed. ${refreshResult.refreshedRules.length} rules refreshed`
+        message: `Cache refresh completed. ${refreshResult.refreshedRules.length} rules refreshed`,
       };
     } catch (error) {
       throw new HttpException(
         `Failed to refresh cache: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -314,12 +315,14 @@ export class MinimalGoRulesController {
       return {
         success: true,
         status,
-        message: `Cache force refresh completed. ${status.rulesLoaded} rules loaded`
+        message: `Cache force refresh completed. ${status.rulesLoaded} rules loaded`,
       };
     } catch (error) {
       throw new HttpException(
-        `Failed to force refresh cache: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        `Failed to force refresh cache: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

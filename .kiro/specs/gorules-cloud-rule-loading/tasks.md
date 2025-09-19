@@ -1,6 +1,7 @@
 # Implementation Plan
 
 - [ ] 1. Enhance GoRulesHttpService with rule loading methods
+
   - Add `loadRuleFromProject` method to fetch rule data as Buffer from specific project
   - Implement `getRuleMetadataFromProject` method to fetch rule metadata
   - Add `listProjectRules` method to retrieve available rules in a project
@@ -9,6 +10,7 @@
   - _Requirements: 1.1, 1.2, 7.1, 7.2_
 
 - [ ] 2. Create rule cache management service
+
   - Implement `GoRulesRuleCacheService` with LRU eviction policy
   - Add cache entry storage with TTL and access tracking
   - Create cache statistics collection and reporting methods
@@ -18,6 +20,7 @@
   - _Requirements: 3.1, 3.2, 3.3, 6.1, 6.2_
 
 - [ ] 3. Implement multi-project configuration manager
+
   - Create `GoRulesProjectManagerService` for managing multiple project configurations
   - Add methods to add, remove, and validate project configurations
   - Implement rule discovery across multiple projects with priority ordering
@@ -27,6 +30,7 @@
   - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
 - [ ] 4. Create cloud rule loader service
+
   - Implement `GoRulesCloudLoaderService` that integrates with cache and HTTP services
   - Add rule loading logic with cache-first strategy and API fallback
   - Implement batch rule preloading for performance optimization
@@ -36,6 +40,7 @@
   - _Requirements: 1.1, 1.3, 1.4, 4.1, 4.2, 4.3_
 
 - [ ] 5. Integrate cloud loader with Zen Engine
+
   - Update `GoRulesZenService` to use the cloud loader in ZenEngineOptions
   - Replace placeholder loader implementation with actual cloud rule loading
   - Add error handling for rule loading failures in Zen Engine context
@@ -44,6 +49,7 @@
   - _Requirements: 1.1, 1.2, 4.4_
 
 - [ ] 6. Update main GoRulesService with enhanced functionality
+
   - Integrate cloud loader service into main GoRulesService
   - Update `validateRuleExists` method to use cloud loader validation
   - Enhance `getRuleMetadata` method to fetch metadata from cloud loader
@@ -53,6 +59,7 @@
   - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
 - [ ] 7. Add configuration support for multi-project setup
+
   - Extend `GoRulesConfig` interface to support multiple project configurations
   - Add configuration validation for project settings and API keys
   - Implement environment variable support for multi-project configuration
@@ -62,6 +69,7 @@
   - _Requirements: 2.1, 2.2, 2.4, 7.3, 7.4_
 
 - [ ] 8. Implement rate limiting and request queuing
+
   - Add rate limiting service to manage API request frequency
   - Implement request queuing for handling rate limit exceeded scenarios
   - Create per-project rate limiting configuration and enforcement
@@ -71,6 +79,7 @@
   - _Requirements: 4.2, 6.3, 7.2_
 
 - [ ] 9. Add comprehensive monitoring and metrics
+
   - Extend `GoRulesMetricsService` to track rule loading performance
   - Add cache performance metrics including hit ratios and memory usage
   - Implement API call metrics including response times and error rates
@@ -80,6 +89,7 @@
   - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
 - [ ] 10. Create rule loading error handling and recovery
+
   - Implement `GoRulesLoadingException` with specific error codes for rule loading
   - Add error recovery strategies including cache fallback and project failover
   - Create retry logic with exponential backoff for transient failures
@@ -89,6 +99,7 @@
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
 - [ ] 11. Update module configuration for cloud loading
+
   - Update `GoRulesModule` to register all new services and dependencies
   - Add configuration options for cache settings and project management
   - Implement async module initialization for cloud loader setup
@@ -98,6 +109,7 @@
   - _Requirements: 2.4, 7.1, 7.2_
 
 - [ ] 12. Create comprehensive integration tests
+
   - Write integration tests for end-to-end rule loading from GoRules Cloud API
   - Test multi-project rule resolution and failover scenarios
   - Create performance tests for cache effectiveness and API response times
@@ -107,6 +119,7 @@
   - _Requirements: 1.1, 1.2, 2.1, 4.1, 5.1_
 
 - [ ] 13. Add rule loading utilities and helper methods
+
   - Create utility methods for rule validation and metadata extraction
   - Implement rule dependency analysis and automatic loading
   - Add rule versioning support and update detection
@@ -116,6 +129,7 @@
   - _Requirements: 5.1, 5.2, 5.4_
 
 - [ ] 14. Update documentation and examples
+
   - Update API documentation to include cloud rule loading capabilities
   - Create configuration examples for multi-project setups
   - Add troubleshooting guide for rule loading issues

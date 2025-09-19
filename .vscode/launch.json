@@ -19,9 +19,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug bomdemoapiv2 with Nx",
+      "name": "Debug @org/bomdemoapiv2 with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "bomdemoapiv2"],
+      "runtimeArgs": ["nx", "serve", "@org/bomdemoapiv2"],
       "env": {
         "NODE_OPTIONS": "--inspect=9230"
       },

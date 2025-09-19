@@ -43,11 +43,11 @@ class IntegrationTestRunner {
 
     for (const suite of testSuites) {
       console.log(`📋 Running ${suite} tests...`);
-      
+
       try {
         const result = await this.runTestSuite(suite);
         this.testResults.set(suite, result);
-        
+
         if (result.success) {
           totalPassed++;
           console.log(`✅ ${suite}: PASSED (${result.duration}ms)\n`);
@@ -55,7 +55,7 @@ class IntegrationTestRunner {
           totalFailed++;
           console.log(`❌ ${suite}: FAILED (${result.duration}ms)`);
           if (result.errors) {
-            result.errors.forEach(error => console.log(`   ${error}`));
+            result.errors.forEach((error) => console.log(`   ${error}`));
           }
           console.log('');
         }
@@ -72,10 +72,10 @@ class IntegrationTestRunner {
 
     const totalDuration = Date.now() - startTime;
     this.printSummary(totalPassed, totalFailed, totalDuration);
-    
+
     // Generate test report
     await this.generateTestReport();
-    
+
     // Exit with appropriate code
     process.exit(totalFailed > 0 ? 1 : 0);
   }
@@ -85,11 +85,11 @@ class IntegrationTestRunner {
    */
   private async runTestSuite(suiteName: string): Promise<TestResult> {
     const startTime = Date.now();
-    
+
     try {
       // Determine test file pattern based on suite name
       const testPattern = this.getTestPattern(suiteName);
-      
+
       // Run Jest with specific configuration
       const command = [
         'npx jest',
@@ -162,7 +162,7 @@ class IntegrationTestRunner {
    */
   private parseJestErrors(output: string): string[] {
     const errors: string[] = [];
-    
+
     // Extract failed test information
     const failedTestRegex = /FAIL\s+(.+)/g;
     let match;
@@ -190,7 +190,7 @@ class IntegrationTestRunner {
     console.log(`Failed: ${failed}`);
     console.log(`Duration: ${duration}ms`);
     console.log(`Success Rate: ${((passed / (passed + failed)) * 100).toFixed(1)}%`);
-    
+
     if (failed === 0) {
       console.log('\n🎉 All integration tests passed!');
     } else {
@@ -204,7 +204,7 @@ class IntegrationTestRunner {
    */
   private async generateTestReport(): Promise<void> {
     const reportPath = path.join(this.projectRoot, 'test-reports', 'integration-test-report.json');
-    
+
     // Ensure reports directory exists
     const reportsDir = path.dirname(reportPath);
     if (!fs.existsSync(reportsDir)) {
@@ -220,9 +220,12 @@ class IntegrationTestRunner {
       },
       summary: {
         totalSuites: this.testResults.size,
-        passedSuites: Array.from(this.testResults.values()).filter(r => r.success).length,
-        failedSuites: Array.from(this.testResults.values()).filter(r => !r.success).length,
-        totalDuration: Array.from(this.testResults.values()).reduce((sum, r) => sum + r.duration, 0),
+        passedSuites: Array.from(this.testResults.values()).filter((r) => r.success).length,
+        failedSuites: Array.from(this.testResults.values()).filter((r) => !r.success).length,
+        totalDuration: Array.from(this.testResults.values()).reduce(
+          (sum, r) => sum + r.duration,
+          0,
+        ),
       },
       results: Object.fromEntries(this.testResults),
     };
@@ -249,7 +252,7 @@ class IntegrationTestRunner {
     } else {
       console.log(`❌ ${suiteName}: FAILED (${duration}ms)`);
       if (result.errors) {
-        result.errors.forEach(error => console.log(`   ${error}`));
+        result.errors.forEach((error) => console.log(`   ${error}`));
       }
     }
 
@@ -295,7 +298,7 @@ process.on('uncaughtException', (error) => {
 
 // Run if called directly
 if (require.main === module) {
-  main().catch(error => {
+  main().catch((error) => {
     console.error('Test runner failed:', error);
     process.exit(1);
   });

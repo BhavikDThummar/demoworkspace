@@ -19,7 +19,10 @@ export class TagManager implements ITagManager {
   /**
    * Resolve rules based on selector criteria with dependency analysis
    */
-  async resolveRules(selector: RuleSelector, availableRules: Map<string, MinimalRuleMetadata>): Promise<ResolvedRulePlan> {
+  async resolveRules(
+    selector: RuleSelector,
+    availableRules: Map<string, MinimalRuleMetadata>,
+  ): Promise<ResolvedRulePlan> {
     if (!this.validateSelector(selector)) {
       throw new Error('Invalid rule selector provided');
     }
@@ -48,7 +51,7 @@ export class TagManager implements ITagManager {
 
     // Create execution order based on mode
     let executionOrder: string[][];
-    
+
     switch (selector.mode.type) {
       case 'parallel':
         // All rules can execute in parallel (assuming no dependencies)
@@ -56,11 +59,15 @@ export class TagManager implements ITagManager {
         break;
       case 'sequential':
         // All rules execute sequentially
-        executionOrder = ruleIds.map(id => [id]);
+        executionOrder = ruleIds.map((id) => [id]);
         break;
       case 'mixed':
         // Create execution order based on groups
-        executionOrder = await this.createMixedExecutionOrder(ruleIds, selector.mode.groups || [], dependencies);
+        executionOrder = await this.createMixedExecutionOrder(
+          ruleIds,
+          selector.mode.groups || [],
+          dependencies,
+        );
         break;
       default:
         throw new Error(`Unsupported execution mode: ${selector.mode.type}`);
@@ -69,29 +76,35 @@ export class TagManager implements ITagManager {
     return {
       ruleIds,
       executionOrder,
-      dependencies
+      dependencies,
     };
   }
 
   /**
    * Get rules by specific IDs with validation
    */
-  async getRulesByIds(ruleIds: string[], availableRules: Map<string, MinimalRuleMetadata>): Promise<string[]> {
+  async getRulesByIds(
+    ruleIds: string[],
+    availableRules: Map<string, MinimalRuleMetadata>,
+  ): Promise<string[]> {
     const validRules: string[] = [];
-    
+
     for (const ruleId of ruleIds) {
       if (availableRules.has(ruleId)) {
         validRules.push(ruleId);
       }
     }
-    
+
     return validRules;
   }
 
   /**
    * Get rules by tags with fast lookup using cached indexes
    */
-  async getRulesByTags(tags: string[], availableRules: Map<string, MinimalRuleMetadata>): Promise<string[]> {
+  async getRulesByTags(
+    tags: string[],
+    availableRules: Map<string, MinimalRuleMetadata>,
+  ): Promise<string[]> {
     if (tags.length === 0) {
       return [];
     }
@@ -101,13 +114,13 @@ export class TagManager implements ITagManager {
 
     // Get intersection of all tag sets for AND logic
     let result: Set<string> | null = null;
-    
+
     for (const tag of tags) {
       const ruleIds = this.tagToRulesCache.get(tag);
       if (!ruleIds || ruleIds.size === 0) {
         return []; // If any tag has no rules, intersection is empty
       }
-      
+
       if (result === null) {
         result = new Set(ruleIds);
       } else {
@@ -120,7 +133,7 @@ export class TagManager implements ITagManager {
         }
         result = intersection;
       }
-      
+
       if (result.size === 0) {
         return []; // Early exit if intersection becomes empty
       }
@@ -134,9 +147,12 @@ export class TagManager implements ITagManager {
    * Note: For minimal implementation, we assume no complex dependencies
    * This can be extended later with actual dependency analysis
    */
-  async analyzeDependencies(ruleIds: string[], availableRules: Map<string, MinimalRuleMetadata>): Promise<Map<string, RuleDependency>> {
+  async analyzeDependencies(
+    ruleIds: string[],
+    availableRules: Map<string, MinimalRuleMetadata>,
+  ): Promise<Map<string, RuleDependency>> {
     const dependencies = new Map<string, RuleDependency>();
-    
+
     // For now, create simple dependency structure with no dependencies
     // This can be extended later to analyze actual rule content for dependencies
     for (const ruleId of ruleIds) {
@@ -144,28 +160,31 @@ export class TagManager implements ITagManager {
         dependencies.set(ruleId, {
           ruleId,
           dependsOn: [],
-          dependents: []
+          dependents: [],
         });
       }
     }
-    
+
     return dependencies;
   }
 
   /**
    * Create execution order based on dependencies using topological sort
    */
-  async createExecutionOrder(ruleIds: string[], dependencies: Map<string, RuleDependency>): Promise<string[][]> {
+  async createExecutionOrder(
+    ruleIds: string[],
+    dependencies: Map<string, RuleDependency>,
+  ): Promise<string[][]> {
     // Simple topological sort implementation
     const inDegree = new Map<string, number>();
     const adjList = new Map<string, string[]>();
-    
+
     // Initialize
     for (const ruleId of ruleIds) {
       inDegree.set(ruleId, 0);
       adjList.set(ruleId, []);
     }
-    
+
     // Build adjacency list and calculate in-degrees
     for (const [ruleId, dep] of dependencies) {
       if (ruleIds.includes(ruleId)) {
@@ -177,26 +196,26 @@ export class TagManager implements ITagManager {
         }
       }
     }
-    
+
     // Topological sort with level-based grouping
     const result: string[][] = [];
     const queue: string[] = [];
-    
+
     // Find all nodes with no incoming edges
     for (const [ruleId, degree] of inDegree) {
       if (degree === 0) {
         queue.push(ruleId);
       }
     }
-    
+
     while (queue.length > 0) {
       const currentLevel: string[] = [...queue];
       queue.length = 0; // Clear queue
-      
+
       if (currentLevel.length > 0) {
         result.push(currentLevel);
       }
-      
+
       // Process current level
       for (const ruleId of currentLevel) {
         const neighbors = adjList.get(ruleId) || [];
@@ -209,13 +228,13 @@ export class TagManager implements ITagManager {
         }
       }
     }
-    
+
     // Check for cycles
     const processedCount = result.flat().length;
     if (processedCount !== ruleIds.length) {
       throw new Error('Circular dependency detected in rules');
     }
-    
+
     return result;
   }
 
@@ -228,8 +247,10 @@ export class TagManager implements ITagManager {
     }
 
     // Must have either IDs or tags
-    if ((!selector.ids || selector.ids.length === 0) && 
-        (!selector.tags || selector.tags.length === 0)) {
+    if (
+      (!selector.ids || selector.ids.length === 0) &&
+      (!selector.tags || selector.tags.length === 0)
+    ) {
       return false;
     }
 
@@ -248,7 +269,7 @@ export class TagManager implements ITagManager {
       if (!selector.mode.groups || selector.mode.groups.length === 0) {
         return false;
       }
-      
+
       for (const group of selector.mode.groups) {
         if (!group.rules || group.rules.length === 0) {
           return false;
@@ -269,10 +290,11 @@ export class TagManager implements ITagManager {
     // Simple cache invalidation based on size change
     // In production, this could be more sophisticated
     const currentTime = Date.now();
-    const shouldUpdate = this.lastCacheUpdate === 0 || 
-                        this.tagToRulesCache.size === 0 ||
-                        this.ruleToTagsCache.size !== availableRules.size;
-    
+    const shouldUpdate =
+      this.lastCacheUpdate === 0 ||
+      this.tagToRulesCache.size === 0 ||
+      this.ruleToTagsCache.size !== availableRules.size;
+
     if (!shouldUpdate) {
       return;
     }
@@ -285,7 +307,7 @@ export class TagManager implements ITagManager {
     for (const [ruleId, metadata] of availableRules) {
       // Update rule to tags cache
       this.ruleToTagsCache.set(ruleId, new Set(metadata.tags));
-      
+
       // Update tag to rules cache
       for (const tag of metadata.tags) {
         let ruleIds = this.tagToRulesCache.get(tag);
@@ -304,17 +326,17 @@ export class TagManager implements ITagManager {
    * Create mixed execution order based on groups
    */
   private async createMixedExecutionOrder(
-    ruleIds: string[], 
+    ruleIds: string[],
     groups: Array<{ rules: string[]; mode: 'parallel' | 'sequential' }>,
-    dependencies: Map<string, RuleDependency>
+    dependencies: Map<string, RuleDependency>,
   ): Promise<string[][]> {
     const result: string[][] = [];
     const processedRules = new Set<string>();
 
     for (const group of groups) {
       // Filter group rules to only include available ones
-      const groupRules = group.rules.filter(ruleId => 
-        ruleIds.includes(ruleId) && !processedRules.has(ruleId)
+      const groupRules = group.rules.filter(
+        (ruleId) => ruleIds.includes(ruleId) && !processedRules.has(ruleId),
       );
 
       if (groupRules.length === 0) {
@@ -332,11 +354,11 @@ export class TagManager implements ITagManager {
       }
 
       // Mark rules as processed
-      groupRules.forEach(ruleId => processedRules.add(ruleId));
+      groupRules.forEach((ruleId) => processedRules.add(ruleId));
     }
 
     // Add any remaining rules not covered by groups
-    const remainingRules = ruleIds.filter(ruleId => !processedRules.has(ruleId));
+    const remainingRules = ruleIds.filter((ruleId) => !processedRules.has(ruleId));
     if (remainingRules.length > 0) {
       // Default to parallel execution for uncategorized rules
       result.push(remainingRules);
@@ -352,7 +374,7 @@ export class TagManager implements ITagManager {
     return {
       tagCacheSize: this.tagToRulesCache.size,
       ruleCacheSize: this.ruleToTagsCache.size,
-      lastUpdate: this.lastCacheUpdate
+      lastUpdate: this.lastCacheUpdate,
     };
   }
 

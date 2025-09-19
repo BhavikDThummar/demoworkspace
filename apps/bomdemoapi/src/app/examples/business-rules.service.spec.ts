@@ -15,10 +15,7 @@ describe('BusinessRulesService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        BusinessRulesService,
-        { provide: GoRulesService, useValue: mockGoRulesService },
-      ],
+      providers: [BusinessRulesService, { provide: GoRulesService, useValue: mockGoRulesService }],
     }).compile();
 
     service = module.get<BusinessRulesService>(BusinessRulesService);
@@ -62,18 +59,17 @@ describe('BusinessRulesService', () => {
       const result = await service.evaluatePurchaseApproval(validInput);
 
       expect(result).toEqual(mockResult);
-      expect(goRulesService.executeRule).toHaveBeenCalledWith(
-        'purchase-approval',
-        validInput,
-        { timeout: 10000, trace: true }
-      );
+      expect(goRulesService.executeRule).toHaveBeenCalledWith('purchase-approval', validInput, {
+        timeout: 10000,
+        trace: true,
+      });
     });
 
     it('should validate input and throw error for invalid amount', async () => {
       const invalidInput = { ...validInput, amount: 0 };
 
       await expect(service.evaluatePurchaseApproval(invalidInput)).rejects.toThrow(
-        GoRulesException
+        GoRulesException,
       );
     });
 
@@ -81,7 +77,7 @@ describe('BusinessRulesService', () => {
       const invalidInput = { ...validInput, department: '' };
 
       await expect(service.evaluatePurchaseApproval(invalidInput)).rejects.toThrow(
-        GoRulesException
+        GoRulesException,
       );
     });
 
@@ -89,30 +85,23 @@ describe('BusinessRulesService', () => {
       const invalidInput = { ...validInput, urgency: 'invalid' as any };
 
       await expect(service.evaluatePurchaseApproval(invalidInput)).rejects.toThrow(
-        GoRulesException
+        GoRulesException,
       );
     });
 
     it('should handle GoRules exceptions', async () => {
-      const goRulesError = new GoRulesException(
-        GoRulesErrorCode.RULE_NOT_FOUND,
-        'Rule not found'
-      );
+      const goRulesError = new GoRulesException(GoRulesErrorCode.RULE_NOT_FOUND, 'Rule not found');
 
       goRulesService.executeRule.mockRejectedValue(goRulesError);
 
-      await expect(service.evaluatePurchaseApproval(validInput)).rejects.toThrow(
-        goRulesError
-      );
+      await expect(service.evaluatePurchaseApproval(validInput)).rejects.toThrow(goRulesError);
     });
 
     it('should wrap generic errors in GoRulesException', async () => {
       const genericError = new Error('Network error');
       goRulesService.executeRule.mockRejectedValue(genericError);
 
-      await expect(service.evaluatePurchaseApproval(validInput)).rejects.toThrow(
-        GoRulesException
-      );
+      await expect(service.evaluatePurchaseApproval(validInput)).rejects.toThrow(GoRulesException);
     });
   });
 
@@ -151,32 +140,26 @@ describe('BusinessRulesService', () => {
       expect(goRulesService.executeRule).toHaveBeenCalledWith(
         'supplier-risk-assessment',
         validInput,
-        { timeout: 15000, trace: true }
+        { timeout: 15000, trace: true },
       );
     });
 
     it('should validate input and throw error for empty supplier ID', async () => {
       const invalidInput = { ...validInput, supplierId: '' };
 
-      await expect(service.assessSupplierRisk(invalidInput)).rejects.toThrow(
-        GoRulesException
-      );
+      await expect(service.assessSupplierRisk(invalidInput)).rejects.toThrow(GoRulesException);
     });
 
     it('should validate input and throw error for negative years in business', async () => {
       const invalidInput = { ...validInput, yearsInBusiness: -1 };
 
-      await expect(service.assessSupplierRisk(invalidInput)).rejects.toThrow(
-        GoRulesException
-      );
+      await expect(service.assessSupplierRisk(invalidInput)).rejects.toThrow(GoRulesException);
     });
 
     it('should validate input and throw error for invalid quality score', async () => {
       const invalidInput = { ...validInput, qualityScore: 150 };
 
-      await expect(service.assessSupplierRisk(invalidInput)).rejects.toThrow(
-        GoRulesException
-      );
+      await expect(service.assessSupplierRisk(invalidInput)).rejects.toThrow(GoRulesException);
     });
   });
 
@@ -220,35 +203,28 @@ describe('BusinessRulesService', () => {
       const result = await service.calculatePricing(validInput);
 
       expect(result).toEqual(mockResult);
-      expect(goRulesService.executeRule).toHaveBeenCalledWith(
-        'pricing-rules',
-        validInput,
-        { timeout: 8000, trace: true }
-      );
+      expect(goRulesService.executeRule).toHaveBeenCalledWith('pricing-rules', validInput, {
+        timeout: 8000,
+        trace: true,
+      });
     });
 
     it('should validate input and throw error for invalid base price', async () => {
       const invalidInput = { ...validInput, basePrice: 0 };
 
-      await expect(service.calculatePricing(invalidInput)).rejects.toThrow(
-        GoRulesException
-      );
+      await expect(service.calculatePricing(invalidInput)).rejects.toThrow(GoRulesException);
     });
 
     it('should validate input and throw error for invalid customer tier', async () => {
       const invalidInput = { ...validInput, customerTier: 'invalid' as any };
 
-      await expect(service.calculatePricing(invalidInput)).rejects.toThrow(
-        GoRulesException
-      );
+      await expect(service.calculatePricing(invalidInput)).rejects.toThrow(GoRulesException);
     });
 
     it('should validate input and throw error for invalid seasonal factor', async () => {
       const invalidInput = { ...validInput, seasonalFactor: 5.0 };
 
-      await expect(service.calculatePricing(invalidInput)).rejects.toThrow(
-        GoRulesException
-      );
+      await expect(service.calculatePricing(invalidInput)).rejects.toThrow(GoRulesException);
     });
   });
 
@@ -282,7 +258,11 @@ describe('BusinessRulesService', () => {
         {
           executionId: 'req-001',
           ruleId: 'purchase-approval',
-          result: { decision: { approved: true }, appliedRules: ['purchase-approval'], warnings: [] },
+          result: {
+            decision: { approved: true },
+            appliedRules: ['purchase-approval'],
+            warnings: [],
+          },
         },
         {
           executionId: 'req-002',
@@ -306,7 +286,11 @@ describe('BusinessRulesService', () => {
         {
           executionId: 'req-001',
           ruleId: 'purchase-approval',
-          result: { decision: { approved: true }, appliedRules: ['purchase-approval'], warnings: [] },
+          result: {
+            decision: { approved: true },
+            appliedRules: ['purchase-approval'],
+            warnings: [],
+          },
         },
         {
           executionId: 'req-002',

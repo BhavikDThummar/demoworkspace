@@ -96,11 +96,7 @@ export class GoRulesLoggerService {
   /**
    * Log rule execution success
    */
-  logExecutionSuccess(
-    executionId: string,
-    output: any,
-    retryCount?: number
-  ): void {
+  logExecutionSuccess(executionId: string, output: any, retryCount?: number): void {
     if (!this.config.enableLogging) return;
 
     const metrics = this.executionMetrics.get(executionId);
@@ -139,11 +135,7 @@ export class GoRulesLoggerService {
   /**
    * Log rule execution error
    */
-  logExecutionError(
-    executionId: string,
-    error: Error,
-    retryCount?: number
-  ): void {
+  logExecutionError(executionId: string, error: Error, retryCount?: number): void {
     if (!this.config.enableLogging) return;
 
     const metrics = this.executionMetrics.get(executionId);
@@ -190,7 +182,7 @@ export class GoRulesLoggerService {
     executionId: string,
     attemptNumber: number,
     error: Error,
-    nextRetryDelay?: number
+    nextRetryDelay?: number,
   ): void {
     if (!this.config.enableLogging) return;
 
@@ -224,7 +216,7 @@ export class GoRulesLoggerService {
     ruleId: string,
     oldState: string,
     newState: string,
-    reason?: string
+    reason?: string,
   ): void {
     if (!this.config.enableLogging) return;
 
@@ -271,7 +263,7 @@ export class GoRulesLoggerService {
     ruleId: string,
     executionId: string,
     duration: number,
-    threshold: number
+    threshold: number,
   ): void {
     if (!this.config.enableLogging) return;
 
@@ -321,14 +313,14 @@ export class GoRulesLoggerService {
    * Get log entries by rule ID
    */
   getLogEntriesByRule(ruleId: string): GoRulesLogEntry[] {
-    return this.logEntries.filter(entry => entry.ruleId === ruleId);
+    return this.logEntries.filter((entry) => entry.ruleId === ruleId);
   }
 
   /**
    * Get log entries by execution ID
    */
   getLogEntriesByExecution(executionId: string): GoRulesLogEntry[] {
-    return this.logEntries.filter(entry => entry.executionId === executionId);
+    return this.logEntries.filter((entry) => entry.executionId === executionId);
   }
 
   /**
@@ -336,7 +328,7 @@ export class GoRulesLoggerService {
    */
   clearOldData(olderThanMs: number = 24 * 60 * 60 * 1000): void {
     const cutoffTime = Date.now() - olderThanMs;
-    
+
     // Clear old metrics
     for (const [executionId, metrics] of this.executionMetrics.entries()) {
       if (metrics.startTime < cutoffTime) {
@@ -346,10 +338,8 @@ export class GoRulesLoggerService {
 
     // Clear old log entries
     const cutoffDate = new Date(cutoffTime).toISOString();
-    const recentEntries = this.logEntries.filter(
-      entry => entry.timestamp > cutoffDate
-    );
-    
+    const recentEntries = this.logEntries.filter((entry) => entry.timestamp > cutoffDate);
+
     this.logEntries.length = 0;
     this.logEntries.push(...recentEntries);
 
@@ -375,7 +365,7 @@ export class GoRulesLoggerService {
     totalRetries: number;
   } {
     const metrics = Array.from(this.executionMetrics.values());
-    
+
     if (metrics.length === 0) {
       return {
         totalExecutions: 0,
@@ -388,9 +378,9 @@ export class GoRulesLoggerService {
       };
     }
 
-    const successful = metrics.filter(m => m.success);
-    const failed = metrics.filter(m => !m.success);
-    const durations = metrics.map(m => m.duration);
+    const successful = metrics.filter((m) => m.success);
+    const failed = metrics.filter((m) => !m.success);
+    const durations = metrics.map((m) => m.duration);
     const totalRetries = metrics.reduce((sum, m) => sum + (m.retryCount || 0), 0);
 
     return {
@@ -409,7 +399,7 @@ export class GoRulesLoggerService {
    */
   private addLogEntry(entry: GoRulesLogEntry): void {
     this.logEntries.push(entry);
-    
+
     // Keep only the most recent entries
     if (this.logEntries.length > this.maxLogEntries) {
       this.logEntries.splice(0, this.logEntries.length - this.maxLogEntries);

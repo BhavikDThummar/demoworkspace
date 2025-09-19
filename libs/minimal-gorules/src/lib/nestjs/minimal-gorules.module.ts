@@ -7,12 +7,12 @@ import { Module, DynamicModule, Provider, Global } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MinimalGoRulesEngine } from '../minimal-gorules-engine.js';
 import { MinimalGoRulesConfig } from '../interfaces/config.js';
-import { 
+import {
   MINIMAL_GORULES_CONFIG_TOKEN,
   MINIMAL_GORULES_ENGINE_TOKEN,
   MinimalGoRulesModuleOptions,
   MinimalGoRulesModuleAsyncOptions,
-  MinimalGoRulesOptionsFactory
+  MinimalGoRulesOptionsFactory,
 } from './interfaces.js';
 import { MinimalGoRulesService } from './minimal-gorules.service.js';
 
@@ -29,7 +29,7 @@ export class MinimalGoRulesModule {
   static forRoot(options: MinimalGoRulesModuleOptions): DynamicModule {
     const configProvider: Provider = {
       provide: MINIMAL_GORULES_CONFIG_TOKEN,
-      useValue: options.config
+      useValue: options.config,
     };
 
     const engineProvider: Provider = {
@@ -37,7 +37,7 @@ export class MinimalGoRulesModule {
       useFactory: (config: MinimalGoRulesConfig) => {
         return new MinimalGoRulesEngine(config);
       },
-      inject: [MINIMAL_GORULES_CONFIG_TOKEN]
+      inject: [MINIMAL_GORULES_CONFIG_TOKEN],
     };
 
     const serviceProvider: Provider = {
@@ -45,13 +45,13 @@ export class MinimalGoRulesModule {
       useFactory: (engine: MinimalGoRulesEngine) => {
         return new MinimalGoRulesService(engine, options.autoInitialize !== false);
       },
-      inject: [MINIMAL_GORULES_ENGINE_TOKEN]
+      inject: [MINIMAL_GORULES_ENGINE_TOKEN],
     };
 
     return {
       module: MinimalGoRulesModule,
       providers: [configProvider, engineProvider, serviceProvider],
-      exports: [MinimalGoRulesService, MINIMAL_GORULES_ENGINE_TOKEN, MINIMAL_GORULES_CONFIG_TOKEN]
+      exports: [MinimalGoRulesService, MINIMAL_GORULES_ENGINE_TOKEN, MINIMAL_GORULES_CONFIG_TOKEN],
     };
   }
 
@@ -60,13 +60,13 @@ export class MinimalGoRulesModule {
    */
   static forRootAsync(options: MinimalGoRulesModuleAsyncOptions): DynamicModule {
     const providers: Provider[] = [];
-
+    debugger;
     // Create config provider based on options
     if (options.useFactory) {
       providers.push({
         provide: MINIMAL_GORULES_CONFIG_TOKEN,
         useFactory: options.useFactory,
-        inject: options.inject || []
+        inject: options.inject || [],
       });
     } else if (options.useClass) {
       providers.push({
@@ -74,11 +74,11 @@ export class MinimalGoRulesModule {
         useFactory: async (optionsFactory: MinimalGoRulesOptionsFactory) => {
           return optionsFactory.createMinimalGoRulesOptions();
         },
-        inject: [options.useClass]
+        inject: [options.useClass],
       });
       providers.push({
         provide: options.useClass,
-        useClass: options.useClass
+        useClass: options.useClass,
       });
     } else if (options.useExisting) {
       providers.push({
@@ -86,7 +86,7 @@ export class MinimalGoRulesModule {
         useFactory: async (optionsFactory: MinimalGoRulesOptionsFactory) => {
           return optionsFactory.createMinimalGoRulesOptions();
         },
-        inject: [options.useExisting]
+        inject: [options.useExisting],
       });
     }
 
@@ -96,7 +96,7 @@ export class MinimalGoRulesModule {
       useFactory: (config: MinimalGoRulesConfig) => {
         return new MinimalGoRulesEngine(config);
       },
-      inject: [MINIMAL_GORULES_CONFIG_TOKEN]
+      inject: [MINIMAL_GORULES_CONFIG_TOKEN],
     };
 
     // Create service provider
@@ -105,7 +105,7 @@ export class MinimalGoRulesModule {
       useFactory: (engine: MinimalGoRulesEngine) => {
         return new MinimalGoRulesService(engine, options.autoInitialize !== false);
       },
-      inject: [MINIMAL_GORULES_ENGINE_TOKEN]
+      inject: [MINIMAL_GORULES_ENGINE_TOKEN],
     };
 
     providers.push(engineProvider, serviceProvider);
@@ -114,7 +114,7 @@ export class MinimalGoRulesModule {
       module: MinimalGoRulesModule,
       imports: options.imports || [],
       providers,
-      exports: [MinimalGoRulesService, MINIMAL_GORULES_ENGINE_TOKEN, MINIMAL_GORULES_CONFIG_TOKEN]
+      exports: [MinimalGoRulesService, MINIMAL_GORULES_ENGINE_TOKEN, MINIMAL_GORULES_CONFIG_TOKEN],
     };
   }
 
@@ -131,17 +131,18 @@ export class MinimalGoRulesModule {
       imports: [ConfigModule],
       useFactory: (configService: ConfigService): MinimalGoRulesConfig => {
         const config = configService.get(configKey);
-        
+
+        debugger;
         // Support both nested config object and flat environment variables
         // If nested config doesn't exist, try to build from environment variables
         const apiUrl = config?.apiUrl || configService.get('GORULES_API_URL');
         const apiKey = config?.apiKey || configService.get('GORULES_API_KEY');
         const projectId = config?.projectId || configService.get('GORULES_PROJECT_ID');
-        
+
         if (!apiUrl || !apiKey || !projectId) {
           throw new Error(
             `Missing required configuration. Either provide a '${configKey}' config object or set environment variables: ` +
-            'GORULES_API_URL, GORULES_API_KEY, GORULES_PROJECT_ID'
+              'GORULES_API_URL, GORULES_API_KEY, GORULES_PROJECT_ID',
           );
         }
 
@@ -152,11 +153,11 @@ export class MinimalGoRulesModule {
           cacheMaxSize: config?.cacheMaxSize || configService.get('GORULES_CACHE_MAX_SIZE', 1000),
           httpTimeout: config?.httpTimeout || configService.get('GORULES_HTTP_TIMEOUT', 5000),
           batchSize: config?.batchSize || configService.get('GORULES_BATCH_SIZE', 50),
-          platform: 'node'
+          platform: 'node',
         };
       },
       inject: [ConfigService],
-      autoInitialize: options?.autoInitialize
+      autoInitialize: options?.autoInitialize,
     });
   }
 }

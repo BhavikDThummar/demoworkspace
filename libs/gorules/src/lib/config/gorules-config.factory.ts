@@ -80,7 +80,7 @@ export class GoRulesAsyncConfigFactory implements GoRulesOptionsFactory {
     // - Remote API
     // - Encrypted configuration files
     // For now, we'll just simulate the async operation
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await new Promise((resolve) => setTimeout(resolve, 10));
   }
 }
 
@@ -131,7 +131,9 @@ export class GoRulesEnvironmentConfigFactory implements GoRulesOptionsFactory {
   /**
    * Get environment-specific configuration overrides
    */
-  private getEnvironmentSpecificConfiguration(environment: string): Pick<GoRulesConfig, 'apiUrl' | 'timeout' | 'retryAttempts' | 'enableLogging'> {
+  private getEnvironmentSpecificConfiguration(
+    environment: string,
+  ): Pick<GoRulesConfig, 'apiUrl' | 'timeout' | 'retryAttempts' | 'enableLogging'> {
     switch (environment) {
       case 'development':
         return {
@@ -258,8 +260,11 @@ export class GoRulesConfigUtils {
    * Merge multiple configuration objects with proper precedence
    */
   static mergeConfigurations(...configs: Partial<GoRulesConfig>[]): GoRulesConfig {
-    const merged = configs.reduce((acc, config) => ({ ...acc, ...config }), {} as Partial<GoRulesConfig>);
-    
+    const merged = configs.reduce(
+      (acc, config) => ({ ...acc, ...config }),
+      {} as Partial<GoRulesConfig>,
+    );
+
     // Ensure required fields are present
     if (!merged.apiUrl || !merged.apiKey || !merged.projectId) {
       throw new Error('Merged configuration is missing required fields');

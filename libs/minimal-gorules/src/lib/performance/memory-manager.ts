@@ -66,7 +66,7 @@ export class MemoryManager {
       criticalThreshold: 0.85,
       maxHeapSize: 0, // Auto-detect
       cleanupInterval: 30000, // 30 seconds
-      ...thresholds
+      ...thresholds,
     };
 
     // Auto-detect max heap size if not provided
@@ -156,7 +156,7 @@ export class MemoryManager {
         external: 0,
         rss: 0,
         arrayBuffers: 0,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
     }
 
@@ -167,7 +167,7 @@ export class MemoryManager {
       external: memUsage.external,
       rss: memUsage.rss,
       arrayBuffers: memUsage.arrayBuffers || 0,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 
@@ -208,7 +208,7 @@ export class MemoryManager {
 
     try {
       const startStats = this.getCurrentStats();
-      
+
       // Execute all cleanup callbacks
       for (const callback of this.cleanupCallbacks) {
         try {
@@ -223,8 +223,12 @@ export class MemoryManager {
 
       const endStats = this.getCurrentStats();
       const memoryFreed = startStats.heapUsed - endStats.heapUsed;
-      
-      this.emitEvent('cleanup', endStats, `Cleanup completed. Memory freed: ${this.formatBytes(memoryFreed)}`);
+
+      this.emitEvent(
+        'cleanup',
+        endStats,
+        `Cleanup completed. Memory freed: ${this.formatBytes(memoryFreed)}`,
+      );
     } finally {
       this.isCleanupInProgress = false;
     }
@@ -265,7 +269,7 @@ export class MemoryManager {
     const current = this.getCurrentStats();
     const percentage = this.getMemoryUsagePercentage();
     const trend = this.getMemoryTrend();
-    
+
     let status: 'normal' | 'warning' | 'critical' = 'normal';
     if (percentage >= this.thresholds.criticalThreshold) {
       status = 'critical';
@@ -274,7 +278,7 @@ export class MemoryManager {
     }
 
     const recommendations: string[] = [];
-    
+
     if (status === 'critical') {
       recommendations.push('Immediate cleanup required');
       recommendations.push('Consider reducing cache size');
@@ -297,10 +301,10 @@ export class MemoryManager {
       usage: {
         percentage,
         trend,
-        status
+        status,
       },
       thresholds: this.thresholds,
-      recommendations
+      recommendations,
     };
   }
 
@@ -315,7 +319,7 @@ export class MemoryManager {
     if (percentage >= this.thresholds.criticalThreshold) {
       this.emitEvent('critical', stats, `Critical memory usage: ${(percentage * 100).toFixed(1)}%`);
       // Trigger immediate cleanup
-      this.performCleanup().catch(error => {
+      this.performCleanup().catch((error) => {
         console.error('Emergency cleanup failed:', error);
       });
     } else if (percentage >= this.thresholds.warningThreshold) {
@@ -330,7 +334,7 @@ export class MemoryManager {
    */
   private async performScheduledCleanup(): Promise<void> {
     const percentage = this.getMemoryUsagePercentage();
-    
+
     // Only perform scheduled cleanup if memory usage is above warning threshold
     if (percentage >= this.thresholds.warningThreshold) {
       await this.performCleanup();
@@ -342,7 +346,7 @@ export class MemoryManager {
    */
   private emitEvent(type: MemoryEventType, stats: MemoryStats, message: string): void {
     const event = { type, stats, message };
-    
+
     for (const listener of this.eventListeners) {
       try {
         listener(event);
@@ -362,7 +366,7 @@ export class MemoryManager {
       // Use current heap total as a baseline, with a reasonable maximum
       return Math.max(memUsage.heapTotal * 4, 512 * 1024 * 1024); // At least 512MB
     }
-    
+
     // Default to 1GB if we can't detect
     return 1024 * 1024 * 1024;
   }
@@ -372,11 +376,11 @@ export class MemoryManager {
    */
   private formatBytes(bytes: number): string {
     if (bytes === 0) return '0 B';
-    
+
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(k));
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 }

@@ -47,7 +47,7 @@ describe('Real-World Scenarios (Integration)', () => {
     app = moduleFixture.createNestApplication();
     businessRulesService = moduleFixture.get<BusinessRulesService>(BusinessRulesService);
     simpleRulesService = moduleFixture.get<SimpleRulesService>(SimpleRulesService);
-    
+
     await app.init();
   });
 
@@ -79,8 +79,7 @@ describe('Real-World Scenarios (Integration)', () => {
         requiresReview: false,
       };
 
-      jest.spyOn(businessRulesService, 'assessSupplierRisk')
-        .mockResolvedValue(mockSupplierRisk);
+      jest.spyOn(businessRulesService, 'assessSupplierRisk').mockResolvedValue(mockSupplierRisk);
 
       const supplierResponse = await request(app.getHttpServer())
         .post('/business-rules/supplier-risk')
@@ -119,8 +118,7 @@ describe('Real-World Scenarios (Integration)', () => {
         },
       };
 
-      jest.spyOn(businessRulesService, 'calculatePricing')
-        .mockResolvedValue(mockPricing);
+      jest.spyOn(businessRulesService, 'calculatePricing').mockResolvedValue(mockPricing);
 
       const pricingResponse = await request(app.getHttpServer())
         .post('/business-rules/pricing')
@@ -153,8 +151,7 @@ describe('Real-World Scenarios (Integration)', () => {
         reason: 'Standard approval for established supplier with good pricing',
       };
 
-      jest.spyOn(businessRulesService, 'evaluatePurchaseApproval')
-        .mockResolvedValue(mockApproval);
+      jest.spyOn(businessRulesService, 'evaluatePurchaseApproval').mockResolvedValue(mockApproval);
 
       const approvalResponse = await request(app.getHttpServer())
         .post('/business-rules/purchase-approval')
@@ -166,7 +163,9 @@ describe('Real-World Scenarios (Integration)', () => {
 
       // Verify the complete workflow
       expect(supplierResponse.body.data.approved).toBe(true);
-      expect(pricingResponse.body.data.finalPrice).toBeLessThan(pricingResponse.body.data.originalPrice);
+      expect(pricingResponse.body.data.finalPrice).toBeLessThan(
+        pricingResponse.body.data.originalPrice,
+      );
       expect(approvalResponse.body.data.approved).toBe(true);
     });
 
@@ -204,7 +203,8 @@ describe('Real-World Scenarios (Integration)', () => {
         requiresReview: true,
       };
 
-      jest.spyOn(businessRulesService, 'assessSupplierRisk')
+      jest
+        .spyOn(businessRulesService, 'assessSupplierRisk')
         .mockResolvedValue(mockHighRiskAssessment);
 
       const response = await request(app.getHttpServer())
@@ -286,8 +286,7 @@ describe('Real-World Scenarios (Integration)', () => {
         },
       ];
 
-      jest.spyOn(businessRulesService, 'executeBatchRules')
-        .mockResolvedValue(mockBatchResults);
+      jest.spyOn(businessRulesService, 'executeBatchRules').mockResolvedValue(mockBatchResults);
 
       const response = await request(app.getHttpServer())
         .post('/business-rules/batch')
@@ -348,8 +347,7 @@ describe('Real-World Scenarios (Integration)', () => {
         },
       ];
 
-      jest.spyOn(businessRulesService, 'executeBatchRules')
-        .mockResolvedValue(mockBatchResults);
+      jest.spyOn(businessRulesService, 'executeBatchRules').mockResolvedValue(mockBatchResults);
 
       const response = await request(app.getHttpServer())
         .post('/business-rules/batch')
@@ -374,7 +372,7 @@ describe('Real-World Scenarios (Integration)', () => {
       ];
 
       // Execute operations
-      await Promise.all(operations.map(op => op()));
+      await Promise.all(operations.map((op) => op()));
 
       // Mock statistics
       const mockStatistics = {
@@ -391,8 +389,7 @@ describe('Real-World Scenarios (Integration)', () => {
         recentExecutions: 45,
       };
 
-      jest.spyOn(businessRulesService, 'getRuleStatistics')
-        .mockResolvedValue(mockStatistics);
+      jest.spyOn(businessRulesService, 'getRuleStatistics').mockResolvedValue(mockStatistics);
 
       const response = await request(app.getHttpServer())
         .get('/business-rules/statistics')
@@ -430,8 +427,7 @@ describe('Real-World Scenarios (Integration)', () => {
         },
       };
 
-      jest.spyOn(simpleRulesService, 'demonstrateErrorHandling')
-        .mockResolvedValue(mockErrorResult);
+      jest.spyOn(simpleRulesService, 'demonstrateErrorHandling').mockResolvedValue(mockErrorResult);
 
       const response = await request(app.getHttpServer())
         .post('/simple-rules/demo-error-handling/timeout-rule')
@@ -448,7 +444,8 @@ describe('Real-World Scenarios (Integration)', () => {
         result: { result: 'recovered-successfully', score: 85, recommendations: [] },
       };
 
-      jest.spyOn(simpleRulesService, 'demonstrateErrorHandling')
+      jest
+        .spyOn(simpleRulesService, 'demonstrateErrorHandling')
         .mockResolvedValue(mockRecoveryResult);
 
       const recoveryResponse = await request(app.getHttpServer())
@@ -471,17 +468,14 @@ describe('Real-World Scenarios (Integration)', () => {
         urgency: 'high',
         category: 'infrastructure',
         supplier: 'Enterprise Solutions Corp',
-        justification: 'Critical infrastructure upgrade for scalability and performance improvements',
+        justification:
+          'Critical infrastructure upgrade for scalability and performance improvements',
       };
 
       const mockEnterpriseApproval = {
         approved: false, // Requires higher approval
         approvalLevel: 'executive' as const,
-        requiredApprovers: [
-          'cto@company.com',
-          'cfo@company.com',
-          'ceo@company.com',
-        ],
+        requiredApprovers: ['cto@company.com', 'cfo@company.com', 'ceo@company.com'],
         conditions: [
           'Board approval required for amounts > $200,000',
           'Detailed ROI analysis required',
@@ -491,7 +485,8 @@ describe('Real-World Scenarios (Integration)', () => {
         reason: 'Amount exceeds departmental approval limits',
       };
 
-      jest.spyOn(businessRulesService, 'evaluatePurchaseApproval')
+      jest
+        .spyOn(businessRulesService, 'evaluatePurchaseApproval')
         .mockResolvedValue(mockEnterpriseApproval);
 
       const response = await request(app.getHttpServer())
@@ -520,8 +515,7 @@ describe('Real-World Scenarios (Integration)', () => {
         recommendations: ['Input at minimum threshold'],
       };
 
-      jest.spyOn(simpleRulesService, 'executeSimpleRule')
-        .mockResolvedValue(mockMinimalResult);
+      jest.spyOn(simpleRulesService, 'executeSimpleRule').mockResolvedValue(mockMinimalResult);
 
       const response = await request(app.getHttpServer())
         .post('/simple-rules/execute')
@@ -552,8 +546,7 @@ describe('Real-World Scenarios (Integration)', () => {
         recommendations: ['Input at maximum threshold'],
       };
 
-      jest.spyOn(simpleRulesService, 'executeSimpleRule')
-        .mockResolvedValue(mockMaximalResult);
+      jest.spyOn(simpleRulesService, 'executeSimpleRule').mockResolvedValue(mockMaximalResult);
 
       const maxResponse = await request(app.getHttpServer())
         .post('/simple-rules/execute')
@@ -567,10 +560,12 @@ describe('Real-World Scenarios (Integration)', () => {
   describe('Concurrent Operations Scenario', () => {
     it('should handle high concurrency gracefully', async () => {
       // Simulate high concurrent load
-      const concurrentRequests = Array(10).fill(null).map((_, index) => ({
-        value: index * 10,
-        category: `concurrent-test-${index}`,
-      }));
+      const concurrentRequests = Array(10)
+        .fill(null)
+        .map((_, index) => ({
+          value: index * 10,
+          category: `concurrent-test-${index}`,
+        }));
 
       const mockResult = {
         result: 'concurrent-success',
@@ -578,20 +573,17 @@ describe('Real-World Scenarios (Integration)', () => {
         recommendations: [],
       };
 
-      jest.spyOn(simpleRulesService, 'executeSimpleRule')
-        .mockResolvedValue(mockResult);
+      jest.spyOn(simpleRulesService, 'executeSimpleRule').mockResolvedValue(mockResult);
 
       // Execute all requests concurrently
-      const promises = concurrentRequests.map(request =>
-        request(app.getHttpServer())
-          .post('/simple-rules/execute')
-          .send(request)
+      const promises = concurrentRequests.map((request) =>
+        request(app.getHttpServer()).post('/simple-rules/execute').send(request),
       );
 
       const responses = await Promise.all(promises);
 
       // All requests should succeed
-      responses.forEach(response => {
+      responses.forEach((response) => {
         expect(response.status).toBe(201);
         expect(response.body.success).toBe(true);
       });

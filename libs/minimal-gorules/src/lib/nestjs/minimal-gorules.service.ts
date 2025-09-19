@@ -5,11 +5,7 @@
 
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { MinimalGoRulesEngine, EngineStatus } from '../minimal-gorules-engine.js';
-import { 
-  RuleSelector, 
-  MinimalExecutionResult, 
-  MinimalRuleMetadata 
-} from '../interfaces/index.js';
+import { RuleSelector, MinimalExecutionResult, MinimalRuleMetadata } from '../interfaces/index.js';
 import { ServiceInitializationStatus } from './interfaces.js';
 
 /**
@@ -20,12 +16,12 @@ import { ServiceInitializationStatus } from './interfaces.js';
 export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(MinimalGoRulesService.name);
   private initializationStatus: ServiceInitializationStatus = {
-    initialized: false
+    initialized: false,
   };
 
   constructor(
     private readonly engine: MinimalGoRulesEngine,
-    private readonly autoInitialize: boolean = true
+    private readonly autoInitialize: boolean = true,
   ) {}
 
   /**
@@ -34,7 +30,7 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit(): Promise<void> {
     if (this.autoInitialize) {
       this.logger.log('Initializing Minimal GoRules Engine...');
-      
+
       try {
         const startTime = performance.now();
         const status = await this.engine.initialize();
@@ -43,22 +39,25 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
         this.initializationStatus = {
           initialized: true,
           initializationTime: initTime,
-          rulesLoaded: status.rulesLoaded
+          rulesLoaded: status.rulesLoaded,
         };
 
         this.logger.log(
           `Engine initialized successfully in ${initTime.toFixed(2)}ms. ` +
-          `Loaded ${status.rulesLoaded} rules from project ${status.projectId}`
+            `Loaded ${status.rulesLoaded} rules from project ${status.projectId}`,
         );
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         this.initializationStatus = {
           initialized: false,
-          error: errorMessage
+          error: errorMessage,
         };
 
-        this.logger.error(`Failed to initialize engine: ${errorMessage}`, error instanceof Error ? error.stack : undefined);
-        
+        this.logger.error(
+          `Failed to initialize engine: ${errorMessage}`,
+          error instanceof Error ? error.stack : undefined,
+        );
+
         // Don't throw here to allow the application to start
         // Users can check initialization status and handle accordingly
       }
@@ -91,7 +90,7 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
    */
   async initialize(projectId?: string): Promise<EngineStatus> {
     this.logger.log('Manually initializing engine...');
-    
+
     try {
       const startTime = performance.now();
       const status = await this.engine.initialize(projectId);
@@ -100,12 +99,12 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
       this.initializationStatus = {
         initialized: true,
         initializationTime: initTime,
-        rulesLoaded: status.rulesLoaded
+        rulesLoaded: status.rulesLoaded,
       };
 
       this.logger.log(
         `Engine initialized manually in ${initTime.toFixed(2)}ms. ` +
-        `Loaded ${status.rulesLoaded} rules`
+          `Loaded ${status.rulesLoaded} rules`,
       );
 
       return status;
@@ -113,7 +112,7 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.initializationStatus = {
         initialized: false,
-        error: errorMessage
+        error: errorMessage,
       };
 
       this.logger.error(`Manual initialization failed: ${errorMessage}`);
@@ -125,8 +124,8 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
    * Execute rules based on selector criteria
    */
   async execute<T = unknown>(
-    selector: RuleSelector, 
-    input: Record<string, unknown>
+    selector: RuleSelector,
+    input: Record<string, unknown>,
   ): Promise<MinimalExecutionResult<T>> {
     this.ensureInitialized();
     return this.engine.execute<T>(selector, input);
@@ -135,10 +134,7 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
   /**
    * Execute a single rule by ID
    */
-  async executeRule<T = unknown>(
-    ruleId: string, 
-    input: Record<string, unknown>
-  ): Promise<T> {
+  async executeRule<T = unknown>(ruleId: string, input: Record<string, unknown>): Promise<T> {
     this.ensureInitialized();
     return this.engine.executeRule<T>(ruleId, input);
   }
@@ -147,8 +143,8 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
    * Execute multiple rules by IDs in parallel
    */
   async executeRules<T = unknown>(
-    ruleIds: string[], 
-    input: Record<string, unknown>
+    ruleIds: string[],
+    input: Record<string, unknown>,
   ): Promise<MinimalExecutionResult<T>> {
     this.ensureInitialized();
     return this.engine.executeRules<T>(ruleIds, input);
@@ -158,9 +154,9 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
    * Execute rules by tags
    */
   async executeByTags<T = unknown>(
-    tags: string[], 
+    tags: string[],
     input: Record<string, unknown>,
-    mode: 'parallel' | 'sequential' = 'parallel'
+    mode: 'parallel' | 'sequential' = 'parallel',
   ): Promise<MinimalExecutionResult<T>> {
     this.ensureInitialized();
     return this.engine.executeByTags<T>(tags, input, mode);
@@ -219,11 +215,11 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
    */
   async forceRefreshCache(): Promise<EngineStatus> {
     const status = await this.engine.forceRefreshCache();
-    
+
     // Update initialization status
     this.initializationStatus = {
       initialized: true,
-      rulesLoaded: status.rulesLoaded
+      rulesLoaded: status.rulesLoaded,
     };
 
     this.logger.log(`Cache force refreshed. Loaded ${status.rulesLoaded} rules`);
@@ -250,7 +246,7 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
   async reset(): Promise<void> {
     await this.engine.reset();
     this.initializationStatus = {
-      initialized: false
+      initialized: false,
     };
     this.logger.log('Engine reset completed');
   }
@@ -281,13 +277,13 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
         initialized: initStatus.initialized,
         rulesLoaded: engineStatus.rulesLoaded,
         lastUpdate: engineStatus.lastUpdate,
-        error: initStatus.error
+        error: initStatus.error,
       };
     } catch (error) {
       return {
         status: 'error',
         initialized: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -297,10 +293,10 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
    */
   private ensureInitialized(): void {
     if (!this.initializationStatus.initialized) {
-      const errorMsg = this.initializationStatus.error 
+      const errorMsg = this.initializationStatus.error
         ? `Engine initialization failed: ${this.initializationStatus.error}`
         : 'Engine not initialized. Call initialize() first or enable autoInitialize.';
-      
+
       throw new Error(errorMsg);
     }
   }

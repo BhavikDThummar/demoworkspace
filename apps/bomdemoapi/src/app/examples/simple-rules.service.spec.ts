@@ -16,10 +16,7 @@ describe('SimpleRulesService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        SimpleRulesService,
-        { provide: GoRulesService, useValue: mockGoRulesService },
-      ],
+      providers: [SimpleRulesService, { provide: GoRulesService, useValue: mockGoRulesService }],
     }).compile();
 
     service = module.get<SimpleRulesService>(SimpleRulesService);
@@ -57,17 +54,16 @@ describe('SimpleRulesService', () => {
       const result = await service.executeSimpleRule(validInput);
 
       expect(result).toEqual(mockResult);
-      expect(goRulesService.executeRule).toHaveBeenCalledWith(
-        'simple-rule',
-        validInput,
-        { timeout: 5000, trace: false }
-      );
+      expect(goRulesService.executeRule).toHaveBeenCalledWith('simple-rule', validInput, {
+        timeout: 5000,
+        trace: false,
+      });
     });
 
     it('should handle GoRules exceptions', async () => {
       const goRulesError = new GoRulesException(
         GoRulesErrorCode.TIMEOUT,
-        'Rule execution timed out'
+        'Rule execution timed out',
       );
 
       goRulesService.executeRule.mockRejectedValue(goRulesError);
@@ -117,11 +113,10 @@ describe('SimpleRulesService', () => {
       expect(result.result).toEqual(mockResult);
       expect(result.trace).toEqual(mockTrace);
       expect(result.performance).toBeDefined();
-      expect(goRulesService.executeRule).toHaveBeenCalledWith(
-        'traced-rule',
-        validInput,
-        { timeout: 10000, trace: true }
-      );
+      expect(goRulesService.executeRule).toHaveBeenCalledWith('traced-rule', validInput, {
+        timeout: 10000,
+        trace: true,
+      });
     });
   });
 
@@ -157,7 +152,7 @@ describe('SimpleRulesService', () => {
       goRulesService.validateRuleExists.mockResolvedValue(false);
 
       await expect(service.validateAndExecuteRule(ruleId, validInput)).rejects.toThrow(
-        GoRulesException
+        GoRulesException,
       );
       expect(goRulesService.executeRule).not.toHaveBeenCalled();
     });
@@ -191,7 +186,7 @@ describe('SimpleRulesService', () => {
       const results = await service.executeRulesSequentially(rules);
 
       expect(results).toHaveLength(3);
-      expect(results.every(r => r.success)).toBe(true);
+      expect(results.every((r) => r.success)).toBe(true);
       expect(goRulesService.executeRule).toHaveBeenCalledTimes(3);
     });
 
@@ -236,11 +231,10 @@ describe('SimpleRulesService', () => {
       const result = await service.executeRuleWithCustomTimeout(ruleId, validInput, customTimeout);
 
       expect(result).toEqual(mockResult);
-      expect(goRulesService.executeRule).toHaveBeenCalledWith(
-        ruleId,
-        validInput,
-        { timeout: customTimeout, trace: false }
-      );
+      expect(goRulesService.executeRule).toHaveBeenCalledWith(ruleId, validInput, {
+        timeout: customTimeout,
+        trace: false,
+      });
     });
   });
 
@@ -312,7 +306,7 @@ describe('SimpleRulesService', () => {
         GoRulesErrorCode.RULE_NOT_FOUND,
         'Rule not found',
         { ruleId },
-        false
+        false,
       );
 
       goRulesService.executeRule.mockRejectedValue(goRulesError);
@@ -342,13 +336,13 @@ describe('SimpleRulesService', () => {
   describe('getServiceHealth', () => {
     it('should return healthy status', async () => {
       const mockStats = {
-        'rule1': { count: 10, averageTime: 150, errorRate: 0.1 },
-        'rule2': { count: 5, averageTime: 200, errorRate: 0.0 },
+        rule1: { count: 10, averageTime: 150, errorRate: 0.1 },
+        rule2: { count: 5, averageTime: 200, errorRate: 0.0 },
       };
 
       const mockCircuitBreakers = {
-        'rule1': { state: 'CLOSED', failures: 1 },
-        'rule2': { state: 'CLOSED', failures: 0 },
+        rule1: { state: 'CLOSED', failures: 1 },
+        rule2: { state: 'CLOSED', failures: 0 },
       };
 
       goRulesService.getExecutionStatistics.mockReturnValue(mockStats);

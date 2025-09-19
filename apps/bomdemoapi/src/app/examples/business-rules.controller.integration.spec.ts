@@ -43,7 +43,7 @@ describe('BusinessRulesController (Integration)', () => {
 
     app = moduleFixture.createNestApplication();
     businessRulesService = moduleFixture.get<BusinessRulesService>(BusinessRulesService);
-    
+
     await app.init();
   });
 
@@ -72,8 +72,7 @@ describe('BusinessRulesController (Integration)', () => {
         reason: 'Within department budget',
       };
 
-      jest.spyOn(businessRulesService, 'evaluatePurchaseApproval')
-        .mockResolvedValue(mockResult);
+      jest.spyOn(businessRulesService, 'evaluatePurchaseApproval').mockResolvedValue(mockResult);
 
       const response = await request(app.getHttpServer())
         .post('/business-rules/purchase-approval')
@@ -132,7 +131,8 @@ describe('BusinessRulesController (Integration)', () => {
     });
 
     it('should handle service errors gracefully', async () => {
-      jest.spyOn(businessRulesService, 'evaluatePurchaseApproval')
+      jest
+        .spyOn(businessRulesService, 'evaluatePurchaseApproval')
         .mockRejectedValue(new Error('Service unavailable'));
 
       const response = await request(app.getHttpServer())
@@ -169,8 +169,7 @@ describe('BusinessRulesController (Integration)', () => {
         requiresReview: false,
       };
 
-      jest.spyOn(businessRulesService, 'assessSupplierRisk')
-        .mockResolvedValue(mockResult);
+      jest.spyOn(businessRulesService, 'assessSupplierRisk').mockResolvedValue(mockResult);
 
       const response = await request(app.getHttpServer())
         .post('/business-rules/supplier-risk')
@@ -239,8 +238,7 @@ describe('BusinessRulesController (Integration)', () => {
         },
       };
 
-      jest.spyOn(businessRulesService, 'calculatePricing')
-        .mockResolvedValue(mockResult);
+      jest.spyOn(businessRulesService, 'calculatePricing').mockResolvedValue(mockResult);
 
       const response = await request(app.getHttpServer())
         .post('/business-rules/pricing')
@@ -313,8 +311,7 @@ describe('BusinessRulesController (Integration)', () => {
         { id: 'req-002', type: 'pricing', success: true, result: { finalPrice: 1800 } },
       ];
 
-      jest.spyOn(businessRulesService, 'executeBatchRules')
-        .mockResolvedValue(mockResult);
+      jest.spyOn(businessRulesService, 'executeBatchRules').mockResolvedValue(mockResult);
 
       const response = await request(app.getHttpServer())
         .post('/business-rules/batch')
@@ -359,8 +356,7 @@ describe('BusinessRulesController (Integration)', () => {
         recentExecutions: 10,
       };
 
-      jest.spyOn(businessRulesService, 'getRuleStatistics')
-        .mockResolvedValue(mockStatistics);
+      jest.spyOn(businessRulesService, 'getRuleStatistics').mockResolvedValue(mockStatistics);
 
       const response = await request(app.getHttpServer())
         .get('/business-rules/statistics')
@@ -393,12 +389,9 @@ describe('BusinessRulesController (Integration)', () => {
         recentExecutions: 0,
       };
 
-      jest.spyOn(businessRulesService, 'getRuleStatistics')
-        .mockResolvedValue(mockStatistics);
+      jest.spyOn(businessRulesService, 'getRuleStatistics').mockResolvedValue(mockStatistics);
 
-      const response = await request(app.getHttpServer())
-        .get('/business-rules/health')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/business-rules/health').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.status).toBe('healthy');
@@ -406,12 +399,11 @@ describe('BusinessRulesController (Integration)', () => {
     });
 
     it('should return unhealthy status on service error', async () => {
-      jest.spyOn(businessRulesService, 'getRuleStatistics')
+      jest
+        .spyOn(businessRulesService, 'getRuleStatistics')
         .mockRejectedValue(new Error('Service unavailable'));
 
-      const response = await request(app.getHttpServer())
-        .get('/business-rules/health')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/business-rules/health').expect(200);
 
       expect(response.body.success).toBe(false);
       expect(response.body.status).toBe('unhealthy');
@@ -448,14 +440,13 @@ describe('BusinessRulesController (Integration)', () => {
         justification: 'A'.repeat(10000), // Large justification
       };
 
-      jest.spyOn(businessRulesService, 'evaluatePurchaseApproval')
-        .mockResolvedValue({
-          approved: true,
-          approvalLevel: 'manager',
-          requiredApprovers: [],
-          conditions: [],
-          reason: 'Approved',
-        });
+      jest.spyOn(businessRulesService, 'evaluatePurchaseApproval').mockResolvedValue({
+        approved: true,
+        approvalLevel: 'manager',
+        requiredApprovers: [],
+        conditions: [],
+        reason: 'Approved',
+      });
 
       const response = await request(app.getHttpServer())
         .post('/business-rules/purchase-approval')

@@ -36,7 +36,7 @@ export class GoRulesConfigService implements OnModuleInit {
    */
   get<T = unknown>(key: keyof GoRulesConfig): T | undefined {
     const cacheKey = `config_${key}`;
-    
+
     if (this.configCache.has(cacheKey)) {
       return this.configCache.get(cacheKey) as T;
     }
@@ -62,11 +62,11 @@ export class GoRulesConfigService implements OnModuleInit {
    */
   updateConfig(updates: Partial<GoRulesConfig>): void {
     this.logger.debug('Updating GoRules configuration', { updates });
-    
+
     const newConfig = { ...this.config, ...updates };
     this.validateAndSetConfig(newConfig);
     this.clearCache();
-    
+
     this.logger.log('GoRules configuration updated successfully');
   }
 
@@ -133,9 +133,11 @@ export class GoRulesConfigService implements OnModuleInit {
    */
   private validateAndSetConfig(config: GoRulesConfig): void {
     const validation = GoRulesConfigUtils.validateConfiguration(config);
-    
+
     if (!validation.isValid) {
-      const errorMessage = `GoRules configuration validation failed: ${validation.errors.join(', ')}`;
+      const errorMessage = `GoRules configuration validation failed: ${validation.errors.join(
+        ', ',
+      )}`;
       this.logger.error(errorMessage, { errors: validation.errors });
       throw new Error(errorMessage);
     }
@@ -166,8 +168,12 @@ export function createGoRulesConfigFromEnv(): GoRulesConfig {
     apiUrl: process.env['GORULES_API_URL'] || 'https://triveni.gorules.io',
     apiKey: process.env['GORULES_API_KEY'] || '',
     projectId: process.env['GORULES_PROJECT_ID'] || '',
-    timeout: process.env['GORULES_TIMEOUT'] ? parseInt(process.env['GORULES_TIMEOUT'], 10) : undefined,
-    retryAttempts: process.env['GORULES_RETRY_ATTEMPTS'] ? parseInt(process.env['GORULES_RETRY_ATTEMPTS'], 10) : undefined,
+    timeout: process.env['GORULES_TIMEOUT']
+      ? parseInt(process.env['GORULES_TIMEOUT'], 10)
+      : undefined,
+    retryAttempts: process.env['GORULES_RETRY_ATTEMPTS']
+      ? parseInt(process.env['GORULES_RETRY_ATTEMPTS'], 10)
+      : undefined,
     enableLogging: process.env['GORULES_ENABLE_LOGGING'] === 'true',
   };
 

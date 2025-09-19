@@ -11,8 +11,8 @@ describe('App (Integration)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-    .overrideModule(ConfigModule)
-    .compile();
+      .overrideModule(ConfigModule)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
@@ -35,33 +35,25 @@ describe('App (Integration)', () => {
 
   describe('Health Checks', () => {
     it('should respond to basic health check', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/').expect(200);
 
       expect(response.body).toBeDefined();
     });
 
     it('should respond to business rules health check', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/business-rules/health')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/business-rules/health').expect(200);
 
       expect(response.body.service).toBe('Business Rules');
     });
 
     it('should respond to simple rules health check', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/simple-rules/health')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/simple-rules/health').expect(200);
 
       expect(response.body.success).toBe(true);
     });
 
     it('should respond to GoRules health check', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/gorules/health')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/gorules/health').expect(200);
 
       expect(response.body.service).toBe('GoRules Integration');
     });
@@ -81,9 +73,7 @@ describe('App (Integration)', () => {
     });
 
     it('should provide simple rules examples', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/simple-rules/examples')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/simple-rules/examples').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data).toBeDefined();
@@ -91,9 +81,7 @@ describe('App (Integration)', () => {
     });
 
     it('should provide simple rules documentation', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/simple-rules/docs')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/simple-rules/docs').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.endpoints).toBeDefined();
@@ -103,9 +91,7 @@ describe('App (Integration)', () => {
 
   describe('Error Handling', () => {
     it('should handle 404 for non-existent endpoints', async () => {
-      await request(app.getHttpServer())
-        .get('/non-existent-endpoint')
-        .expect(404);
+      await request(app.getHttpServer()).get('/non-existent-endpoint').expect(404);
     });
 
     it('should handle invalid HTTP methods', async () => {
@@ -128,14 +114,11 @@ describe('App (Integration)', () => {
   describe('Cross-Controller Integration', () => {
     it('should handle requests to different controllers independently', async () => {
       // Test that multiple controllers can handle requests simultaneously
-      const businessRulesPromise = request(app.getHttpServer())
-        .get('/business-rules/examples');
+      const businessRulesPromise = request(app.getHttpServer()).get('/business-rules/examples');
 
-      const simpleRulesPromise = request(app.getHttpServer())
-        .get('/simple-rules/examples');
+      const simpleRulesPromise = request(app.getHttpServer()).get('/simple-rules/examples');
 
-      const goRulesPromise = request(app.getHttpServer())
-        .get('/gorules/health');
+      const goRulesPromise = request(app.getHttpServer()).get('/gorules/health');
 
       const [businessResponse, simpleResponse, goRulesResponse] = await Promise.all([
         businessRulesPromise,
@@ -213,21 +196,20 @@ describe('App (Integration)', () => {
 
       const responses = await Promise.all(requests);
 
-      responses.forEach(response => {
+      responses.forEach((response) => {
         expect(response.status).toBe(200);
       });
     });
 
     it('should handle rapid sequential requests', async () => {
       const responses = [];
-      
+
       for (let i = 0; i < 5; i++) {
-        const response = await request(app.getHttpServer())
-          .get('/simple-rules/examples');
+        const response = await request(app.getHttpServer()).get('/simple-rules/examples');
         responses.push(response);
       }
 
-      responses.forEach(response => {
+      responses.forEach((response) => {
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
       });
@@ -242,9 +224,7 @@ describe('App (Integration)', () => {
 
     it('should handle missing optional configuration gracefully', async () => {
       // Health checks should still work even if some optional config is missing
-      const response = await request(app.getHttpServer())
-        .get('/gorules/health')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/gorules/health').expect(200);
 
       expect(response.body.service).toBe('GoRules Integration');
     });
@@ -276,14 +256,12 @@ describe('App (Integration)', () => {
       ];
 
       for (const endpoint of endpoints) {
-        const response = await request(app.getHttpServer())
-          .get(endpoint)
-          .expect(200);
+        const response = await request(app.getHttpServer()).get(endpoint).expect(200);
 
         // All responses should have a consistent structure
         expect(response.body).toHaveProperty('success');
         expect(response.body).toHaveProperty('timestamp');
-        
+
         if (response.body.success) {
           expect(response.body).toHaveProperty('data');
         } else {

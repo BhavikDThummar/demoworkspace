@@ -3,22 +3,33 @@
  * Orchestrates all components for high-performance rule execution
  */
 
-import { 
-  MinimalGoRulesConfig, 
-  RuleSelector, 
-  MinimalExecutionResult, 
+import {
+  MinimalGoRulesConfig,
+  RuleSelector,
+  MinimalExecutionResult,
   MinimalRuleMetadata,
   IRuleCacheManager,
   IRuleLoaderService,
-  IExecutionEngine
+  IExecutionEngine,
 } from './interfaces/index';
 import { ConfigFactory } from './config/index';
 import { MinimalRuleCacheManager } from './cache/index';
 import { MinimalRuleLoaderService } from './loader/index';
-import { EnhancedRuleLoaderService, MemoryManager, getGlobalMemoryManager } from './performance/index';
+import {
+  EnhancedRuleLoaderService,
+  MemoryManager,
+  getGlobalMemoryManager,
+} from './performance/index';
 import { MinimalExecutionEngine } from './execution/index';
 import { TagManager } from './tag-manager/index';
-import { VersionManager, VersionComparisonResult, VersionConflict, VersionManagementResult, CacheInvalidationOptions, RollbackSnapshot } from './version/index';
+import {
+  VersionManager,
+  VersionComparisonResult,
+  VersionConflict,
+  VersionManagementResult,
+  CacheInvalidationOptions,
+  RollbackSnapshot,
+} from './version/index';
 import { MinimalGoRulesError, MinimalErrorCode } from './errors/index';
 
 /**
@@ -79,49 +90,45 @@ export class MinimalGoRulesEngine {
     if (!validation.isValid) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.INVALID_INPUT,
-        `Configuration validation failed: ${validation.errors.join(', ')}`
+        `Configuration validation failed: ${validation.errors.join(', ')}`,
       );
     }
     this.config = { ...config };
 
     // Initialize all components
     this.cacheManager = new MinimalRuleCacheManager(config.cacheMaxSize);
-    
+
     // Use enhanced loader if performance optimizations are enabled
     const enhancedConfig = config as any;
     if (enhancedConfig.enablePerformanceOptimizations) {
       this.useEnhancedLoader = true;
       this.loaderService = new EnhancedRuleLoaderService(enhancedConfig);
-      
+
       // Initialize memory management
       this.memoryManager = getGlobalMemoryManager({
         warningThreshold: enhancedConfig.memoryWarningThreshold || 0.7,
         criticalThreshold: enhancedConfig.memoryCriticalThreshold || 0.85,
-        cleanupInterval: enhancedConfig.memoryCleanupInterval || 30000
+        cleanupInterval: enhancedConfig.memoryCleanupInterval || 30000,
       });
-      
+
       // Register cache cleanup callback
       this.memoryManager.registerCleanupCallback(async () => {
         await this.performMemoryCleanup();
       });
-      
+
       // Start memory monitoring
       this.memoryManager.startMonitoring(5000);
     } else {
       this.loaderService = new MinimalRuleLoaderService(config);
     }
-    
+
     this.tagManager = new TagManager();
     this.versionManager = new VersionManager(this.cacheManager, this.loaderService);
-    this.executionEngine = new MinimalExecutionEngine(
-      this.cacheManager,
-      this.tagManager,
-      {
-        maxConcurrency: config.batchSize || 50,
-        executionTimeout: config.httpTimeout || 5000,
-        includePerformanceMetrics: enhancedConfig.enablePerformanceMetrics || false
-      }
-    );
+    this.executionEngine = new MinimalExecutionEngine(this.cacheManager, this.tagManager, {
+      maxConcurrency: config.batchSize || 50,
+      executionTimeout: config.httpTimeout || 5000,
+      includePerformanceMetrics: enhancedConfig.enablePerformanceMetrics || false,
+    });
   }
 
   /**
@@ -151,16 +158,15 @@ export class MinimalGoRulesEngine {
         lastUpdate: this.lastInitialization,
         projectId: targetProjectId,
         version: '1.0.0',
-        performance: this.getPerformanceStats()
+        performance: this.getPerformanceStats(),
       };
 
       return status;
-
     } catch (error) {
       this.initialized = false;
       throw new MinimalGoRulesError(
         MinimalErrorCode.NETWORK_ERROR,
-        `Failed to initialize engine: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to initialize engine: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -170,8 +176,8 @@ export class MinimalGoRulesEngine {
    * Main execution method with selector-based rule resolution
    */
   async execute<T = unknown>(
-    selector: RuleSelector, 
-    input: Record<string, unknown>
+    selector: RuleSelector,
+    input: Record<string, unknown>,
   ): Promise<MinimalExecutionResult<T>> {
     this.ensureInitialized();
 
@@ -183,7 +189,7 @@ export class MinimalGoRulesEngine {
       }
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
-        `Rule execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Rule execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -192,10 +198,7 @@ export class MinimalGoRulesEngine {
    * Execute a single rule by ID
    * Convenience method for single rule execution
    */
-  async executeRule<T = unknown>(
-    ruleId: string, 
-    input: Record<string, unknown>
-  ): Promise<T> {
+  async executeRule<T = unknown>(ruleId: string, input: Record<string, unknown>): Promise<T> {
     this.ensureInitialized();
 
     try {
@@ -207,7 +210,7 @@ export class MinimalGoRulesEngine {
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
         `Single rule execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        ruleId
+        ruleId,
       );
     }
   }
@@ -217,14 +220,14 @@ export class MinimalGoRulesEngine {
    * Convenience method for parallel execution of specific rules
    */
   async executeRules<T = unknown>(
-    ruleIds: string[], 
-    input: Record<string, unknown>
+    ruleIds: string[],
+    input: Record<string, unknown>,
   ): Promise<MinimalExecutionResult<T>> {
     this.ensureInitialized();
 
     const selector: RuleSelector = {
       ids: ruleIds,
-      mode: { type: 'parallel' }
+      mode: { type: 'parallel' },
     };
 
     return this.execute<T>(selector, input);
@@ -235,15 +238,15 @@ export class MinimalGoRulesEngine {
    * Convenience method for tag-based rule execution
    */
   async executeByTags<T = unknown>(
-    tags: string[], 
+    tags: string[],
     input: Record<string, unknown>,
-    mode: 'parallel' | 'sequential' = 'parallel'
+    mode: 'parallel' | 'sequential' = 'parallel',
   ): Promise<MinimalExecutionResult<T>> {
     this.ensureInitialized();
 
     const selector: RuleSelector = {
       tags,
-      mode: { type: mode }
+      mode: { type: mode },
     };
 
     return this.execute<T>(selector, input);
@@ -259,7 +262,7 @@ export class MinimalGoRulesEngine {
     try {
       // Get all cached rule metadata
       const cachedRules = await this.cacheManager.getAllMetadata();
-      
+
       // Create version map for checking
       const versionMap = new Map<string, string>();
       for (const [ruleId, metadata] of cachedRules) {
@@ -284,13 +287,12 @@ export class MinimalGoRulesEngine {
         outdatedRules,
         upToDateRules,
         totalChecked: versionResults.size,
-        checkTime: performance.now() - startTime
+        checkTime: performance.now() - startTime,
       };
-
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.NETWORK_ERROR,
-        `Version check failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Version check failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -333,13 +335,12 @@ export class MinimalGoRulesEngine {
         refreshedRules,
         failedRules,
         totalProcessed: rulesToRefresh.length,
-        refreshTime: performance.now() - startTime
+        refreshTime: performance.now() - startTime,
       };
-
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.NETWORK_ERROR,
-        `Cache refresh failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Cache refresh failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -354,7 +355,7 @@ export class MinimalGoRulesEngine {
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.NETWORK_ERROR,
-        `Force cache refresh failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Force cache refresh failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -365,13 +366,13 @@ export class MinimalGoRulesEngine {
    */
   async compareVersions(ruleIds?: string[]): Promise<VersionComparisonResult[]> {
     this.ensureInitialized();
-    
+
     try {
       return await this.versionManager.compareVersions(ruleIds);
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.NETWORK_ERROR,
-        `Version comparison failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Version comparison failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -381,13 +382,15 @@ export class MinimalGoRulesEngine {
    */
   async detectVersionConflicts(ruleIds?: string[]): Promise<VersionConflict[]> {
     this.ensureInitialized();
-    
+
     try {
       return await this.versionManager.detectVersionConflicts(ruleIds);
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.NETWORK_ERROR,
-        `Version conflict detection failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Version conflict detection failed: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
       );
     }
   }
@@ -397,16 +400,16 @@ export class MinimalGoRulesEngine {
    */
   async autoRefreshCache(
     ruleIds?: string[],
-    options?: Partial<CacheInvalidationOptions>
+    options?: Partial<CacheInvalidationOptions>,
   ): Promise<VersionManagementResult> {
     this.ensureInitialized();
-    
+
     try {
       return await this.versionManager.autoRefreshCache(ruleIds, options);
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
-        `Auto refresh failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Auto refresh failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -416,16 +419,16 @@ export class MinimalGoRulesEngine {
    */
   async invalidateRules(
     ruleIds: string[],
-    options?: Partial<CacheInvalidationOptions>
+    options?: Partial<CacheInvalidationOptions>,
   ): Promise<VersionManagementResult> {
     this.ensureInitialized();
-    
+
     try {
       return await this.versionManager.invalidateRules(ruleIds, options);
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
-        `Manual invalidation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Manual invalidation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -435,14 +438,14 @@ export class MinimalGoRulesEngine {
    */
   async createRollbackSnapshot(ruleId: string, reason: string): Promise<void> {
     this.ensureInitialized();
-    
+
     try {
       await this.versionManager.createRollbackSnapshot(ruleId, reason);
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
         `Snapshot creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        ruleId
+        ruleId,
       );
     }
   }
@@ -452,14 +455,14 @@ export class MinimalGoRulesEngine {
    */
   async rollbackRule(ruleId: string, snapshotIndex = 0): Promise<boolean> {
     this.ensureInitialized();
-    
+
     try {
       return await this.versionManager.rollbackRule(ruleId, snapshotIndex);
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
         `Rollback failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        ruleId
+        ruleId,
       );
     }
   }
@@ -527,7 +530,7 @@ export class MinimalGoRulesEngine {
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
-        `Failed to get rule metadata: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to get rule metadata: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -543,7 +546,7 @@ export class MinimalGoRulesEngine {
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
-        `Failed to get rules by tags: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to get rules by tags: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -560,7 +563,7 @@ export class MinimalGoRulesEngine {
       lastUpdate: this.lastInitialization,
       projectId: this.config.projectId,
       version: '1.0.0',
-      performance: this.getPerformanceStats()
+      performance: this.getPerformanceStats(),
     };
   }
 
@@ -607,7 +610,7 @@ export class MinimalGoRulesEngine {
     } catch (error) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
-        `Failed to reset engine: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to reset engine: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -619,7 +622,7 @@ export class MinimalGoRulesEngine {
     if (this.cacheManager instanceof MinimalRuleCacheManager) {
       return {
         size: this.cacheManager.size,
-        maxSize: this.cacheManager.maxCacheSize
+        maxSize: this.cacheManager.maxCacheSize,
       };
     }
     return { size: 0, maxSize: 0 };
@@ -633,15 +636,14 @@ export class MinimalGoRulesEngine {
     cacheHitRate?: number;
     averageExecutionTime?: number;
   } {
-    const memoryUsage = this.memoryManager ? 
-      this.memoryManager.getCurrentStats().heapUsed : 0;
-    
+    const memoryUsage = this.memoryManager ? this.memoryManager.getCurrentStats().heapUsed : 0;
+
     // Get execution metrics if available
     const averageExecutionTime = undefined; // TODO: Implement execution metrics interface
 
     return {
       memoryUsage,
-      averageExecutionTime
+      averageExecutionTime,
     };
   }
 
@@ -652,11 +654,11 @@ export class MinimalGoRulesEngine {
     if (this.useEnhancedLoader && this.loaderService instanceof EnhancedRuleLoaderService) {
       return this.loaderService.getPerformanceStats();
     }
-    
+
     return {
       memoryUsage: this.memoryManager?.getMemoryReport(),
       cacheStats: this.getCacheStats(),
-      executionMetrics: undefined // TODO: Implement execution metrics interface
+      executionMetrics: undefined, // TODO: Implement execution metrics interface
     };
   }
 
@@ -669,7 +671,7 @@ export class MinimalGoRulesEngine {
       if (typeof global !== 'undefined' && global.gc) {
         global.gc();
       }
-      
+
       // Could implement cache trimming here if needed
       console.log('Memory cleanup performed for GoRules engine');
     } catch (error) {
@@ -686,22 +688,20 @@ export class MinimalGoRulesEngine {
       if (this.memoryManager) {
         this.memoryManager.stopMonitoring();
       }
-      
+
       // Cleanup enhanced loader if used
       if (this.useEnhancedLoader && this.loaderService instanceof EnhancedRuleLoaderService) {
         await this.loaderService.cleanup();
       }
-      
+
       // Clear cache
       await this.cacheManager.clear();
-      
+
       this.initialized = false;
     } catch (error) {
       console.warn('Engine cleanup failed:', error);
     }
   }
-
-
 
   /**
    * Ensure engine is initialized before operations
@@ -710,7 +710,7 @@ export class MinimalGoRulesEngine {
     if (!this.initialized) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.EXECUTION_ERROR,
-        'Engine not initialized. Call initialize() first.'
+        'Engine not initialized. Call initialize() first.',
       );
     }
   }

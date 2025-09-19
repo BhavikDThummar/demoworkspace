@@ -17,7 +17,7 @@ describe('ReactGoRulesService', () => {
     config = {
       apiBaseUrl: 'http://localhost:3000/api',
       apiKey: 'test-api-key',
-      timeout: 5000
+      timeout: 5000,
     };
     service = new ReactGoRulesService(config);
     mockFetch.mockClear();
@@ -37,11 +37,11 @@ describe('ReactGoRulesService', () => {
 
     it('should use default values for optional config', () => {
       const minimalConfig: ReactGoRulesConfig = {
-        apiBaseUrl: 'http://localhost:3000/api'
+        apiBaseUrl: 'http://localhost:3000/api',
       };
       const minimalService = new ReactGoRulesService(minimalConfig);
       const serviceConfig = minimalService.getConfig();
-      
+
       expect(serviceConfig.timeout).toBe(10000);
       expect(serviceConfig.withCredentials).toBe(false);
       expect(serviceConfig.headers).toEqual({});
@@ -53,19 +53,19 @@ describe('ReactGoRulesService', () => {
       const mockResponse = { success: true, data: 'test' };
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse)
+        json: jest.fn().mockResolvedValueOnce(mockResponse),
       });
 
       const result = await (service as any).makeRequest('/test');
-      
+
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/test',
         expect.objectContaining({
           headers: expect.objectContaining({
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer test-api-key'
-          })
-        })
+            Authorization: 'Bearer test-api-key',
+          }),
+        }),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -74,7 +74,7 @@ describe('ReactGoRulesService', () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        text: jest.fn().mockResolvedValueOnce('Not Found')
+        text: jest.fn().mockResolvedValueOnce('Not Found'),
       });
 
       await expect((service as any).makeRequest('/test')).rejects.toThrow(ReactGoRulesError);
@@ -88,18 +88,16 @@ describe('ReactGoRulesService', () => {
 
     it('should handle timeout', async () => {
       jest.useFakeTimers();
-      
-      mockFetch.mockImplementationOnce(() => 
-        new Promise(resolve => setTimeout(resolve, 10000))
-      );
+
+      mockFetch.mockImplementationOnce(() => new Promise((resolve) => setTimeout(resolve, 10000)));
 
       const requestPromise = (service as unknown).makeRequest('/test');
-      
+
       // Fast-forward time to trigger timeout
       jest.advanceTimersByTime(5000);
-      
+
       await expect(requestPromise).rejects.toThrow(ReactGoRulesError);
-      
+
       jest.useRealTimers();
     }, 10000);
   });
@@ -109,25 +107,25 @@ describe('ReactGoRulesService', () => {
       const mockResponse = {
         success: true,
         results: { result: 'test-result' },
-        executionTime: 100
+        executionTime: 100,
       };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse)
+        json: jest.fn().mockResolvedValueOnce(mockResponse),
       });
 
       const result = await service.executeRule('test-rule', { input: 'test' });
-      
+
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/minimal-gorules/execute-rule',
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify({
             ruleId: 'test-rule',
-            input: { input: 'test' }
-          })
-        })
+            input: { input: 'test' },
+          }),
+        }),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -137,29 +135,29 @@ describe('ReactGoRulesService', () => {
     it('should execute multiple rules successfully', async () => {
       const mockResponse = {
         success: true,
-        results: { 'rule1': 'result1', 'rule2': 'result2' },
-        executionTime: 150
+        results: { rule1: 'result1', rule2: 'result2' },
+        executionTime: 150,
       };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse)
+        json: jest.fn().mockResolvedValueOnce(mockResponse),
       });
 
       const request = {
         ruleIds: ['rule1', 'rule2'],
         input: { input: 'test' },
-        mode: 'parallel' as const
+        mode: 'parallel' as const,
       };
 
       const result = await service.execute(request);
-      
+
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/minimal-gorules/execute',
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify(request)
-        })
+          body: JSON.stringify(request),
+        }),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -169,17 +167,17 @@ describe('ReactGoRulesService', () => {
     it('should execute rules by tags successfully', async () => {
       const mockResponse = {
         success: true,
-        results: { 'rule1': 'result1' },
-        executionTime: 120
+        results: { rule1: 'result1' },
+        executionTime: 120,
       };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse)
+        json: jest.fn().mockResolvedValueOnce(mockResponse),
       });
 
       const result = await service.executeByTags(['tag1', 'tag2'], { input: 'test' }, 'sequential');
-      
+
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/minimal-gorules/execute-by-tags',
         expect.objectContaining({
@@ -187,9 +185,9 @@ describe('ReactGoRulesService', () => {
           body: JSON.stringify({
             tags: ['tag1', 'tag2'],
             input: { input: 'test' },
-            mode: 'sequential'
-          })
-        })
+            mode: 'sequential',
+          }),
+        }),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -199,17 +197,17 @@ describe('ReactGoRulesService', () => {
     it('should execute rules by IDs successfully', async () => {
       const mockResponse = {
         success: true,
-        results: { 'rule1': 'result1', 'rule2': 'result2' },
-        executionTime: 180
+        results: { rule1: 'result1', rule2: 'result2' },
+        executionTime: 180,
       };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse)
+        json: jest.fn().mockResolvedValueOnce(mockResponse),
       });
 
       const result = await service.executeByIds(['rule1', 'rule2'], { input: 'test' }, 'mixed');
-      
+
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/minimal-gorules/execute',
         expect.objectContaining({
@@ -217,9 +215,9 @@ describe('ReactGoRulesService', () => {
           body: JSON.stringify({
             ruleIds: ['rule1', 'rule2'],
             input: { input: 'test' },
-            mode: 'mixed'
-          })
-        })
+            mode: 'mixed',
+          }),
+        }),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -230,23 +228,23 @@ describe('ReactGoRulesService', () => {
       const mockResponse = {
         engine: { status: 'ready', initialized: true, rulesLoaded: 10 },
         health: { status: 'healthy', uptime: 3600, lastCheck: Date.now() },
-        cache: { size: 10, maxSize: 100, hitRate: 0.95, memoryUsage: 1024 }
+        cache: { size: 10, maxSize: 100, hitRate: 0.95, memoryUsage: 1024 },
       };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse)
+        json: jest.fn().mockResolvedValueOnce(mockResponse),
       });
 
       const result = await service.getStatus();
-      
+
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/minimal-gorules/status',
         expect.objectContaining({
           headers: expect.objectContaining({
-            'Content-Type': 'application/json'
-          })
-        })
+            'Content-Type': 'application/json',
+          }),
+        }),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -260,20 +258,20 @@ describe('ReactGoRulesService', () => {
           id: 'test-rule',
           version: '1.0.0',
           tags: ['tag1'],
-          lastModified: Date.now()
-        }
+          lastModified: Date.now(),
+        },
       };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse)
+        json: jest.fn().mockResolvedValueOnce(mockResponse),
       });
 
       const result = await service.getRuleMetadata('test-rule');
-      
+
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/minimal-gorules/rules/test-rule/metadata',
-        expect.any(Object)
+        expect.any(Object),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -284,22 +282,22 @@ describe('ReactGoRulesService', () => {
       const mockResponse = {
         success: true,
         metadata: {
-          'rule1': { id: 'rule1', version: '1.0.0', tags: ['tag1'], lastModified: Date.now() },
-          'rule2': { id: 'rule2', version: '1.0.1', tags: ['tag2'], lastModified: Date.now() }
+          rule1: { id: 'rule1', version: '1.0.0', tags: ['tag1'], lastModified: Date.now() },
+          rule2: { id: 'rule2', version: '1.0.1', tags: ['tag2'], lastModified: Date.now() },
         },
-        count: 2
+        count: 2,
       };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse)
+        json: jest.fn().mockResolvedValueOnce(mockResponse),
       });
 
       const result = await service.getAllRuleMetadata();
-      
+
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/minimal-gorules/rules/metadata',
-        expect.any(Object)
+        expect.any(Object),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -311,22 +309,22 @@ describe('ReactGoRulesService', () => {
         success: true,
         ruleIds: ['rule1', 'rule2'],
         count: 2,
-        tags: ['tag1', 'tag2']
+        tags: ['tag1', 'tag2'],
       };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse)
+        json: jest.fn().mockResolvedValueOnce(mockResponse),
       });
 
       const result = await service.getRulesByTags(['tag1', 'tag2']);
-      
+
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/minimal-gorules/rules/by-tags',
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify({ tags: ['tag1', 'tag2'] })
-        })
+          body: JSON.stringify({ tags: ['tag1', 'tag2'] }),
+        }),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -337,19 +335,19 @@ describe('ReactGoRulesService', () => {
       const mockResponse = {
         success: true,
         ruleId: 'test-rule',
-        isValid: true
+        isValid: true,
       };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse)
+        json: jest.fn().mockResolvedValueOnce(mockResponse),
       });
 
       const result = await service.validateRule('test-rule');
-      
+
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/minimal-gorules/rules/test-rule/validate',
-        expect.any(Object)
+        expect.any(Object),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -362,22 +360,22 @@ describe('ReactGoRulesService', () => {
         versionCheck: {
           outdatedRules: ['rule1'],
           upToDateRules: ['rule2'],
-          totalRules: 2
-        }
+          totalRules: 2,
+        },
       };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse)
+        json: jest.fn().mockResolvedValueOnce(mockResponse),
       });
 
       const result = await service.checkVersions();
-      
+
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/minimal-gorules/cache/check-versions',
         expect.objectContaining({
-          method: 'POST'
-        })
+          method: 'POST',
+        }),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -390,23 +388,23 @@ describe('ReactGoRulesService', () => {
         refreshResult: {
           refreshedRules: ['rule1', 'rule2'],
           failedRules: [],
-          totalProcessed: 2
-        }
+          totalProcessed: 2,
+        },
       };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse)
+        json: jest.fn().mockResolvedValueOnce(mockResponse),
       });
 
       const result = await service.refreshCache(['rule1', 'rule2']);
-      
+
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/minimal-gorules/cache/refresh',
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify({ ruleIds: ['rule1', 'rule2'] })
-        })
+          body: JSON.stringify({ ruleIds: ['rule1', 'rule2'] }),
+        }),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -417,23 +415,23 @@ describe('ReactGoRulesService', () => {
         refreshResult: {
           refreshedRules: ['rule1', 'rule2'],
           failedRules: [],
-          totalProcessed: 2
-        }
+          totalProcessed: 2,
+        },
       };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse)
+        json: jest.fn().mockResolvedValueOnce(mockResponse),
       });
 
       const result = await service.refreshCache();
-      
+
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/minimal-gorules/cache/refresh',
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify({})
-        })
+          body: JSON.stringify({}),
+        }),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -445,22 +443,22 @@ describe('ReactGoRulesService', () => {
         success: true,
         status: {
           rulesLoaded: 10,
-          loadTime: 500
-        }
+          loadTime: 500,
+        },
       };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse)
+        json: jest.fn().mockResolvedValueOnce(mockResponse),
       });
 
       const result = await service.forceRefreshCache();
-      
+
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/minimal-gorules/cache/force-refresh',
         expect.objectContaining({
-          method: 'POST'
-        })
+          method: 'POST',
+        }),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -470,7 +468,7 @@ describe('ReactGoRulesService', () => {
     it('should update configuration', () => {
       const newConfig = {
         timeout: 15000,
-        apiKey: 'new-api-key'
+        apiKey: 'new-api-key',
       };
 
       service.updateConfig(newConfig);

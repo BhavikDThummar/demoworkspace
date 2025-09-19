@@ -78,7 +78,7 @@ export class GoRulesMetricsService {
   private readonly retryTotals: Map<string, number> = new Map();
   private readonly circuitBreakerStates: Map<string, CircuitBreakerMetrics> = new Map();
   private readonly activeExecutions: Set<string> = new Set();
-  
+
   private readonly maxDataPoints = 1000; // Keep last 1000 data points per metric
   private readonly metricsRetentionMs = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -87,26 +87,26 @@ export class GoRulesMetricsService {
    */
   recordExecutionTime(ruleId: string, executionTime: number, success: boolean): void {
     const timestamp = Date.now();
-    
+
     // Record execution time
     if (!this.executionTimes.has(ruleId)) {
       this.executionTimes.set(ruleId, []);
     }
-    
+
     const dataPoints = this.executionTimes.get(ruleId)!;
     dataPoints.push({
       timestamp,
       value: executionTime,
       labels: { success: success.toString() },
     });
-    
+
     // Keep only recent data points
     this.trimDataPoints(dataPoints);
-    
+
     // Update execution counts
     const currentCount = this.executionCounts.get(ruleId) || 0;
     this.executionCounts.set(ruleId, currentCount + 1);
-    
+
     // Update error counts
     if (!success) {
       const currentErrors = this.errorCounts.get(ruleId) || 0;
@@ -143,10 +143,10 @@ export class GoRulesMetricsService {
     ruleId: string,
     state: 'CLOSED' | 'OPEN' | 'HALF_OPEN',
     isFailure?: boolean,
-    nextAttemptTime?: number
+    nextAttemptTime?: number,
   ): void {
     let metrics = this.circuitBreakerStates.get(ruleId);
-    
+
     if (!metrics) {
       metrics = {
         ruleId,
@@ -156,12 +156,12 @@ export class GoRulesMetricsService {
       };
       this.circuitBreakerStates.set(ruleId, metrics);
     }
-    
+
     metrics.state = state;
-    
+
     if (isFailure !== undefined) {
       const timestamp = Date.now();
-      
+
       if (isFailure) {
         metrics.failures++;
         metrics.lastFailureTime = timestamp;
@@ -170,7 +170,7 @@ export class GoRulesMetricsService {
         metrics.lastSuccessTime = timestamp;
       }
     }
-    
+
     if (nextAttemptTime !== undefined) {
       metrics.nextAttemptTime = nextAttemptTime;
     }
@@ -184,23 +184,23 @@ export class GoRulesMetricsService {
     const totalExecutions = this.executionCounts.get(ruleId) || 0;
     const totalErrors = this.errorCounts.get(ruleId) || 0;
     const totalRetries = this.retryTotals.get(ruleId) || 0;
-    
+
     const successfulExecutions = totalExecutions - totalErrors;
     const errorRate = totalExecutions > 0 ? totalErrors / totalExecutions : 0;
-    
+
     let averageExecutionTime = 0;
     let minExecutionTime = 0;
     let maxExecutionTime = 0;
     let lastExecutionTime: number | undefined;
-    
+
     if (executionTimes.length > 0) {
-      const times = executionTimes.map(dp => dp.value);
+      const times = executionTimes.map((dp) => dp.value);
       averageExecutionTime = times.reduce((sum, time) => sum + time, 0) / times.length;
       minExecutionTime = Math.min(...times);
       maxExecutionTime = Math.max(...times);
       lastExecutionTime = executionTimes[executionTimes.length - 1].timestamp;
     }
-    
+
     return {
       ruleId,
       totalExecutions,
@@ -224,8 +224,8 @@ export class GoRulesMetricsService {
       ...this.errorCounts.keys(),
       ...this.executionTimes.keys(),
     ]);
-    
-    return Array.from(allRuleIds).map(ruleId => this.getRuleMetrics(ruleId));
+
+    return Array.from(allRuleIds).map((ruleId) => this.getRuleMetrics(ruleId));
   }
 
   /**
@@ -233,11 +233,11 @@ export class GoRulesMetricsService {
    */
   getCircuitBreakerMetrics(): Record<string, CircuitBreakerMetrics> {
     const result: Record<string, CircuitBreakerMetrics> = {};
-    
+
     for (const [ruleId, metrics] of this.circuitBreakerStates.entries()) {
       result[ruleId] = { ...metrics };
     }
-    
+
     return result;
   }
 
@@ -246,30 +246,29 @@ export class GoRulesMetricsService {
    */
   getSystemMetrics(): SystemMetrics {
     const allMetrics = this.getAllRuleMetrics();
-    
+
     const totalRuleExecutions = allMetrics.reduce(
       (sum, metrics) => sum + metrics.totalExecutions,
-      0
+      0,
     );
-    
-    const totalErrors = allMetrics.reduce(
-      (sum, metrics) => sum + metrics.failedExecutions,
-      0
-    );
-    
-    const averageResponseTime = allMetrics.length > 0
-      ? allMetrics.reduce((sum, metrics) => sum + metrics.averageExecutionTime, 0) / allMetrics.length
-      : 0;
-    
+
+    const totalErrors = allMetrics.reduce((sum, metrics) => sum + metrics.failedExecutions, 0);
+
+    const averageResponseTime =
+      allMetrics.length > 0
+        ? allMetrics.reduce((sum, metrics) => sum + metrics.averageExecutionTime, 0) /
+          allMetrics.length
+        : 0;
+
     // Calculate requests per second based on recent activity
     const now = Date.now();
     const oneSecondAgo = now - 1000;
-    
+
     let recentRequests = 0;
     for (const dataPoints of this.executionTimes.values()) {
-      recentRequests += dataPoints.filter(dp => dp.timestamp > oneSecondAgo).length;
+      recentRequests += dataPoints.filter((dp) => dp.timestamp > oneSecondAgo).length;
     }
-    
+
     return {
       totalRuleExecutions,
       activeExecutions: this.activeExecutions.size,
@@ -285,24 +284,24 @@ export class GoRulesMetricsService {
    */
   getExecutionTimeStatistics(ruleId: string): MetricStatistics | null {
     const dataPoints = this.executionTimes.get(ruleId);
-    
+
     if (!dataPoints || dataPoints.length === 0) {
       return null;
     }
-    
-    const values = dataPoints.map(dp => dp.value).sort((a, b) => a - b);
+
+    const values = dataPoints.map((dp) => dp.value).sort((a, b) => a - b);
     const count = values.length;
     const sum = values.reduce((total, value) => total + value, 0);
     const min = values[0];
     const max = values[count - 1];
     const average = sum / count;
-    
+
     // Calculate percentiles
     const p95Index = Math.floor(count * 0.95);
     const p99Index = Math.floor(count * 0.99);
     const percentile95 = values[p95Index] || max;
     const percentile99 = values[p99Index] || max;
-    
+
     return {
       count,
       sum,
@@ -342,10 +341,10 @@ export class GoRulesMetricsService {
    */
   cleanupOldMetrics(): void {
     const cutoffTime = Date.now() - this.metricsRetentionMs;
-    
+
     for (const [ruleId, dataPoints] of this.executionTimes.entries()) {
-      const recentDataPoints = dataPoints.filter(dp => dp.timestamp > cutoffTime);
-      
+      const recentDataPoints = dataPoints.filter((dp) => dp.timestamp > cutoffTime);
+
       if (recentDataPoints.length === 0) {
         this.executionTimes.delete(ruleId);
       } else {
@@ -364,13 +363,13 @@ export class GoRulesMetricsService {
         const used = usage.heapUsed;
         const total = usage.heapTotal;
         const percentage = (used / total) * 100;
-        
+
         return { used, total, percentage };
       }
     } catch {
       // Memory usage not available
     }
-    
+
     return undefined;
   }
 

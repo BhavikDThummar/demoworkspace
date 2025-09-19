@@ -8,10 +8,10 @@ import { MinimalGoRulesModule } from './minimal-gorules.module.js';
 import { MinimalGoRulesService } from './minimal-gorules.service.js';
 import { MinimalGoRulesEngine } from '../minimal-gorules-engine.js';
 import { MinimalGoRulesConfig } from '../interfaces/config.js';
-import { 
-  MINIMAL_GORULES_CONFIG_TOKEN, 
+import {
+  MINIMAL_GORULES_CONFIG_TOKEN,
   MINIMAL_GORULES_ENGINE_TOKEN,
-  MinimalGoRulesOptionsFactory 
+  MinimalGoRulesOptionsFactory,
 } from './interfaces.js';
 
 describe('MinimalGoRulesModule', () => {
@@ -22,7 +22,7 @@ describe('MinimalGoRulesModule', () => {
     cacheMaxSize: 100,
     httpTimeout: 3000,
     batchSize: 25,
-    platform: 'node'
+    platform: 'node',
   };
 
   describe('forRoot', () => {
@@ -36,9 +36,9 @@ describe('MinimalGoRulesModule', () => {
         imports: [
           MinimalGoRulesModule.forRoot({
             config: mockConfig,
-            autoInitialize: false // Disable auto-init for testing
-          })
-        ]
+            autoInitialize: false, // Disable auto-init for testing
+          }),
+        ],
       }).compile();
 
       service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
@@ -85,9 +85,9 @@ describe('MinimalGoRulesModule', () => {
         imports: [
           MinimalGoRulesModule.forRootAsync({
             useFactory: (): MinimalGoRulesConfig => mockConfig,
-            autoInitialize: false
-          })
-        ]
+            autoInitialize: false,
+          }),
+        ],
       }).compile();
 
       service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
@@ -123,9 +123,9 @@ describe('MinimalGoRulesModule', () => {
         imports: [
           MinimalGoRulesModule.forRootAsync({
             useClass: TestConfigFactory,
-            autoInitialize: false
-          })
-        ]
+            autoInitialize: false,
+          }),
+        ],
       }).compile();
 
       service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
@@ -164,12 +164,12 @@ describe('MinimalGoRulesModule', () => {
           imports: [
             ConfigModule.forRoot({
               isGlobal: true,
-              envFilePath: []
+              envFilePath: [],
             }),
             MinimalGoRulesModule.forRootWithConfig({
-              autoInitialize: false
-            })
-          ]
+              autoInitialize: false,
+            }),
+          ],
         }).compile();
 
         service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
@@ -219,14 +219,14 @@ describe('MinimalGoRulesModule', () => {
             isGlobal: true,
             load: [
               () => ({
-                minimalGoRules: mockConfig
-              })
-            ]
+                minimalGoRules: mockConfig,
+              }),
+            ],
           }),
           MinimalGoRulesModule.forRootWithConfig({
-            autoInitialize: false
-          })
-        ]
+            autoInitialize: false,
+          }),
+        ],
       }).compile();
 
       service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
@@ -245,7 +245,7 @@ describe('MinimalGoRulesModule', () => {
       const config = module.get<MinimalGoRulesConfig>(MINIMAL_GORULES_CONFIG_TOKEN);
       expect(config).toEqual({
         ...mockConfig,
-        platform: 'node'
+        platform: 'node',
       });
     });
   });
@@ -258,9 +258,9 @@ describe('MinimalGoRulesModule', () => {
         imports: [
           MinimalGoRulesModule.forRoot({
             config: mockConfig,
-            autoInitialize: false
-          })
-        ]
+            autoInitialize: false,
+          }),
+        ],
       }).compile();
     });
 
@@ -291,13 +291,13 @@ describe('MinimalGoRulesModule', () => {
           imports: [
             ConfigModule.forRoot({
               isGlobal: true,
-              envFilePath: []
+              envFilePath: [],
             }),
             MinimalGoRulesModule.forRootWithConfig({
-              configKey: 'nonExistentKey'
-            })
-          ]
-        }).compile()
+              configKey: 'nonExistentKey',
+            }),
+          ],
+        }).compile(),
       ).rejects.toThrow('Missing required configuration');
     });
   });

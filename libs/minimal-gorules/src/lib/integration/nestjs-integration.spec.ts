@@ -21,7 +21,7 @@ describe('NestJS Integration Tests', () => {
     apiKey: 'test-api-key',
     projectId: 'test-project',
     cacheMaxSize: 50,
-    httpTimeout: 5000
+    httpTimeout: 5000,
   };
 
   beforeEach(() => {
@@ -40,9 +40,9 @@ describe('NestJS Integration Tests', () => {
         imports: [
           MinimalGoRulesModule.forRoot({
             config: testConfig,
-            autoInitialize: false // Don't auto-initialize for testing
-          })
-        ]
+            autoInitialize: false, // Don't auto-initialize for testing
+          }),
+        ],
       }).compile();
 
       service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
@@ -64,21 +64,24 @@ describe('NestJS Integration Tests', () => {
       // Mock successful initialization
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          rules: [
-            {
-              id: 'test-rule',
-              name: 'Test Rule',
-              version: '1.0.0',
-              tags: ['test'],
-              lastModified: new Date().toISOString(),
-              content: Buffer.from(JSON.stringify({
-                conditions: [{ field: 'test', operator: 'eq', value: true }],
-                actions: [{ type: 'approve' }]
-              })).toString('base64')
-            }
-          ]
-        })
+        json: () =>
+          Promise.resolve({
+            rules: [
+              {
+                id: 'test-rule',
+                name: 'Test Rule',
+                version: '1.0.0',
+                tags: ['test'],
+                lastModified: new Date().toISOString(),
+                content: Buffer.from(
+                  JSON.stringify({
+                    conditions: [{ field: 'test', operator: 'eq', value: true }],
+                    actions: [{ type: 'approve' }],
+                  }),
+                ).toString('base64'),
+              },
+            ],
+          }),
       });
 
       const status = await service.initialize();
@@ -90,7 +93,7 @@ describe('NestJS Integration Tests', () => {
       // Initialize first
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ rules: [] })
+        json: () => Promise.resolve({ rules: [] }),
       });
 
       await service.initialize();
@@ -116,11 +119,11 @@ describe('NestJS Integration Tests', () => {
               apiUrl: 'https://api.gorules.io',
               apiKey: 'factory-api-key',
               projectId: 'factory-project',
-              cacheMaxSize: 100
+              cacheMaxSize: 100,
             }),
-            autoInitialize: false
-          })
-        ]
+            autoInitialize: false,
+          }),
+        ],
       }).compile();
 
       service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
@@ -128,7 +131,7 @@ describe('NestJS Integration Tests', () => {
 
     it('should create module with factory configuration', () => {
       expect(service).toBeDefined();
-      
+
       const config = service.getConfig();
       expect(config.apiKey).toBe('factory-api-key');
       expect(config.projectId).toBe('factory-project');
@@ -139,7 +142,7 @@ describe('NestJS Integration Tests', () => {
       // Mock initialization
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ rules: [] })
+        json: () => Promise.resolve({ rules: [] }),
       });
 
       const status = await service.initialize();
@@ -154,7 +157,7 @@ describe('NestJS Integration Tests', () => {
           apiUrl: 'https://api.gorules.io',
           apiKey: 'class-api-key',
           projectId: 'class-project',
-          cacheMaxSize: 75
+          cacheMaxSize: 75,
         };
       }
     }
@@ -164,9 +167,9 @@ describe('NestJS Integration Tests', () => {
         imports: [
           MinimalGoRulesModule.forRootAsync({
             useClass: ConfigService,
-            autoInitialize: false
-          })
-        ]
+            autoInitialize: false,
+          }),
+        ],
       }).compile();
 
       service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
@@ -174,7 +177,7 @@ describe('NestJS Integration Tests', () => {
 
     it('should create module with class configuration', () => {
       expect(service).toBeDefined();
-      
+
       const config = service.getConfig();
       expect(config.apiKey).toBe('class-api-key');
       expect(config.projectId).toBe('class-project');
@@ -188,9 +191,9 @@ describe('NestJS Integration Tests', () => {
         imports: [
           MinimalGoRulesModule.forRoot({
             config: testConfig,
-            autoInitialize: false
-          })
-        ]
+            autoInitialize: false,
+          }),
+        ],
       }).compile();
 
       service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
@@ -200,11 +203,11 @@ describe('NestJS Integration Tests', () => {
       // Mock successful initialization
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ rules: [] })
+        json: () => Promise.resolve({ rules: [] }),
       });
 
       await module.init();
-      
+
       // Service should be ready
       expect(service).toBeDefined();
     });
@@ -213,14 +216,14 @@ describe('NestJS Integration Tests', () => {
       // Initialize first
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ rules: [] })
+        json: () => Promise.resolve({ rules: [] }),
       });
 
       await service.initialize();
-      
+
       // Close module
       await module.close();
-      
+
       // Should not throw
       expect(true).toBe(true);
     });
@@ -231,33 +234,34 @@ describe('NestJS Integration Tests', () => {
       // Mock successful initialization
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          rules: [
-            {
-              id: 'auto-rule',
-              name: 'Auto Rule',
-              version: '1.0.0',
-              tags: ['auto'],
-              lastModified: new Date().toISOString(),
-              content: Buffer.from(JSON.stringify({ test: 'auto' })).toString('base64')
-            }
-          ]
-        })
+        json: () =>
+          Promise.resolve({
+            rules: [
+              {
+                id: 'auto-rule',
+                name: 'Auto Rule',
+                version: '1.0.0',
+                tags: ['auto'],
+                lastModified: new Date().toISOString(),
+                content: Buffer.from(JSON.stringify({ test: 'auto' })).toString('base64'),
+              },
+            ],
+          }),
       });
 
       module = await Test.createTestingModule({
         imports: [
           MinimalGoRulesModule.forRoot({
             config: testConfig,
-            autoInitialize: true
-          })
-        ]
+            autoInitialize: true,
+          }),
+        ],
       }).compile();
 
       await module.init();
-      
+
       service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
-      
+
       // Should be initialized automatically
       const status = await service.getStatus();
       expect(status.initialized).toBe(true);
@@ -272,16 +276,16 @@ describe('NestJS Integration Tests', () => {
         imports: [
           MinimalGoRulesModule.forRoot({
             config: testConfig,
-            autoInitialize: true
-          })
-        ]
+            autoInitialize: true,
+          }),
+        ],
       }).compile();
 
       // Should not throw during module creation
       await expect(module.init()).resolves.not.toThrow();
-      
+
       service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
-      
+
       // Service should exist but not be initialized
       const status = await service.getStatus();
       expect(status.initialized).toBe(false);
@@ -292,7 +296,7 @@ describe('NestJS Integration Tests', () => {
     it('should inject service into other providers', async () => {
       class TestService {
         constructor(private readonly goRulesService: MinimalGoRulesService) {}
-        
+
         getGoRulesService() {
           return this.goRulesService;
         }
@@ -302,15 +306,15 @@ describe('NestJS Integration Tests', () => {
         imports: [
           MinimalGoRulesModule.forRoot({
             config: testConfig,
-            autoInitialize: false
-          })
+            autoInitialize: false,
+          }),
         ],
-        providers: [TestService]
+        providers: [TestService],
       }).compile();
 
       const testService = module.get<TestService>(TestService);
       const injectedService = testService.getGoRulesService();
-      
+
       expect(injectedService).toBeDefined();
       expect(injectedService).toBeInstanceOf(MinimalGoRulesService);
     });
@@ -328,15 +332,15 @@ describe('NestJS Integration Tests', () => {
         imports: [
           MinimalGoRulesModule.forRoot({
             config: testConfig,
-            autoInitialize: false
-          })
+            autoInitialize: false,
+          }),
         ],
-        providers: [Service1, Service2]
+        providers: [Service1, Service2],
       }).compile();
 
       const service1 = module.get<Service1>(Service1);
       const service2 = module.get<Service2>(Service2);
-      
+
       // Should be the same instance
       expect(service1.goRules).toBe(service2.goRules);
     });
@@ -348,9 +352,9 @@ describe('NestJS Integration Tests', () => {
         imports: [
           MinimalGoRulesModule.forRoot({
             config: testConfig,
-            autoInitialize: false
-          })
-        ]
+            autoInitialize: false,
+          }),
+        ],
       }).compile();
 
       service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
@@ -366,7 +370,7 @@ describe('NestJS Integration Tests', () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
-        statusText: 'Internal Server Error'
+        statusText: 'Internal Server Error',
       });
 
       await expect(service.initialize()).rejects.toThrow();
@@ -375,18 +379,19 @@ describe('NestJS Integration Tests', () => {
     it('should handle malformed rule data', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          rules: [
-            {
-              id: 'malformed-rule',
-              name: 'Malformed Rule',
-              version: '1.0.0',
-              tags: ['test'],
-              lastModified: new Date().toISOString(),
-              content: 'invalid-base64-content'
-            }
-          ]
-        })
+        json: () =>
+          Promise.resolve({
+            rules: [
+              {
+                id: 'malformed-rule',
+                name: 'Malformed Rule',
+                version: '1.0.0',
+                tags: ['test'],
+                lastModified: new Date().toISOString(),
+                content: 'invalid-base64-content',
+              },
+            ],
+          }),
       });
 
       await expect(service.initialize()).rejects.toThrow();
@@ -401,11 +406,11 @@ describe('NestJS Integration Tests', () => {
             config: {
               ...testConfig,
               enablePerformanceOptimizations: true,
-              enablePerformanceMetrics: true
+              enablePerformanceMetrics: true,
             },
-            autoInitialize: false
-          })
-        ]
+            autoInitialize: false,
+          }),
+        ],
       }).compile();
 
       service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
@@ -415,7 +420,7 @@ describe('NestJS Integration Tests', () => {
       // Mock initialization
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ rules: [] })
+        json: () => Promise.resolve({ rules: [] }),
       });
 
       await service.initialize();
@@ -426,7 +431,7 @@ describe('NestJS Integration Tests', () => {
 
     it('should handle health checks', async () => {
       const healthCheck = await service.healthCheck();
-      
+
       expect(healthCheck.status).toBeDefined();
       expect(healthCheck.uptime).toBeGreaterThanOrEqual(0);
       expect(healthCheck.lastCheck).toBeGreaterThan(0);
@@ -434,7 +439,7 @@ describe('NestJS Integration Tests', () => {
 
     it('should provide initialization status', () => {
       const initStatus = service.getInitializationStatus();
-      
+
       expect(initStatus.status).toBeDefined();
       expect(initStatus.startTime).toBeGreaterThan(0);
     });
@@ -447,10 +452,10 @@ describe('NestJS Integration Tests', () => {
           imports: [
             MinimalGoRulesModule.forRoot({
               config: {} as any, // Invalid config
-              autoInitialize: false
-            })
-          ]
-        }).compile()
+              autoInitialize: false,
+            }),
+          ],
+        }).compile(),
       ).rejects.toThrow();
     });
 
@@ -463,10 +468,10 @@ describe('NestJS Integration Tests', () => {
                 apiUrl: 'https://api.gorules.io',
                 // Missing apiKey and projectId
               } as any,
-              autoInitialize: false
-            })
-          ]
-        }).compile()
+              autoInitialize: false,
+            }),
+          ],
+        }).compile(),
       ).rejects.toThrow();
     });
   });

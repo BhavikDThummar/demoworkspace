@@ -32,14 +32,15 @@ import { MinimalGoRulesModule } from '@org/minimal-gorules';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MinimalGoRulesModule.forRootWithConfig({
-      autoInitialize: true
-    })
-  ]
+      autoInitialize: true,
+    }),
+  ],
 })
 export class AppModule {}
 ```
 
 Set environment variables:
+
 ```bash
 GORULES_API_URL=https://api.gorules.io
 GORULES_API_KEY=your-api-key
@@ -57,28 +58,23 @@ import { MinimalGoRulesService } from '@org/minimal-gorules';
 
 @Injectable()
 export class BusinessLogicService {
-  constructor(
-    private readonly goRulesService: MinimalGoRulesService
-  ) {}
+  constructor(private readonly goRulesService: MinimalGoRulesService) {}
 
   async processOrder(orderData: any) {
     // Execute a single rule
-    const result = await this.goRulesService.executeRule(
-      'order-validation',
-      orderData
-    );
+    const result = await this.goRulesService.executeRule('order-validation', orderData);
 
     // Execute multiple rules in parallel
     const batchResult = await this.goRulesService.executeRules(
       ['pricing', 'discount', 'tax'],
-      orderData
+      orderData,
     );
 
     // Execute rules by tags
     const tagResult = await this.goRulesService.executeByTags(
       ['validation', 'business-rules'],
       orderData,
-      'sequential'
+      'sequential',
     );
 
     return { result, batchResult, tagResult };
@@ -99,10 +95,10 @@ MinimalGoRulesModule.forRoot({
     cacheMaxSize: 1000,
     httpTimeout: 5000,
     batchSize: 50,
-    platform: 'node'
+    platform: 'node',
   },
-  autoInitialize: true
-})
+  autoInitialize: true,
+});
 ```
 
 ### 2. Factory-based Configuration
@@ -117,11 +113,11 @@ MinimalGoRulesModule.forRootAsync({
     cacheMaxSize: configService.get('GORULES_CACHE_MAX_SIZE', 1000),
     httpTimeout: configService.get('GORULES_HTTP_TIMEOUT', 5000),
     batchSize: configService.get('GORULES_BATCH_SIZE', 50),
-    platform: 'node'
+    platform: 'node',
   }),
   inject: [ConfigService],
-  autoInitialize: true
-})
+  autoInitialize: true,
+});
 ```
 
 ### 3. Class-based Configuration
@@ -136,15 +132,15 @@ export class GoRulesConfigService implements MinimalGoRulesOptionsFactory {
       apiUrl: this.configService.get('GORULES_API_URL'),
       apiKey: this.configService.get('GORULES_API_KEY'),
       projectId: this.configService.get('GORULES_PROJECT_ID'),
-      platform: 'node'
+      platform: 'node',
     };
   }
 }
 
 MinimalGoRulesModule.forRootAsync({
   useClass: GoRulesConfigService,
-  autoInitialize: true
-})
+  autoInitialize: true,
+});
 ```
 
 ### 4. Environment-based Configuration (Recommended)
@@ -152,13 +148,14 @@ MinimalGoRulesModule.forRootAsync({
 ```typescript
 MinimalGoRulesModule.forRootWithConfig({
   autoInitialize: true,
-  configKey: 'minimalGoRules' // Optional, defaults to 'minimalGoRules'
-})
+  configKey: 'minimalGoRules', // Optional, defaults to 'minimalGoRules'
+});
 ```
 
 This supports both nested configuration objects and flat environment variables:
 
 **Option A: Nested Configuration**
+
 ```typescript
 // In your config file
 export default () => ({
@@ -168,12 +165,13 @@ export default () => ({
     projectId: 'your-project-id',
     cacheMaxSize: 1000,
     httpTimeout: 5000,
-    batchSize: 50
-  }
+    batchSize: 50,
+  },
 });
 ```
 
 **Option B: Environment Variables (Fallback)**
+
 ```bash
 GORULES_API_URL=https://api.gorules.io
 GORULES_API_KEY=your-api-key
@@ -189,36 +187,36 @@ GORULES_BATCH_SIZE=50
 
 ```typescript
 // Single rule execution
-const result = await goRulesService.executeRule<OrderResult>(
-  'order-processing',
-  { orderId: '123', amount: 100 }
-);
+const result = await goRulesService.executeRule<OrderResult>('order-processing', {
+  orderId: '123',
+  amount: 100,
+});
 
 // Multiple rules in parallel
-const results = await goRulesService.executeRules<any>(
-  ['rule1', 'rule2', 'rule3'],
-  inputData
-);
+const results = await goRulesService.executeRules<any>(['rule1', 'rule2', 'rule3'], inputData);
 
 // Rules by tags with execution mode
 const results = await goRulesService.executeByTags<any>(
   ['validation', 'pricing'],
   inputData,
-  'sequential' // or 'parallel'
+  'sequential', // or 'parallel'
 );
 
 // Advanced selector-based execution
-const results = await goRulesService.execute<any>({
-  ids: ['rule1', 'rule2'],
-  tags: ['important'],
-  mode: { 
-    type: 'mixed',
-    groups: [
-      { rules: ['rule1'], mode: 'sequential' },
-      { rules: ['rule2'], mode: 'parallel' }
-    ]
-  }
-}, inputData);
+const results = await goRulesService.execute<any>(
+  {
+    ids: ['rule1', 'rule2'],
+    tags: ['important'],
+    mode: {
+      type: 'mixed',
+      groups: [
+        { rules: ['rule1'], mode: 'sequential' },
+        { rules: ['rule2'], mode: 'parallel' },
+      ],
+    },
+  },
+  inputData,
+);
 ```
 
 ### Rule Management
@@ -276,33 +274,28 @@ import { MinimalGoRulesService } from '@org/minimal-gorules';
 
 @Controller('rules')
 export class RulesController {
-  constructor(
-    private readonly goRulesService: MinimalGoRulesService
-  ) {}
+  constructor(private readonly goRulesService: MinimalGoRulesService) {}
 
   @Post('execute/:ruleId')
-  async executeRule(
-    @Param('ruleId') ruleId: string,
-    @Body() input: Record<string, unknown>
-  ) {
+  async executeRule(@Param('ruleId') ruleId: string, @Body() input: Record<string, unknown>) {
     const result = await this.goRulesService.executeRule(ruleId, input);
     return { success: true, result };
   }
 
   @Post('execute-batch')
-  async executeBatch(@Body() request: {
-    ruleIds: string[];
-    input: Record<string, unknown>;
-    mode?: 'parallel' | 'sequential';
-  }) {
-    const result = await this.goRulesService.executeRules(
-      request.ruleIds,
-      request.input
-    );
-    return { 
-      success: true, 
+  async executeBatch(
+    @Body()
+    request: {
+      ruleIds: string[];
+      input: Record<string, unknown>;
+      mode?: 'parallel' | 'sequential';
+    },
+  ) {
+    const result = await this.goRulesService.executeRules(request.ruleIds, request.input);
+    return {
+      success: true,
       results: Object.fromEntries(result.results),
-      executionTime: result.executionTime
+      executionTime: result.executionTime,
     };
   }
 
@@ -315,7 +308,7 @@ export class RulesController {
   async status() {
     const [engineStatus, cacheStats] = await Promise.all([
       this.goRulesService.getStatus(),
-      this.goRulesService.getCacheStats()
+      this.goRulesService.getCacheStats(),
     ]);
     return { engine: engineStatus, cache: cacheStats };
   }
@@ -352,9 +345,7 @@ If `autoInitialize` is set to `false`, you can manually control initialization:
 ```typescript
 @Injectable()
 export class AppService implements OnApplicationBootstrap {
-  constructor(
-    private readonly goRulesService: MinimalGoRulesService
-  ) {}
+  constructor(private readonly goRulesService: MinimalGoRulesService) {}
 
   async onApplicationBootstrap() {
     try {
@@ -374,17 +365,12 @@ import { HealthCheck, HealthCheckService } from '@nestjs/terminus';
 
 @Controller('health')
 export class HealthController {
-  constructor(
-    private health: HealthCheckService,
-    private goRulesService: MinimalGoRulesService
-  ) {}
+  constructor(private health: HealthCheckService, private goRulesService: MinimalGoRulesService) {}
 
   @Get()
   @HealthCheck()
   check() {
-    return this.health.check([
-      () => this.goRulesService.healthCheck()
-    ]);
+    return this.health.check([() => this.goRulesService.healthCheck()]);
   }
 }
 ```

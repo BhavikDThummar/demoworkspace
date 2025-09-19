@@ -43,18 +43,18 @@ import { GoRulesService } from './gorules.service';
         projectId: configService.get<string>('GORULES_PROJECT_ID'),
         cacheMaxSize: configService.get<number>('GORULES_CACHE_SIZE', 1000),
         httpTimeout: configService.get<number>('GORULES_TIMEOUT', 5000),
-        platform: 'node' as const
+        platform: 'node' as const,
       }),
-      inject: [ConfigService]
+      inject: [ConfigService],
     },
     {
       provide: MinimalGoRulesEngine,
       useFactory: (config) => new MinimalGoRulesEngine(config),
-      inject: ['GORULES_CONFIG']
+      inject: ['GORULES_CONFIG'],
     },
-    GoRulesService
+    GoRulesService,
   ],
-  exports: [MinimalGoRulesEngine, GoRulesService]
+  exports: [MinimalGoRulesEngine, GoRulesService],
 })
 export class GoRulesModule {}
 ```
@@ -83,7 +83,7 @@ import { GoRulesService } from './gorules.service';
         httpTimeout: configService.get<number>('GORULES_TIMEOUT', 10000),
         batchSize: configService.get<number>('GORULES_BATCH_SIZE', 100),
         platform: 'node' as const,
-        
+
         // Performance optimizations
         enablePerformanceOptimizations: true,
         enablePerformanceMetrics: true,
@@ -91,13 +91,13 @@ import { GoRulesService } from './gorules.service';
         enableRequestBatching: true,
         enableCompression: true,
         compressionAlgorithm: 'gzip' as const,
-        
+
         // Memory management
         memoryWarningThreshold: 0.7,
         memoryCriticalThreshold: 0.85,
-        memoryCleanupInterval: 30000
+        memoryCleanupInterval: 30000,
       }),
-      inject: [ConfigService]
+      inject: [ConfigService],
     },
     {
       provide: MinimalGoRulesEngine,
@@ -106,11 +106,11 @@ import { GoRulesService } from './gorules.service';
         await engine.initialize(); // Initialize on startup
         return engine;
       },
-      inject: ['GORULES_CONFIG']
+      inject: ['GORULES_CONFIG'],
     },
-    GoRulesService
+    GoRulesService,
   ],
-  exports: [MinimalGoRulesEngine, GoRulesService]
+  exports: [MinimalGoRulesEngine, GoRulesService],
 })
 export class GoRulesPerformanceModule {}
 ```
@@ -179,12 +179,12 @@ export class GoRulesConfig {
 ```typescript
 // src/gorules/gorules.service.ts
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { 
-  MinimalGoRulesEngine, 
-  RuleSelector, 
+import {
+  MinimalGoRulesEngine,
+  RuleSelector,
   MinimalExecutionResult,
   MinimalGoRulesError,
-  MinimalErrorCode 
+  MinimalErrorCode,
 } from '@your-org/minimal-gorules';
 
 @Injectable()
@@ -215,10 +215,7 @@ export class GoRulesService implements OnModuleInit, OnModuleDestroy {
   /**
    * Execute a single rule
    */
-  async executeRule<T = unknown>(
-    ruleId: string, 
-    input: Record<string, unknown>
-  ): Promise<T> {
+  async executeRule<T = unknown>(ruleId: string, input: Record<string, unknown>): Promise<T> {
     try {
       return await this.engine.executeRule<T>(ruleId, input);
     } catch (error) {
@@ -231,8 +228,8 @@ export class GoRulesService implements OnModuleInit, OnModuleDestroy {
    * Execute multiple rules in parallel
    */
   async executeRules<T = unknown>(
-    ruleIds: string[], 
-    input: Record<string, unknown>
+    ruleIds: string[],
+    input: Record<string, unknown>,
   ): Promise<MinimalExecutionResult<T>> {
     try {
       return await this.engine.executeRules<T>(ruleIds, input);
@@ -246,9 +243,9 @@ export class GoRulesService implements OnModuleInit, OnModuleDestroy {
    * Execute rules by tags
    */
   async executeByTags<T = unknown>(
-    tags: string[], 
+    tags: string[],
     input: Record<string, unknown>,
-    mode: 'parallel' | 'sequential' = 'parallel'
+    mode: 'parallel' | 'sequential' = 'parallel',
   ): Promise<MinimalExecutionResult<T>> {
     try {
       return await this.engine.executeByTags<T>(tags, input, mode);
@@ -262,8 +259,8 @@ export class GoRulesService implements OnModuleInit, OnModuleDestroy {
    * Execute rules with custom selector
    */
   async execute<T = unknown>(
-    selector: RuleSelector, 
-    input: Record<string, unknown>
+    selector: RuleSelector,
+    input: Record<string, unknown>,
   ): Promise<MinimalExecutionResult<T>> {
     try {
       return await this.engine.execute<T>(selector, input);
@@ -367,24 +364,19 @@ export class GoRulesService implements OnModuleInit, OnModuleDestroy {
 
 ```typescript
 // src/gorules/gorules.controller.ts
-import { 
-  Controller, 
-  Post, 
-  Body, 
-  Param, 
-  Get, 
-  HttpException, 
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Get,
+  HttpException,
   HttpStatus,
-  Query 
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { GoRulesService } from './gorules.service';
-import { 
-  ExecuteRuleDto, 
-  ExecuteRulesDto, 
-  ExecuteByTagsDto,
-  RuleSelectorDto 
-} from './dto';
+import { ExecuteRuleDto, ExecuteRulesDto, ExecuteByTagsDto, RuleSelectorDto } from './dto';
 
 @ApiTags('rules')
 @Controller('rules')
@@ -394,23 +386,17 @@ export class GoRulesController {
   @Post('execute/:ruleId')
   @ApiOperation({ summary: 'Execute a single rule' })
   @ApiResponse({ status: 200, description: 'Rule executed successfully' })
-  async executeRule(
-    @Param('ruleId') ruleId: string,
-    @Body() dto: ExecuteRuleDto
-  ) {
+  async executeRule(@Param('ruleId') ruleId: string, @Body() dto: ExecuteRuleDto) {
     try {
       const result = await this.goRulesService.executeRule(ruleId, dto.input);
       return {
         success: true,
         ruleId,
         result,
-        executedAt: new Date().toISOString()
+        executedAt: new Date().toISOString(),
       };
     } catch (error) {
-      throw new HttpException(
-        `Failed to execute rule: ${error.message}`,
-        HttpStatus.BAD_REQUEST
-      );
+      throw new HttpException(`Failed to execute rule: ${error.message}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -418,23 +404,17 @@ export class GoRulesController {
   @ApiOperation({ summary: 'Execute multiple rules' })
   async executeRules(@Body() dto: ExecuteRulesDto) {
     try {
-      const result = await this.goRulesService.executeRules(
-        dto.ruleIds, 
-        dto.input
-      );
-      
+      const result = await this.goRulesService.executeRules(dto.ruleIds, dto.input);
+
       return {
         success: true,
         executionTime: result.executionTime,
         results: Object.fromEntries(result.results),
         errors: result.errors ? Object.fromEntries(result.errors) : undefined,
-        executedAt: new Date().toISOString()
+        executedAt: new Date().toISOString(),
       };
     } catch (error) {
-      throw new HttpException(
-        `Failed to execute rules: ${error.message}`,
-        HttpStatus.BAD_REQUEST
-      );
+      throw new HttpException(`Failed to execute rules: ${error.message}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -442,23 +422,19 @@ export class GoRulesController {
   @ApiOperation({ summary: 'Execute rules by tags' })
   async executeByTags(@Body() dto: ExecuteByTagsDto) {
     try {
-      const result = await this.goRulesService.executeByTags(
-        dto.tags, 
-        dto.input,
-        dto.mode
-      );
-      
+      const result = await this.goRulesService.executeByTags(dto.tags, dto.input, dto.mode);
+
       return {
         success: true,
         executionTime: result.executionTime,
         results: Object.fromEntries(result.results),
         errors: result.errors ? Object.fromEntries(result.errors) : undefined,
-        executedAt: new Date().toISOString()
+        executedAt: new Date().toISOString(),
       };
     } catch (error) {
       throw new HttpException(
         `Failed to execute rules by tags: ${error.message}`,
-        HttpStatus.BAD_REQUEST
+        HttpStatus.BAD_REQUEST,
       );
     }
   }
@@ -467,23 +443,17 @@ export class GoRulesController {
   @ApiOperation({ summary: 'Execute rules with custom selector' })
   async execute(@Body() dto: RuleSelectorDto) {
     try {
-      const result = await this.goRulesService.execute(
-        dto.selector, 
-        dto.input
-      );
-      
+      const result = await this.goRulesService.execute(dto.selector, dto.input);
+
       return {
         success: true,
         executionTime: result.executionTime,
         results: Object.fromEntries(result.results),
         errors: result.errors ? Object.fromEntries(result.errors) : undefined,
-        executedAt: new Date().toISOString()
+        executedAt: new Date().toISOString(),
       };
     } catch (error) {
-      throw new HttpException(
-        `Failed to execute rules: ${error.message}`,
-        HttpStatus.BAD_REQUEST
-      );
+      throw new HttpException(`Failed to execute rules: ${error.message}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -494,7 +464,7 @@ export class GoRulesController {
     return {
       ...status,
       cacheStats: this.goRulesService.getCacheStats(),
-      performanceStats: this.goRulesService.getPerformanceStats()
+      performanceStats: this.goRulesService.getPerformanceStats(),
     };
   }
 
@@ -504,7 +474,7 @@ export class GoRulesController {
     const metadata = await this.goRulesService.getAllRuleMetadata();
     return {
       rules: Object.fromEntries(metadata),
-      totalRules: metadata.size
+      totalRules: metadata.size,
     };
   }
 
@@ -525,7 +495,7 @@ export class GoRulesController {
     return {
       tag,
       ruleIds,
-      count: ruleIds.length
+      count: ruleIds.length,
     };
   }
 
@@ -538,7 +508,7 @@ export class GoRulesController {
       refreshedRules: result.refreshedRules,
       failedRules: result.failedRules ? Object.fromEntries(result.failedRules) : {},
       totalProcessed: result.totalProcessed,
-      refreshTime: result.refreshTime
+      refreshTime: result.refreshTime,
     };
   }
 
@@ -585,10 +555,10 @@ export class ExecuteByTagsDto {
   @IsObject()
   input: Record<string, unknown>;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Execution mode',
     enum: ['parallel', 'sequential'],
-    default: 'parallel'
+    default: 'parallel',
   })
   @IsOptional()
   @IsIn(['parallel', 'sequential'])
@@ -626,27 +596,27 @@ export class GoRulesHealthIndicator extends HealthIndicator {
     try {
       const status = await this.goRulesService.getStatus();
       const cacheStats = this.goRulesService.getCacheStats();
-      
+
       const isHealthy = status.initialized && status.rulesLoaded > 0;
-      
+
       const result = this.getStatus(key, isHealthy, {
         initialized: status.initialized,
         rulesLoaded: status.rulesLoaded,
         cacheSize: cacheStats.size,
-        lastUpdate: new Date(status.lastUpdate).toISOString()
+        lastUpdate: new Date(status.lastUpdate).toISOString(),
       });
 
       if (isHealthy) {
         return result;
       }
-      
+
       throw new HealthCheckError('GoRules engine is not healthy', result);
     } catch (error) {
       throw new HealthCheckError('GoRules health check failed', {
         [key]: {
           status: 'down',
-          error: error.message
-        }
+          error: error.message,
+        },
       });
     }
   }
@@ -666,13 +636,13 @@ import { GoRulesService } from './gorules.service';
 export class GoRulesCacheService {
   constructor(
     private readonly goRulesService: GoRulesService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async executeRuleWithCache<T = unknown>(
     ruleId: string,
     input: Record<string, unknown>,
-    ttl: number = 300 // 5 minutes
+    ttl: number = 300, // 5 minutes
   ): Promise<T> {
     // Create cache key from rule ID and input hash
     const inputHash = this.hashInput(input);
@@ -687,7 +657,7 @@ export class GoRulesCacheService {
     // Execute rule and cache result
     const result = await this.goRulesService.executeRule<T>(ruleId, input);
     await this.cacheManager.set(cacheKey, result, ttl);
-    
+
     return result;
   }
 
@@ -716,19 +686,17 @@ export class GoRulesSchedulerService {
   async checkForUpdates() {
     try {
       this.logger.log('Checking for rule updates...');
-      
+
       const versionCheck = await this.goRulesService.checkVersions();
-      
+
       if (versionCheck.outdatedRules.length > 0) {
         this.logger.log(`Found ${versionCheck.outdatedRules.length} outdated rules`);
-        
-        const refreshResult = await this.goRulesService.refreshCache(
-          versionCheck.outdatedRules
-        );
-        
+
+        const refreshResult = await this.goRulesService.refreshCache(versionCheck.outdatedRules);
+
         this.logger.log(
           `Refreshed ${refreshResult.refreshedRules.length} rules, ` +
-          `${refreshResult.failedRules.size} failed`
+            `${refreshResult.failedRules.size} failed`,
         );
       } else {
         this.logger.log('All rules are up to date');
@@ -749,7 +717,7 @@ export class GoRulesSchedulerService {
         rulesLoaded: status.rulesLoaded,
         cacheSize: cacheStats.size,
         memoryUsage: perfStats.memoryUsage,
-        averageExecutionTime: perfStats.averageExecutionTime
+        averageExecutionTime: perfStats.averageExecutionTime,
       });
     } catch (error) {
       this.logger.warn('Failed to log performance stats', error);
@@ -779,7 +747,7 @@ describe('GoRulesService', () => {
       executeRules: jest.fn(),
       executeByTags: jest.fn(),
       getStatus: jest.fn(),
-      cleanup: jest.fn()
+      cleanup: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -787,9 +755,9 @@ describe('GoRulesService', () => {
         GoRulesService,
         {
           provide: MinimalGoRulesEngine,
-          useValue: mockEngine
-        }
-      ]
+          useValue: mockEngine,
+        },
+      ],
     }).compile();
 
     service = module.get<GoRulesService>(GoRulesService);
@@ -806,7 +774,7 @@ describe('GoRulesService', () => {
       rulesLoaded: 10,
       lastUpdate: Date.now(),
       projectId: 'test-project',
-      version: '1.0.0'
+      version: '1.0.0',
     };
 
     engine.initialize.mockResolvedValue(mockStatus);
@@ -830,9 +798,9 @@ describe('GoRulesService', () => {
     const error = new Error('Rule execution failed');
     engine.executeRule.mockRejectedValue(error);
 
-    await expect(
-      service.executeRule('test-rule', { userId: 123 })
-    ).rejects.toThrow('Rule execution failed');
+    await expect(service.executeRule('test-rule', { userId: 123 })).rejects.toThrow(
+      'Rule execution failed',
+    );
   });
 });
 ```
@@ -856,7 +824,7 @@ describe('GoRulesController', () => {
       executeByTags: jest.fn(),
       getStatus: jest.fn(),
       getCacheStats: jest.fn(),
-      getPerformanceStats: jest.fn()
+      getPerformanceStats: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -864,9 +832,9 @@ describe('GoRulesController', () => {
       providers: [
         {
           provide: GoRulesService,
-          useValue: mockService
-        }
-      ]
+          useValue: mockService,
+        },
+      ],
     }).compile();
 
     controller = module.get<GoRulesController>(GoRulesController);
@@ -878,7 +846,7 @@ describe('GoRulesController', () => {
     service.executeRule.mockResolvedValue(mockResult);
 
     const result = await controller.executeRule('test-rule', {
-      input: { userId: 123 }
+      input: { userId: 123 },
     });
 
     expect(result.success).toBe(true);
@@ -902,7 +870,7 @@ describe('GoRules (e2e)', () => {
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule]
+      imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -958,29 +926,30 @@ import { MinimalGoRulesEngine } from '@your-org/minimal-gorules';
         maxSockets: 100,
         maxFreeSockets: 10,
         timeout: 60000,
-        freeSocketTimeout: 30000
+        freeSocketTimeout: 30000,
       }),
       httpsAgent: new (require('https').Agent)({
         keepAlive: true,
         maxSockets: 100,
         maxFreeSockets: 10,
         timeout: 60000,
-        freeSocketTimeout: 30000
-      })
-    })
+        freeSocketTimeout: 30000,
+      }),
+    }),
   ],
   providers: [
     {
       provide: MinimalGoRulesEngine,
-      useFactory: () => new MinimalGoRulesEngine({
-        // ... config with performance optimizations
-        enablePerformanceOptimizations: true,
-        enableConnectionPooling: true,
-        enableRequestBatching: true,
-        enableCompression: true
-      })
-    }
-  ]
+      useFactory: () =>
+        new MinimalGoRulesEngine({
+          // ... config with performance optimizations
+          enablePerformanceOptimizations: true,
+          enableConnectionPooling: true,
+          enableRequestBatching: true,
+          enableCompression: true,
+        }),
+    },
+  ],
 })
 export class GoRulesOptimizedModule {}
 ```
@@ -997,24 +966,20 @@ import { GoRulesService } from './gorules.service';
 export class GoRulesMetricsService {
   constructor(
     private readonly goRulesService: GoRulesService,
-    private readonly metricsService: MetricsService
+    private readonly metricsService: MetricsService,
   ) {}
 
-  async recordExecutionMetrics(
-    ruleId: string,
-    executionTime: number,
-    success: boolean
-  ) {
+  async recordExecutionMetrics(ruleId: string, executionTime: number, success: boolean) {
     // Record execution time histogram
     this.metricsService.histogram('gorules_execution_duration_ms', executionTime, {
       rule_id: ruleId,
-      success: success.toString()
+      success: success.toString(),
     });
 
     // Increment execution counter
     this.metricsService.counter('gorules_executions_total', 1, {
       rule_id: ruleId,
-      success: success.toString()
+      success: success.toString(),
     });
 
     // Record cache stats

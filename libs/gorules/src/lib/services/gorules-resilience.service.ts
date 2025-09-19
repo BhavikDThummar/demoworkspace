@@ -1,9 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoRulesConfigService } from '../config/gorules.config.js';
-import {
-  GoRulesException,
-  GoRulesErrorCode,
-} from '../types/index.js';
+import { GoRulesException, GoRulesErrorCode } from '../types/index.js';
 
 /**
  * Configuration for retry behavior
@@ -11,19 +8,19 @@ import {
 export interface RetryConfig {
   /** Maximum number of retry attempts */
   maxAttempts: number;
-  
+
   /** Base delay in milliseconds */
   baseDelay: number;
-  
+
   /** Maximum delay in milliseconds */
   maxDelay: number;
-  
+
   /** Exponential backoff multiplier */
   backoffMultiplier: number;
-  
+
   /** Jitter factor (0-1) to add randomness */
   jitterFactor: number;
-  
+
   /** Function to determine if an error should be retried */
   shouldRetry?: (error: unknown, attempt: number) => boolean;
 }
@@ -34,13 +31,13 @@ export interface RetryConfig {
 export interface CircuitBreakerConfig {
   /** Number of failures before opening the circuit */
   failureThreshold: number;
-  
+
   /** Time in milliseconds to wait before attempting to close the circuit */
   resetTimeout: number;
-  
+
   /** Number of successful calls needed to close the circuit */
   successThreshold: number;
-  
+
   /** Timeout for individual requests in milliseconds */
   requestTimeout: number;
 }
@@ -51,7 +48,7 @@ export interface CircuitBreakerConfig {
 export enum CircuitBreakerState {
   CLOSED = 'CLOSED',
   OPEN = 'OPEN',
-  HALF_OPEN = 'HALF_OPEN'
+  HALF_OPEN = 'HALF_OPEN',
 }
 
 /**
@@ -74,13 +71,13 @@ export interface CircuitBreakerStats {
 export interface RateLimiterConfig {
   /** Maximum number of requests per window */
   maxRequests: number;
-  
+
   /** Time window in milliseconds */
   windowSize: number;
-  
+
   /** Strategy for handling rate limit exceeded */
   strategy: 'reject' | 'queue' | 'delay';
-  
+
   /** Maximum queue size (for queue strategy) */
   maxQueueSize?: number;
 }
@@ -91,25 +88,31 @@ export interface RateLimiterConfig {
 @Injectable()
 export class GoRulesResilienceService {
   private readonly logger = new Logger(GoRulesResilienceService.name);
-  
+
   // Circuit breaker state per operation
-  private circuitBreakers = new Map<string, {
-    state: CircuitBreakerState;
-    failureCount: number;
-    successCount: number;
-    lastFailureTime?: Date;
-    lastSuccessTime?: Date;
-    totalRequests: number;
-    totalFailures: number;
-    totalSuccesses: number;
-    config: CircuitBreakerConfig;
-  }>();
-  
+  private circuitBreakers = new Map<
+    string,
+    {
+      state: CircuitBreakerState;
+      failureCount: number;
+      successCount: number;
+      lastFailureTime?: Date;
+      lastSuccessTime?: Date;
+      totalRequests: number;
+      totalFailures: number;
+      totalSuccesses: number;
+      config: CircuitBreakerConfig;
+    }
+  >();
+
   // Rate limiter state per operation
-  private rateLimiters = new Map<string, {
-    requests: Array<{ timestamp: number; resolve: () => void; reject: (error: Error) => void }>;
-    config: RateLimiterConfig;
-  }>();
+  private rateLimiters = new Map<
+    string,
+    {
+      requests: Array<{ timestamp: number; resolve: () => void; reject: (error: Error) => void }>;
+      config: RateLimiterConfig;
+    }
+  >();
 
   constructor(private readonly configService: GoRulesConfigService) {}
 
@@ -119,7 +122,7 @@ export class GoRulesResilienceService {
   async withRetry<T>(
     operation: () => Promise<T>,
     config?: Partial<RetryConfig>,
-    operationName = 'unknown'
+    operationName = 'unknown',
   ): Promise<T> {
     const retryConfig = this.getRetryConfig(config);
     let lastError: unknown;
@@ -128,19 +131,22 @@ export class GoRulesResilienceService {
       try {
         if (attempt > 1) {
           const delay = this.calculateDelay(attempt - 1, retryConfig);
-          
-          this.logger.debug(`Retrying operation '${operationName}' (attempt ${attempt}/${retryConfig.maxAttempts}) after ${delay}ms`, {
-            operationName,
-            attempt,
-            maxAttempts: retryConfig.maxAttempts,
-            delay,
-          });
-          
+
+          this.logger.debug(
+            `Retrying operation '${operationName}' (attempt ${attempt}/${retryConfig.maxAttempts}) after ${delay}ms`,
+            {
+              operationName,
+              attempt,
+              maxAttempts: retryConfig.maxAttempts,
+              delay,
+            },
+          );
+
           await this.sleep(delay);
         }
 
         const result = await operation();
-        
+
         if (attempt > 1) {
           this.logger.log(`Operation '${operationName}' succeeded on attempt ${attempt}`, {
             operationName,
@@ -148,27 +154,33 @@ export class GoRulesResilienceService {
             totalAttempts: attempt,
           });
         }
-        
+
         return result;
       } catch (error) {
         lastError = error;
-        
+
         // Check if we should retry this error
         if (!this.shouldRetryError(error, attempt, retryConfig)) {
-          this.logger.debug(`Not retrying operation '${operationName}' due to non-retryable error`, {
-            operationName,
-            attempt,
-            error: error instanceof Error ? error.message : String(error),
-          });
+          this.logger.debug(
+            `Not retrying operation '${operationName}' due to non-retryable error`,
+            {
+              operationName,
+              attempt,
+              error: error instanceof Error ? error.message : String(error),
+            },
+          );
           break;
         }
 
         if (attempt === retryConfig.maxAttempts) {
-          this.logger.error(`Operation '${operationName}' failed after ${retryConfig.maxAttempts} attempts`, {
-            operationName,
-            totalAttempts: retryConfig.maxAttempts,
-            finalError: error instanceof Error ? error.message : String(error),
-          });
+          this.logger.error(
+            `Operation '${operationName}' failed after ${retryConfig.maxAttempts} attempts`,
+            {
+              operationName,
+              totalAttempts: retryConfig.maxAttempts,
+              finalError: error instanceof Error ? error.message : String(error),
+            },
+          );
           break;
         }
 
@@ -191,7 +203,7 @@ export class GoRulesResilienceService {
   async withCircuitBreaker<T>(
     operation: () => Promise<T>,
     operationName: string,
-    config?: Partial<CircuitBreakerConfig>
+    config?: Partial<CircuitBreakerConfig>,
   ): Promise<T> {
     const circuitConfig = this.getCircuitBreakerConfig(config);
     const breaker = this.getOrCreateCircuitBreaker(operationName, circuitConfig);
@@ -209,7 +221,7 @@ export class GoRulesResilienceService {
           failureCount: breaker.failureCount,
           lastFailureTime: breaker.lastFailureTime,
         },
-        true
+        true,
       );
     }
 
@@ -218,19 +230,19 @@ export class GoRulesResilienceService {
     try {
       // Execute with timeout
       const result = await this.executeWithTimeout(operation, circuitConfig.requestTimeout);
-      
+
       // Success
       breaker.successCount++;
       breaker.totalSuccesses++;
       breaker.lastSuccessTime = new Date();
-      
+
       // Reset failure count on success
       if (breaker.state === CircuitBreakerState.HALF_OPEN) {
         if (breaker.successCount >= circuitConfig.successThreshold) {
           breaker.state = CircuitBreakerState.CLOSED;
           breaker.failureCount = 0;
           breaker.successCount = 0;
-          
+
           this.logger.log(`Circuit breaker CLOSED for operation '${operationName}'`, {
             operationName,
             successCount: breaker.successCount,
@@ -246,13 +258,15 @@ export class GoRulesResilienceService {
       breaker.failureCount++;
       breaker.totalFailures++;
       breaker.lastFailureTime = new Date();
-      
+
       // Check if we should open the circuit
-      if (breaker.state === CircuitBreakerState.CLOSED && 
-          breaker.failureCount >= circuitConfig.failureThreshold) {
+      if (
+        breaker.state === CircuitBreakerState.CLOSED &&
+        breaker.failureCount >= circuitConfig.failureThreshold
+      ) {
         breaker.state = CircuitBreakerState.OPEN;
         breaker.successCount = 0;
-        
+
         this.logger.warn(`Circuit breaker OPENED for operation '${operationName}'`, {
           operationName,
           failureCount: breaker.failureCount,
@@ -261,11 +275,14 @@ export class GoRulesResilienceService {
       } else if (breaker.state === CircuitBreakerState.HALF_OPEN) {
         breaker.state = CircuitBreakerState.OPEN;
         breaker.successCount = 0;
-        
-        this.logger.warn(`Circuit breaker returned to OPEN state for operation '${operationName}'`, {
-          operationName,
-          failureCount: breaker.failureCount,
-        });
+
+        this.logger.warn(
+          `Circuit breaker returned to OPEN state for operation '${operationName}'`,
+          {
+            operationName,
+            failureCount: breaker.failureCount,
+          },
+        );
       }
 
       throw error;
@@ -278,15 +295,15 @@ export class GoRulesResilienceService {
   async withRateLimit<T>(
     operation: () => Promise<T>,
     operationName: string,
-    config?: Partial<RateLimiterConfig>
+    config?: Partial<RateLimiterConfig>,
   ): Promise<T> {
     const rateLimitConfig = this.getRateLimiterConfig(config);
     const limiter = this.getOrCreateRateLimiter(operationName, rateLimitConfig);
 
     // Clean up old requests
     const now = Date.now();
-    limiter.requests = limiter.requests.filter(req => 
-      now - req.timestamp < rateLimitConfig.windowSize
+    limiter.requests = limiter.requests.filter(
+      (req) => now - req.timestamp < rateLimitConfig.windowSize,
     );
 
     // Check if we're at the limit
@@ -302,11 +319,14 @@ export class GoRulesResilienceService {
               maxRequests: rateLimitConfig.maxRequests,
               windowSize: rateLimitConfig.windowSize,
             },
-            true
+            true,
           );
 
         case 'queue':
-          if (limiter.requests.length >= (rateLimitConfig.maxQueueSize || rateLimitConfig.maxRequests * 2)) {
+          if (
+            limiter.requests.length >=
+            (rateLimitConfig.maxQueueSize || rateLimitConfig.maxRequests * 2)
+          ) {
             throw new GoRulesException(
               GoRulesErrorCode.RATE_LIMIT_EXCEEDED,
               `Rate limit queue full for operation '${operationName}'`,
@@ -315,28 +335,32 @@ export class GoRulesResilienceService {
                 queueSize: limiter.requests.length,
                 maxQueueSize: rateLimitConfig.maxQueueSize,
               },
-              true
+              true,
             );
           }
-          
+
           // Wait for a slot to become available
           await this.waitForRateLimitSlot(limiter, rateLimitConfig);
           break;
 
-        case 'delay':
-          // Calculate delay until next slot is available
-          { const oldestRequest = limiter.requests[0];
+        case 'delay': // Calculate delay until next slot is available
+        {
+          const oldestRequest = limiter.requests[0];
           const delay = rateLimitConfig.windowSize - (now - oldestRequest.timestamp);
-          
+
           if (delay > 0) {
-            this.logger.debug(`Rate limiting: delaying operation '${operationName}' by ${delay}ms`, {
-              operationName,
-              delay,
-            });
-            
+            this.logger.debug(
+              `Rate limiting: delaying operation '${operationName}' by ${delay}ms`,
+              {
+                operationName,
+                delay,
+              },
+            );
+
             await this.sleep(delay);
           }
-          break; }
+          break;
+        }
       }
     }
 
@@ -369,14 +393,14 @@ export class GoRulesResilienceService {
       retry?: Partial<RetryConfig>;
       circuitBreaker?: Partial<CircuitBreakerConfig>;
       rateLimit?: Partial<RateLimiterConfig>;
-    }
+    },
   ): Promise<T> {
     // Apply rate limiting first
     if (options?.rateLimit) {
       return this.withRateLimit(
         () => this.withCircuitBreakerAndRetry(operation, operationName, options),
         operationName,
-        options.rateLimit
+        options.rateLimit,
       );
     }
 
@@ -413,7 +437,7 @@ export class GoRulesResilienceService {
       breaker.state = CircuitBreakerState.CLOSED;
       breaker.failureCount = 0;
       breaker.successCount = 0;
-      
+
       this.logger.log(`Circuit breaker reset for operation '${operationName}'`, {
         operationName,
       });
@@ -425,7 +449,7 @@ export class GoRulesResilienceService {
    */
   getAllCircuitBreakerStats(): Record<string, CircuitBreakerStats> {
     const stats: Record<string, CircuitBreakerStats> = {};
-    
+
     this.circuitBreakers.forEach((breaker, operationName) => {
       stats[operationName] = {
         state: breaker.state,
@@ -451,13 +475,13 @@ export class GoRulesResilienceService {
     options?: {
       retry?: Partial<RetryConfig>;
       circuitBreaker?: Partial<CircuitBreakerConfig>;
-    }
+    },
   ): Promise<T> {
     if (options?.circuitBreaker) {
       return this.withCircuitBreaker(
         () => this.withRetry(operation, options?.retry, operationName),
         operationName,
-        options.circuitBreaker
+        options.circuitBreaker,
       );
     }
 
@@ -473,7 +497,7 @@ export class GoRulesResilienceService {
    */
   private getRetryConfig(config?: Partial<RetryConfig>): RetryConfig {
     const goRulesConfig = this.configService.getConfig();
-    
+
     return {
       maxAttempts: config?.maxAttempts ?? goRulesConfig.retryAttempts ?? 3,
       baseDelay: config?.baseDelay ?? 100,
@@ -489,7 +513,7 @@ export class GoRulesResilienceService {
    */
   private getCircuitBreakerConfig(config?: Partial<CircuitBreakerConfig>): CircuitBreakerConfig {
     const goRulesConfig = this.configService.getConfig();
-    
+
     return {
       failureThreshold: config?.failureThreshold ?? 5,
       resetTimeout: config?.resetTimeout ?? 60000, // 1 minute
@@ -516,12 +540,12 @@ export class GoRulesResilienceService {
   private calculateDelay(attempt: number, config: RetryConfig): number {
     const exponentialDelay = Math.min(
       config.baseDelay * Math.pow(config.backoffMultiplier, attempt),
-      config.maxDelay
+      config.maxDelay,
     );
 
     // Add jitter
     const jitter = exponentialDelay * config.jitterFactor * Math.random();
-    
+
     return Math.floor(exponentialDelay + jitter);
   }
 
@@ -540,8 +564,9 @@ export class GoRulesResilienceService {
     }
 
     // Check error message for retryable patterns
-    const errorMessage = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-    
+    const errorMessage =
+      error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+
     return (
       errorMessage.includes('timeout') ||
       errorMessage.includes('network') ||
@@ -557,7 +582,11 @@ export class GoRulesResilienceService {
   /**
    * Wrap retry error with additional context
    */
-  private wrapRetryError(error: unknown, maxAttempts: number, operationName: string): GoRulesException {
+  private wrapRetryError(
+    error: unknown,
+    maxAttempts: number,
+    operationName: string,
+  ): GoRulesException {
     if (error instanceof GoRulesException) {
       return new GoRulesException(
         error.code,
@@ -568,19 +597,21 @@ export class GoRulesResilienceService {
           maxAttempts,
           originalError: error,
         },
-        error.retryable
+        error.retryable,
       );
     }
 
     return new GoRulesException(
       GoRulesErrorCode.INTERNAL_ERROR,
-      `Operation failed after ${maxAttempts} attempts: ${error instanceof Error ? error.message : String(error)}`,
+      `Operation failed after ${maxAttempts} attempts: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
       {
         operationName,
         maxAttempts,
         originalError: error,
       },
-      false
+      false,
     );
   }
 
@@ -589,7 +620,7 @@ export class GoRulesResilienceService {
    */
   private getOrCreateCircuitBreaker(operationName: string, config: CircuitBreakerConfig) {
     let breaker = this.circuitBreakers.get(operationName);
-    
+
     if (!breaker) {
       breaker = {
         state: CircuitBreakerState.CLOSED,
@@ -600,7 +631,7 @@ export class GoRulesResilienceService {
         totalSuccesses: 0,
         config,
       };
-      
+
       this.circuitBreakers.set(operationName, breaker);
     }
 
@@ -613,11 +644,11 @@ export class GoRulesResilienceService {
   private updateCircuitBreakerState(breaker: any): void {
     if (breaker.state === CircuitBreakerState.OPEN && breaker.lastFailureTime) {
       const timeSinceLastFailure = Date.now() - breaker.lastFailureTime.getTime();
-      
+
       if (timeSinceLastFailure >= breaker.config.resetTimeout) {
         breaker.state = CircuitBreakerState.HALF_OPEN;
         breaker.successCount = 0;
-        
+
         this.logger.debug(`Circuit breaker moved to HALF_OPEN state`, {
           timeSinceLastFailure,
           resetTimeout: breaker.config.resetTimeout,
@@ -631,13 +662,13 @@ export class GoRulesResilienceService {
    */
   private getOrCreateRateLimiter(operationName: string, config: RateLimiterConfig) {
     let limiter = this.rateLimiters.get(operationName);
-    
+
     if (!limiter) {
       limiter = {
         requests: [],
         config,
       };
-      
+
       this.rateLimiters.set(operationName, limiter);
     }
 
@@ -651,8 +682,8 @@ export class GoRulesResilienceService {
     return new Promise((resolve, reject) => {
       const checkSlot = () => {
         const now = Date.now();
-        limiter.requests = limiter.requests.filter((req: any) => 
-          now - req.timestamp < config.windowSize
+        limiter.requests = limiter.requests.filter(
+          (req: any) => now - req.timestamp < config.windowSize,
         );
 
         if (limiter.requests.length < config.maxRequests) {
@@ -670,26 +701,25 @@ export class GoRulesResilienceService {
   /**
    * Execute operation with timeout
    */
-  private async executeWithTimeout<T>(
-    operation: () => Promise<T>,
-    timeoutMs: number
-  ): Promise<T> {
+  private async executeWithTimeout<T>(operation: () => Promise<T>, timeoutMs: number): Promise<T> {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
-        reject(new GoRulesException(
-          GoRulesErrorCode.TIMEOUT,
-          `Operation timeout after ${timeoutMs}ms`,
-          { timeout: timeoutMs },
-          true
-        ));
+        reject(
+          new GoRulesException(
+            GoRulesErrorCode.TIMEOUT,
+            `Operation timeout after ${timeoutMs}ms`,
+            { timeout: timeoutMs },
+            true,
+          ),
+        );
       }, timeoutMs);
 
       operation()
-        .then(result => {
+        .then((result) => {
           clearTimeout(timer);
           resolve(result);
         })
-        .catch(error => {
+        .catch((error) => {
           clearTimeout(timer);
           reject(error);
         });
@@ -700,6 +730,6 @@ export class GoRulesResilienceService {
    * Sleep for specified milliseconds
    */
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

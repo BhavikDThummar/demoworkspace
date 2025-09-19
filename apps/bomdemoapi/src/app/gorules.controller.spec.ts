@@ -21,9 +21,7 @@ describe('GoRulesController', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [GoRulesController],
-      providers: [
-        { provide: BomDemoGoRulesService, useValue: mockService },
-      ],
+      providers: [{ provide: BomDemoGoRulesService, useValue: mockService }],
     }).compile();
 
     controller = module.get<GoRulesController>(GoRulesController);
@@ -75,7 +73,7 @@ describe('GoRulesController', () => {
       const goRulesError = new GoRulesException(
         GoRulesErrorCode.VALIDATION_ERROR,
         'Invalid BOM data',
-        { field: 'totalValue' }
+        { field: 'totalValue' },
       );
 
       service.validateBom.mockRejectedValue(goRulesError);

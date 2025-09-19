@@ -10,7 +10,6 @@ import { AppModule } from './app/app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  debugger;
   const configService = app.get(ConfigService);
 
   // Global prefix from environment or default

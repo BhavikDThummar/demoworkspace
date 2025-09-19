@@ -1,6 +1,6 @@
 /**
  * Engine Status Dashboard Example
- * 
+ *
  * This example demonstrates real-time monitoring of the Minimal GoRules Engine
  * status, including health checks, cache statistics, and performance metrics.
  */
@@ -13,7 +13,7 @@ import { useEngineStatus } from '../hooks/use-engine-status.js';
 // Configuration for the GoRules service
 const config = {
   apiBaseUrl: 'http://localhost:3000/api',
-  timeout: 10000
+  timeout: 10000,
 };
 
 /**
@@ -27,7 +27,7 @@ function CacheManagement(): JSX.Element {
   const handleRefreshCache = async () => {
     setLoading(true);
     setMessage(null);
-    
+
     try {
       const result = await service.refreshCache();
       setMessage(`Cache refreshed: ${result.refreshResult.refreshedRules.length} rules updated`);
@@ -41,10 +41,12 @@ function CacheManagement(): JSX.Element {
   const handleForceRefresh = async () => {
     setLoading(true);
     setMessage(null);
-    
+
     try {
       const result = await service.forceRefreshCache();
-      setMessage(`Force refresh completed: ${result.status.rulesLoaded} rules loaded in ${result.status.loadTime}ms`);
+      setMessage(
+        `Force refresh completed: ${result.status.rulesLoaded} rules loaded in ${result.status.loadTime}ms`,
+      );
     } catch (error) {
       setMessage(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
@@ -55,11 +57,13 @@ function CacheManagement(): JSX.Element {
   const handleCheckVersions = async () => {
     setLoading(true);
     setMessage(null);
-    
+
     try {
       const result = await service.checkVersions();
       const { outdatedRules, upToDateRules, totalRules } = result.versionCheck;
-      setMessage(`Version check: ${outdatedRules.length} outdated, ${upToDateRules.length} up-to-date (${totalRules} total)`);
+      setMessage(
+        `Version check: ${outdatedRules.length} outdated, ${upToDateRules.length} up-to-date (${totalRules} total)`,
+      );
     } catch (error) {
       setMessage(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
@@ -68,14 +72,16 @@ function CacheManagement(): JSX.Element {
   };
 
   return (
-    <div style={{ 
-      padding: '16px', 
-      border: '1px solid #ddd', 
-      borderRadius: '4px',
-      backgroundColor: '#f9f9f9'
-    }}>
+    <div
+      style={{
+        padding: '16px',
+        border: '1px solid #ddd',
+        borderRadius: '4px',
+        backgroundColor: '#f9f9f9',
+      }}
+    >
       <h4 style={{ margin: '0 0 16px 0' }}>Cache Management</h4>
-      
+
       <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
         <button
           onClick={handleRefreshCache}
@@ -86,12 +92,12 @@ function CacheManagement(): JSX.Element {
             color: 'white',
             border: 'none',
             borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer'
+            cursor: loading ? 'not-allowed' : 'pointer',
           }}
         >
           Refresh Cache
         </button>
-        
+
         <button
           onClick={handleForceRefresh}
           disabled={loading}
@@ -101,12 +107,12 @@ function CacheManagement(): JSX.Element {
             color: 'white',
             border: 'none',
             borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer'
+            cursor: loading ? 'not-allowed' : 'pointer',
           }}
         >
           Force Refresh
         </button>
-        
+
         <button
           onClick={handleCheckVersions}
           disabled={loading}
@@ -116,7 +122,7 @@ function CacheManagement(): JSX.Element {
             color: 'white',
             border: 'none',
             borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer'
+            cursor: loading ? 'not-allowed' : 'pointer',
           }}
         >
           Check Versions
@@ -124,13 +130,15 @@ function CacheManagement(): JSX.Element {
       </div>
 
       {message && (
-        <div style={{
-          padding: '8px',
-          backgroundColor: message.startsWith('Error') ? '#f8d7da' : '#d4edda',
-          border: `1px solid ${message.startsWith('Error') ? '#dc3545' : '#28a745'}`,
-          borderRadius: '4px',
-          fontSize: '14px'
-        }}>
+        <div
+          style={{
+            padding: '8px',
+            backgroundColor: message.startsWith('Error') ? '#f8d7da' : '#d4edda',
+            border: `1px solid ${message.startsWith('Error') ? '#dc3545' : '#28a745'}`,
+            borderRadius: '4px',
+            fontSize: '14px',
+          }}
+        >
           {message}
         </div>
       )}
@@ -153,26 +161,34 @@ function PerformanceMetrics(): JSX.Element {
     const { size, maxSize, hitRate } = status.cache;
     const utilization = (size / maxSize) * 100;
     const efficiency = hitRate * 100;
-    
+
     return {
       utilization: utilization.toFixed(1),
       efficiency: efficiency.toFixed(1),
-      status: efficiency > 90 ? 'excellent' : efficiency > 70 ? 'good' : 'needs-improvement'
+      status: efficiency > 90 ? 'excellent' : efficiency > 70 ? 'good' : 'needs-improvement',
     };
   };
 
   const cacheMetrics = calculateCacheEfficiency();
 
   return (
-    <div style={{ 
-      padding: '16px', 
-      border: '1px solid #ddd', 
-      borderRadius: '4px',
-      backgroundColor: '#f9f9f9'
-    }}>
+    <div
+      style={{
+        padding: '16px',
+        border: '1px solid #ddd',
+        borderRadius: '4px',
+        backgroundColor: '#f9f9f9',
+      }}
+    >
       <h4 style={{ margin: '0 0 16px 0' }}>Performance Metrics</h4>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '16px',
+        }}
+      >
         {/* Cache Utilization */}
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>
@@ -186,12 +202,18 @@ function PerformanceMetrics(): JSX.Element {
 
         {/* Cache Hit Rate */}
         <div style={{ textAlign: 'center' }}>
-          <div style={{ 
-            fontSize: '24px', 
-            fontWeight: 'bold', 
-            color: cacheMetrics.status === 'excellent' ? '#28a745' : 
-                   cacheMetrics.status === 'good' ? '#ffc107' : '#dc3545'
-          }}>
+          <div
+            style={{
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color:
+                cacheMetrics.status === 'excellent'
+                  ? '#28a745'
+                  : cacheMetrics.status === 'good'
+                  ? '#ffc107'
+                  : '#dc3545',
+            }}
+          >
             {cacheMetrics.efficiency}%
           </div>
           <div style={{ fontSize: '12px', color: '#666' }}>Hit Rate</div>
@@ -262,9 +284,9 @@ function SystemAlerts(): JSX.Element {
 
       // Check for initialization errors
       if (status.initialization.errors && status.initialization.errors.length > 0) {
-        alerts.push({ 
-          type: 'error', 
-          message: `Initialization errors: ${status.initialization.errors.join(', ')}` 
+        alerts.push({
+          type: 'error',
+          message: `Initialization errors: ${status.initialization.errors.join(', ')}`,
         });
       }
     }
@@ -276,13 +298,15 @@ function SystemAlerts(): JSX.Element {
 
   if (alerts.length === 0) {
     return (
-      <div style={{ 
-        padding: '16px', 
-        border: '1px solid #28a745', 
-        borderRadius: '4px',
-        backgroundColor: '#d4edda',
-        color: '#155724'
-      }}>
+      <div
+        style={{
+          padding: '16px',
+          border: '1px solid #28a745',
+          borderRadius: '4px',
+          backgroundColor: '#d4edda',
+          color: '#155724',
+        }}
+      >
         <h4 style={{ margin: '0 0 8px 0' }}>System Status</h4>
         <div>✅ All systems operational</div>
       </div>
@@ -290,31 +314,30 @@ function SystemAlerts(): JSX.Element {
   }
 
   return (
-    <div style={{ 
-      padding: '16px', 
-      border: '1px solid #ddd', 
-      borderRadius: '4px',
-      backgroundColor: '#f9f9f9'
-    }}>
+    <div
+      style={{
+        padding: '16px',
+        border: '1px solid #ddd',
+        borderRadius: '4px',
+        backgroundColor: '#f9f9f9',
+      }}
+    >
       <h4 style={{ margin: '0 0 16px 0' }}>System Alerts</h4>
-      
+
       {alerts.map((alert, index) => (
         <div
           key={index}
           style={{
             padding: '8px 12px',
             margin: '4px 0',
-            backgroundColor: 
-              alert.type === 'error' ? '#f8d7da' :
-              alert.type === 'warning' ? '#fff3cd' : '#d1ecf1',
+            backgroundColor:
+              alert.type === 'error' ? '#f8d7da' : alert.type === 'warning' ? '#fff3cd' : '#d1ecf1',
             border: `1px solid ${
-              alert.type === 'error' ? '#dc3545' :
-              alert.type === 'warning' ? '#ffc107' : '#17a2b8'
+              alert.type === 'error' ? '#dc3545' : alert.type === 'warning' ? '#ffc107' : '#17a2b8'
             }`,
             borderRadius: '4px',
-            color: 
-              alert.type === 'error' ? '#721c24' :
-              alert.type === 'warning' ? '#856404' : '#0c5460'
+            color:
+              alert.type === 'error' ? '#721c24' : alert.type === 'warning' ? '#856404' : '#0c5460',
           }}
         >
           <span style={{ marginRight: '8px' }}>
@@ -336,9 +359,16 @@ function EngineStatusDashboardExample(): JSX.Element {
 
   return (
     <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px',
+        }}
+      >
         <h1>Engine Status Dashboard</h1>
-        
+
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <label>
             Refresh Interval:
@@ -354,7 +384,7 @@ function EngineStatusDashboardExample(): JSX.Element {
               <option value={30000}>30 seconds</option>
             </select>
           </label>
-          
+
           <label>
             <input
               type="checkbox"
@@ -367,7 +397,14 @@ function EngineStatusDashboardExample(): JSX.Element {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '20px' }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '2fr 1fr',
+          gap: '20px',
+          marginBottom: '20px',
+        }}
+      >
         {/* Main Status */}
         <EngineStatus
           refreshInterval={refreshInterval}

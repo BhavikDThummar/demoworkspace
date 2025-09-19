@@ -21,7 +21,7 @@ describe('Engine Version Management Integration', () => {
       apiKey: 'test-api-key',
       projectId: 'test-project',
       cacheMaxSize: 100,
-      httpTimeout: 5000
+      httpTimeout: 5000,
     };
 
     engine = new MinimalGoRulesEngine(config);
@@ -41,7 +41,7 @@ describe('Engine Version Management Integration', () => {
               version: '1.0.0',
               tags: ['test'],
               lastModified: '2024-01-01T00:00:00Z',
-              content: Buffer.from('{"test": "rule1"}').toString('base64')
+              content: Buffer.from('{"test": "rule1"}').toString('base64'),
             },
             {
               id: 'rule2',
@@ -49,10 +49,10 @@ describe('Engine Version Management Integration', () => {
               version: '1.0.0',
               tags: ['test'],
               lastModified: '2024-01-01T00:00:00Z',
-              content: Buffer.from('{"test": "rule2"}').toString('base64')
-            }
-          ]
-        })
+              content: Buffer.from('{"test": "rule2"}').toString('base64'),
+            },
+          ],
+        }),
       });
 
       // Initialize engine
@@ -70,7 +70,7 @@ describe('Engine Version Management Integration', () => {
                 version: '1.1.0', // Newer version
                 tags: ['test'],
                 lastModified: '2024-01-02T00:00:00Z',
-                content: Buffer.from('{"test": "rule1-updated"}').toString('base64')
+                content: Buffer.from('{"test": "rule1-updated"}').toString('base64'),
               },
               {
                 id: 'rule2',
@@ -78,10 +78,10 @@ describe('Engine Version Management Integration', () => {
                 version: '1.0.0', // Same version
                 tags: ['test'],
                 lastModified: '2024-01-01T00:00:00Z',
-                content: Buffer.from('{"test": "rule2"}').toString('base64')
-              }
-            ]
-          })
+                content: Buffer.from('{"test": "rule2"}').toString('base64'),
+              },
+            ],
+          }),
         })
         // Mock individual rule loads for detailed comparison
         .mockResolvedValueOnce({
@@ -92,16 +92,16 @@ describe('Engine Version Management Integration', () => {
             version: '1.1.0',
             tags: ['test'],
             lastModified: '2024-01-02T00:00:00Z',
-            content: Buffer.from('{"test": "rule1-updated"}').toString('base64')
-          })
+            content: Buffer.from('{"test": "rule1-updated"}').toString('base64'),
+          }),
         });
 
       const comparisons = await engine.compareVersions(['rule1', 'rule2']);
 
       expect(comparisons).toHaveLength(2);
-      
-      const rule1Comparison = comparisons.find(c => c.ruleId === 'rule1');
-      const rule2Comparison = comparisons.find(c => c.ruleId === 'rule2');
+
+      const rule1Comparison = comparisons.find((c) => c.ruleId === 'rule1');
+      const rule2Comparison = comparisons.find((c) => c.ruleId === 'rule2');
 
       expect(rule1Comparison).toBeDefined();
       expect(rule1Comparison!.needsUpdate).toBe(true);
@@ -126,10 +126,10 @@ describe('Engine Version Management Integration', () => {
               version: '1.0.0',
               tags: ['test'],
               lastModified: '2024-01-01T00:00:00Z',
-              content: Buffer.from('{"test": "rule1"}').toString('base64')
-            }
-          ]
-        })
+              content: Buffer.from('{"test": "rule1"}').toString('base64'),
+            },
+          ],
+        }),
       });
 
       await engine.initialize();
@@ -146,10 +146,10 @@ describe('Engine Version Management Integration', () => {
                 version: '2.0.0', // Major version change
                 tags: ['test'],
                 lastModified: '2024-01-02T00:00:00Z',
-                content: Buffer.from('{"test": "rule1-major-update"}').toString('base64')
-              }
-            ]
-          })
+                content: Buffer.from('{"test": "rule1-major-update"}').toString('base64'),
+              },
+            ],
+          }),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -159,8 +159,8 @@ describe('Engine Version Management Integration', () => {
             version: '2.0.0',
             tags: ['test'],
             lastModified: '2024-01-02T00:00:00Z',
-            content: Buffer.from('{"test": "rule1-major-update"}').toString('base64')
-          })
+            content: Buffer.from('{"test": "rule1-major-update"}').toString('base64'),
+          }),
         });
 
       const conflicts = await engine.detectVersionConflicts(['rule1']);
@@ -172,7 +172,7 @@ describe('Engine Version Management Integration', () => {
         cloudVersion: '2.0.0',
         localLastModified: new Date('2024-01-01T00:00:00Z').getTime(),
         cloudLastModified: new Date('2024-01-02T00:00:00Z').getTime(),
-        conflictType: 'version-mismatch'
+        conflictType: 'version-mismatch',
       });
     });
   });
@@ -190,10 +190,10 @@ describe('Engine Version Management Integration', () => {
               version: '1.0.0',
               tags: ['test'],
               lastModified: '2024-01-01T00:00:00Z',
-              content: Buffer.from('{"test": "rule1-old"}').toString('base64')
-            }
-          ]
-        })
+              content: Buffer.from('{"test": "rule1-old"}').toString('base64'),
+            },
+          ],
+        }),
       });
 
       await engine.initialize();
@@ -215,10 +215,10 @@ describe('Engine Version Management Integration', () => {
                 version: '1.1.0',
                 tags: ['test'],
                 lastModified: '2024-01-02T00:00:00Z',
-                content: Buffer.from('{"test": "rule1-new"}').toString('base64')
-              }
-            ]
-          })
+                content: Buffer.from('{"test": "rule1-new"}').toString('base64'),
+              },
+            ],
+          }),
         })
         // Individual rule load for comparison
         .mockResolvedValueOnce({
@@ -229,8 +229,8 @@ describe('Engine Version Management Integration', () => {
             version: '1.1.0',
             tags: ['test'],
             lastModified: '2024-01-02T00:00:00Z',
-            content: Buffer.from('{"test": "rule1-new"}').toString('base64')
-          })
+            content: Buffer.from('{"test": "rule1-new"}').toString('base64'),
+          }),
         })
         // Rule refresh
         .mockResolvedValueOnce({
@@ -241,13 +241,13 @@ describe('Engine Version Management Integration', () => {
             version: '1.1.0',
             tags: ['test'],
             lastModified: '2024-01-02T00:00:00Z',
-            content: Buffer.from('{"test": "rule1-new"}').toString('base64')
-          })
+            content: Buffer.from('{"test": "rule1-new"}').toString('base64'),
+          }),
         });
 
       const result = await engine.autoRefreshCache(['rule1'], {
         strategy: 'cloud-wins',
-        createSnapshot: false
+        createSnapshot: false,
       });
 
       expect(result.processed).toEqual(['rule1']);
@@ -272,10 +272,10 @@ describe('Engine Version Management Integration', () => {
               version: '1.0.0',
               tags: ['test'],
               lastModified: '2024-01-02T00:00:00Z', // Local is newer
-              content: Buffer.from('{"test": "rule1-local"}').toString('base64')
-            }
-          ]
-        })
+              content: Buffer.from('{"test": "rule1-local"}').toString('base64'),
+            },
+          ],
+        }),
       });
 
       await engine.initialize();
@@ -292,10 +292,10 @@ describe('Engine Version Management Integration', () => {
                 version: '1.1.0', // Different version
                 tags: ['test'],
                 lastModified: '2024-01-01T00:00:00Z', // But older timestamp
-                content: Buffer.from('{"test": "rule1-cloud"}').toString('base64')
-              }
-            ]
-          })
+                content: Buffer.from('{"test": "rule1-cloud"}').toString('base64'),
+              },
+            ],
+          }),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -305,13 +305,13 @@ describe('Engine Version Management Integration', () => {
             version: '1.1.0',
             tags: ['test'],
             lastModified: '2024-01-01T00:00:00Z',
-            content: Buffer.from('{"test": "rule1-cloud"}').toString('base64')
-          })
+            content: Buffer.from('{"test": "rule1-cloud"}').toString('base64'),
+          }),
         });
 
       const result = await engine.autoRefreshCache(['rule1'], {
         strategy: 'newer-wins',
-        createSnapshot: false
+        createSnapshot: false,
       });
 
       expect(result.processed).toEqual(['rule1']);
@@ -337,10 +337,10 @@ describe('Engine Version Management Integration', () => {
               version: '1.0.0',
               tags: ['test'],
               lastModified: '2024-01-01T00:00:00Z',
-              content: Buffer.from('{"test": "rule1-old"}').toString('base64')
-            }
-          ]
-        })
+              content: Buffer.from('{"test": "rule1-old"}').toString('base64'),
+            },
+          ],
+        }),
       });
 
       await engine.initialize();
@@ -354,13 +354,13 @@ describe('Engine Version Management Integration', () => {
           version: '1.2.0',
           tags: ['test'],
           lastModified: '2024-01-03T00:00:00Z',
-          content: Buffer.from('{"test": "rule1-manual-update"}').toString('base64')
-        })
+          content: Buffer.from('{"test": "rule1-manual-update"}').toString('base64'),
+        }),
       });
 
       const result = await engine.invalidateRules(['rule1'], {
         createSnapshot: false,
-        validateAfterUpdate: true
+        validateAfterUpdate: true,
       });
 
       expect(result.processed).toEqual(['rule1']);
@@ -384,10 +384,10 @@ describe('Engine Version Management Integration', () => {
               version: '1.0.0',
               tags: ['test'],
               lastModified: '2024-01-01T00:00:00Z',
-              content: Buffer.from('{"test": "rule1"}').toString('base64')
-            }
-          ]
-        })
+              content: Buffer.from('{"test": "rule1"}').toString('base64'),
+            },
+          ],
+        }),
       });
 
       await engine.initialize();
@@ -404,14 +404,14 @@ describe('Engine Version Management Integration', () => {
             version: '1.1.0',
             tags: ['test'],
             lastModified: '2024-01-02T00:00:00Z',
-            content: Buffer.from('{"test": "rule1-retry-success"}').toString('base64')
-          })
+            content: Buffer.from('{"test": "rule1-retry-success"}').toString('base64'),
+          }),
         });
 
       const result = await engine.invalidateRules(['rule1'], {
         createSnapshot: false,
         maxRetries: 3,
-        retryDelay: 10
+        retryDelay: 10,
       });
 
       expect(result.processed).toEqual(['rule1']);
@@ -437,10 +437,10 @@ describe('Engine Version Management Integration', () => {
               version: '1.0.0',
               tags: ['test'],
               lastModified: '2024-01-01T00:00:00Z',
-              content: Buffer.from('{"test": "rule1-original"}').toString('base64')
-            }
-          ]
-        })
+              content: Buffer.from('{"test": "rule1-original"}').toString('base64'),
+            },
+          ],
+        }),
       });
 
       await engine.initialize();
@@ -463,8 +463,8 @@ describe('Engine Version Management Integration', () => {
           version: '1.1.0',
           tags: ['test'],
           lastModified: '2024-01-02T00:00:00Z',
-          content: Buffer.from('{"test": "rule1-updated"}').toString('base64')
-        })
+          content: Buffer.from('{"test": "rule1-updated"}').toString('base64'),
+        }),
       });
 
       // Update rule
@@ -495,7 +495,7 @@ describe('Engine Version Management Integration', () => {
               version: '1.0.0',
               tags: ['test'],
               lastModified: '2024-01-01T00:00:00Z',
-              content: Buffer.from('{"test": "rule1"}').toString('base64')
+              content: Buffer.from('{"test": "rule1"}').toString('base64'),
             },
             {
               id: 'rule2',
@@ -503,10 +503,10 @@ describe('Engine Version Management Integration', () => {
               version: '1.0.0',
               tags: ['test'],
               lastModified: '2024-01-01T00:00:00Z',
-              content: Buffer.from('{"test": "rule2"}').toString('base64')
-            }
-          ]
-        })
+              content: Buffer.from('{"test": "rule2"}').toString('base64'),
+            },
+          ],
+        }),
       });
 
       await engine.initialize();
@@ -549,10 +549,10 @@ describe('Engine Version Management Integration', () => {
               version: '1.0.0',
               tags: ['test'],
               lastModified: '2024-01-01T00:00:00Z',
-              content: Buffer.from('{"test": "rule1"}').toString('base64')
-            }
-          ]
-        })
+              content: Buffer.from('{"test": "rule1"}').toString('base64'),
+            },
+          ],
+        }),
       });
 
       await engine.initialize();
@@ -560,9 +560,7 @@ describe('Engine Version Management Integration', () => {
       // Mock network error
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-      await expect(engine.compareVersions(['rule1'])).rejects.toThrow(
-        MinimalGoRulesError
-      );
+      await expect(engine.compareVersions(['rule1'])).rejects.toThrow(MinimalGoRulesError);
     });
 
     it('should handle API errors gracefully', async () => {
@@ -577,10 +575,10 @@ describe('Engine Version Management Integration', () => {
               version: '1.0.0',
               tags: ['test'],
               lastModified: '2024-01-01T00:00:00Z',
-              content: Buffer.from('{"test": "rule1"}').toString('base64')
-            }
-          ]
-        })
+              content: Buffer.from('{"test": "rule1"}').toString('base64'),
+            },
+          ],
+        }),
       });
 
       await engine.initialize();
@@ -589,32 +587,24 @@ describe('Engine Version Management Integration', () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        statusText: 'Not Found'
+        statusText: 'Not Found',
       });
 
-      await expect(engine.detectVersionConflicts(['rule1'])).rejects.toThrow(
-        MinimalGoRulesError
-      );
+      await expect(engine.detectVersionConflicts(['rule1'])).rejects.toThrow(MinimalGoRulesError);
     });
 
     it('should require initialization before version operations', async () => {
       // Don't initialize engine
 
-      await expect(engine.compareVersions(['rule1'])).rejects.toThrow(
-        'Engine not initialized'
-      );
+      await expect(engine.compareVersions(['rule1'])).rejects.toThrow('Engine not initialized');
 
       await expect(engine.detectVersionConflicts(['rule1'])).rejects.toThrow(
-        'Engine not initialized'
+        'Engine not initialized',
       );
 
-      await expect(engine.autoRefreshCache(['rule1'])).rejects.toThrow(
-        'Engine not initialized'
-      );
+      await expect(engine.autoRefreshCache(['rule1'])).rejects.toThrow('Engine not initialized');
 
-      await expect(engine.invalidateRules(['rule1'])).rejects.toThrow(
-        'Engine not initialized'
-      );
+      await expect(engine.invalidateRules(['rule1'])).rejects.toThrow('Engine not initialized');
     });
   });
 
@@ -631,34 +621,39 @@ describe('Engine Version Management Integration', () => {
               version: '1.0.0',
               tags: ['test'],
               lastModified: '2024-01-01T00:00:00Z',
-              content: Buffer.from('{"test": "rule1"}').toString('base64')
-            }
-          ]
-        })
+              content: Buffer.from('{"test": "rule1"}').toString('base64'),
+            },
+          ],
+        }),
       });
 
       await engine.initialize();
 
       // Mock version operations with delays
       mockFetch
-        .mockImplementationOnce(() => 
-          new Promise(resolve => 
-            setTimeout(() => resolve({
-              ok: true,
-              json: async () => ({
-                rules: [
-                  {
-                    id: 'rule1',
-                    name: 'Test Rule 1',
-                    version: '1.1.0',
-                    tags: ['test'],
-                    lastModified: '2024-01-02T00:00:00Z',
-                    content: Buffer.from('{"test": "rule1-updated"}').toString('base64')
-                  }
-                ]
-              })
-            }), 50)
-          )
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve) =>
+              setTimeout(
+                () =>
+                  resolve({
+                    ok: true,
+                    json: async () => ({
+                      rules: [
+                        {
+                          id: 'rule1',
+                          name: 'Test Rule 1',
+                          version: '1.1.0',
+                          tags: ['test'],
+                          lastModified: '2024-01-02T00:00:00Z',
+                          content: Buffer.from('{"test": "rule1-updated"}').toString('base64'),
+                        },
+                      ],
+                    }),
+                  }),
+                50,
+              ),
+            ),
         )
         .mockResolvedValueOnce({
           ok: true,
@@ -668,8 +663,8 @@ describe('Engine Version Management Integration', () => {
             version: '1.1.0',
             tags: ['test'],
             lastModified: '2024-01-02T00:00:00Z',
-            content: Buffer.from('{"test": "rule1-updated"}').toString('base64')
-          })
+            content: Buffer.from('{"test": "rule1-updated"}').toString('base64'),
+          }),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -679,13 +674,13 @@ describe('Engine Version Management Integration', () => {
             version: '1.1.0',
             tags: ['test'],
             lastModified: '2024-01-02T00:00:00Z',
-            content: Buffer.from('{"test": "rule1-updated"}').toString('base64')
-          })
+            content: Buffer.from('{"test": "rule1-updated"}').toString('base64'),
+          }),
         });
 
       const result = await engine.autoRefreshCache(['rule1'], {
         strategy: 'cloud-wins',
-        createSnapshot: false
+        createSnapshot: false,
       });
 
       expect(result.processingTime).toBeGreaterThan(0);

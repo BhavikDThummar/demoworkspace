@@ -26,11 +26,7 @@ export interface GoRulesProviderProps {
 export function GoRulesProvider({ config, children }: GoRulesProviderProps) {
   const service = useGoRulesService(config);
 
-  return (
-    <GoRulesContext.Provider value={service}>
-      {children}
-    </GoRulesContext.Provider>
-  );
+  return <GoRulesContext.Provider value={service}>{children}</GoRulesContext.Provider>;
 }
 
 /**
@@ -38,10 +34,10 @@ export function GoRulesProvider({ config, children }: GoRulesProviderProps) {
  */
 export function useGoRulesContext(): ReactGoRulesService {
   const service = useContext(GoRulesContext);
-  
+
   if (!service) {
     throw new Error('useGoRulesContext must be used within a GoRulesProvider');
   }
-  
+
   return service;
 }

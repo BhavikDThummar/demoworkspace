@@ -72,7 +72,7 @@ export class ConnectionPoolError extends Error {
   constructor(
     message: string,
     public readonly code: string,
-    public override readonly cause?: Error
+    public override readonly cause?: Error,
   ) {
     super(message);
     this.name = 'ConnectionPoolError';
@@ -127,7 +127,7 @@ export class ConnectionPool {
     completedRequests: 0,
     failedRequests: 0,
     averageResponseTime: 0,
-    connectionReuses: 0
+    connectionReuses: 0,
   };
   private responseTimeSum = 0;
   private cleanupInterval?: NodeJS.Timeout;
@@ -137,11 +137,11 @@ export class ConnectionPool {
   constructor(
     baseUrl: string,
     defaultHeaders: Record<string, string> = {},
-    config: Partial<ConnectionPoolConfig> = {}
+    config: Partial<ConnectionPoolConfig> = {},
   ) {
     this.baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
     this.defaultHeaders = defaultHeaders;
-    
+
     this.config = {
       maxConnections: 10,
       maxRequestsPerConnection: 100,
@@ -153,9 +153,9 @@ export class ConnectionPool {
       retry: {
         maxRetries: 3,
         retryDelay: 1000,
-        retryOnTimeout: true
+        retryOnTimeout: true,
       },
-      ...config
+      ...config,
     };
 
     // Start cleanup interval
@@ -172,7 +172,7 @@ export class ConnectionPool {
         resolve,
         reject,
         timestamp: Date.now(),
-        retryCount: 0
+        retryCount: 0,
       };
 
       this.enqueueRequest(queuedRequest);
@@ -266,7 +266,7 @@ export class ConnectionPool {
 
       // Execute the request
       const response = await this.performRequest(connection, request.options);
-      
+
       // Update connection stats
       connection.requestCount++;
       connection.inUse = false;
@@ -286,7 +286,6 @@ export class ConnectionPool {
 
       // Process next request in queue
       this.processQueue();
-
     } catch (error) {
       // Release connection
       if (connection) {
@@ -301,7 +300,7 @@ export class ConnectionPool {
       // Handle retry logic
       if (this.shouldRetry(request, error as Error)) {
         request.retryCount++;
-        
+
         // Add delay before retry
         setTimeout(() => {
           this.enqueueRequest(request);
@@ -318,15 +317,15 @@ export class ConnectionPool {
    */
   private async performRequest(
     connection: PooledConnection,
-    options: PooledRequestOptions
+    options: PooledRequestOptions,
   ): Promise<PooledResponse> {
     const url = `${this.baseUrl}${options.path}`;
     const timeout = options.timeout || this.config.requestTimeout;
-    
+
     // Create abort controller for this request
     const controller = new AbortController();
     connection.controller = controller;
-    
+
     const timeoutId = setTimeout(() => {
       controller.abort();
     }, timeout);
@@ -334,13 +333,13 @@ export class ConnectionPool {
     try {
       const headers = {
         ...this.defaultHeaders,
-        ...options.headers
+        ...options.headers,
       };
 
       const requestOptions: RequestInit = {
         method: options.method,
         headers,
-        signal: controller.signal
+        signal: controller.signal,
       };
 
       if (options.body) {
@@ -367,19 +366,18 @@ export class ConnectionPool {
         statusText: response.statusText,
         headers: responseHeaders,
         body,
-        responseTime
+        responseTime,
       };
-
     } catch (error) {
       clearTimeout(timeoutId);
-      
+
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
           throw ConnectionPoolError.timeout(`request to ${options.path}`);
         }
         throw ConnectionPoolError.connectionFailed(error);
       }
-      
+
       throw new ConnectionPoolError('Unknown request error', 'UNKNOWN_ERROR');
     } finally {
       connection.controller = undefined;
@@ -391,8 +389,7 @@ export class ConnectionPool {
    */
   private getAvailableConnection(): PooledConnection | null {
     for (const connection of this.connections.values()) {
-      if (!connection.inUse && 
-          connection.requestCount < this.config.maxRequestsPerConnection) {
+      if (!connection.inUse && connection.requestCount < this.config.maxRequestsPerConnection) {
         this.stats.connectionReuses++;
         return connection;
       }
@@ -409,12 +406,12 @@ export class ConnectionPool {
     }
 
     const connectionId = `conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const connection: PooledConnection = {
       id: connectionId,
       requestCount: 0,
       lastUsed: Date.now(),
-      inUse: false
+      inUse: false,
     };
 
     this.connections.set(connectionId, connection);
@@ -452,15 +449,16 @@ export class ConnectionPool {
     }
 
     // Retry on timeout if configured
-    if (error instanceof ConnectionPoolError && 
-        error.code === 'TIMEOUT' && 
-        this.config.retry.retryOnTimeout) {
+    if (
+      error instanceof ConnectionPoolError &&
+      error.code === 'TIMEOUT' &&
+      this.config.retry.retryOnTimeout
+    ) {
       return true;
     }
 
     // Retry on connection failures
-    if (error instanceof ConnectionPoolError && 
-        error.code === 'CONNECTION_FAILED') {
+    if (error instanceof ConnectionPoolError && error.code === 'CONNECTION_FAILED') {
       return true;
     }
 
@@ -493,7 +491,7 @@ export class ConnectionPool {
       completedRequests: 0,
       failedRequests: 0,
       averageResponseTime: 0,
-      connectionReuses: 0
+      connectionReuses: 0,
     };
     this.responseTimeSum = 0;
   }
@@ -515,8 +513,7 @@ export class ConnectionPool {
     const connectionsToRemove: string[] = [];
 
     for (const [id, connection] of this.connections) {
-      if (!connection.inUse && 
-          (now - connection.lastUsed) > this.config.keepAliveTimeout) {
+      if (!connection.inUse && now - connection.lastUsed > this.config.keepAliveTimeout) {
         connectionsToRemove.push(id);
       }
     }

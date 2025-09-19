@@ -22,7 +22,7 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
       projectId: 'test-project',
       cacheMaxSize: 100,
       httpTimeout: 5000,
-      batchSize: 10
+      batchSize: 10,
     };
 
     engine = new MinimalGoRulesEngine(config);
@@ -38,32 +38,37 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
       // Mock successful API response
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          rules: [
-            {
-              id: 'rule1',
-              name: 'Test Rule 1',
-              version: '1.0.0',
-              tags: ['test', 'validation'],
-              lastModified: new Date().toISOString(),
-              content: Buffer.from(JSON.stringify({
-                conditions: [{ field: 'age', operator: 'gte', value: 18 }],
-                actions: [{ type: 'approve' }]
-              })).toString('base64')
-            },
-            {
-              id: 'rule2',
-              name: 'Test Rule 2',
-              version: '1.0.1',
-              tags: ['test', 'scoring'],
-              lastModified: new Date().toISOString(),
-              content: Buffer.from(JSON.stringify({
-                conditions: [{ field: 'income', operator: 'gt', value: 50000 }],
-                actions: [{ type: 'set', field: 'score', value: 100 }]
-              })).toString('base64')
-            }
-          ]
-        })
+        json: () =>
+          Promise.resolve({
+            rules: [
+              {
+                id: 'rule1',
+                name: 'Test Rule 1',
+                version: '1.0.0',
+                tags: ['test', 'validation'],
+                lastModified: new Date().toISOString(),
+                content: Buffer.from(
+                  JSON.stringify({
+                    conditions: [{ field: 'age', operator: 'gte', value: 18 }],
+                    actions: [{ type: 'approve' }],
+                  }),
+                ).toString('base64'),
+              },
+              {
+                id: 'rule2',
+                name: 'Test Rule 2',
+                version: '1.0.1',
+                tags: ['test', 'scoring'],
+                lastModified: new Date().toISOString(),
+                content: Buffer.from(
+                  JSON.stringify({
+                    conditions: [{ field: 'income', operator: 'gt', value: 50000 }],
+                    actions: [{ type: 'set', field: 'score', value: 100 }],
+                  }),
+                ).toString('base64'),
+              },
+            ],
+          }),
       });
 
       const status = await engine.initialize();
@@ -76,9 +81,9 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
-            'Authorization': 'Bearer test-api-key'
-          })
-        })
+            Authorization: 'Bearer test-api-key',
+          }),
+        }),
       );
     });
 
@@ -92,7 +97,7 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        statusText: 'Not Found'
+        statusText: 'Not Found',
       });
 
       await expect(engine.initialize()).rejects.toThrow(MinimalGoRulesError);
@@ -104,32 +109,37 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
       // Initialize engine with test rules
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          rules: [
-            {
-              id: 'age-validation',
-              name: 'Age Validation Rule',
-              version: '1.0.0',
-              tags: ['validation'],
-              lastModified: new Date().toISOString(),
-              content: Buffer.from(JSON.stringify({
-                conditions: [{ field: 'age', operator: 'gte', value: 18 }],
-                actions: [{ type: 'set', field: 'eligible', value: true }]
-              })).toString('base64')
-            },
-            {
-              id: 'income-scoring',
-              name: 'Income Scoring Rule',
-              version: '1.0.0',
-              tags: ['scoring'],
-              lastModified: new Date().toISOString(),
-              content: Buffer.from(JSON.stringify({
-                conditions: [{ field: 'income', operator: 'gt', value: 50000 }],
-                actions: [{ type: 'set', field: 'score', value: 100 }]
-              })).toString('base64')
-            }
-          ]
-        })
+        json: () =>
+          Promise.resolve({
+            rules: [
+              {
+                id: 'age-validation',
+                name: 'Age Validation Rule',
+                version: '1.0.0',
+                tags: ['validation'],
+                lastModified: new Date().toISOString(),
+                content: Buffer.from(
+                  JSON.stringify({
+                    conditions: [{ field: 'age', operator: 'gte', value: 18 }],
+                    actions: [{ type: 'set', field: 'eligible', value: true }],
+                  }),
+                ).toString('base64'),
+              },
+              {
+                id: 'income-scoring',
+                name: 'Income Scoring Rule',
+                version: '1.0.0',
+                tags: ['scoring'],
+                lastModified: new Date().toISOString(),
+                content: Buffer.from(
+                  JSON.stringify({
+                    conditions: [{ field: 'income', operator: 'gt', value: 50000 }],
+                    actions: [{ type: 'set', field: 'score', value: 100 }],
+                  }),
+                ).toString('base64'),
+              },
+            ],
+          }),
       });
 
       await engine.initialize();
@@ -140,8 +150,8 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
       const mockZenEngine = {
         evaluate: jest.fn().mockResolvedValue({
           result: { eligible: true },
-          performance: '5ms'
-        })
+          performance: '5ms',
+        }),
       };
 
       // Replace the engine's ZenEngine instance (this is a simplified mock)
@@ -155,16 +165,17 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
 
     it('should execute multiple rules in parallel', async () => {
       const mockZenEngine = {
-        evaluate: jest.fn()
+        evaluate: jest
+          .fn()
           .mockResolvedValueOnce({ result: { eligible: true }, performance: '5ms' })
-          .mockResolvedValueOnce({ result: { score: 100 }, performance: '3ms' })
+          .mockResolvedValueOnce({ result: { score: 100 }, performance: '3ms' }),
       };
 
       (engine as any).executionEngine.zenEngine = mockZenEngine;
 
       const result = await engine.executeRules(['age-validation', 'income-scoring'], {
         age: 25,
-        income: 60000
+        income: 60000,
       });
 
       expect(result.results.size).toBe(2);
@@ -177,8 +188,8 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
       const mockZenEngine = {
         evaluate: jest.fn().mockResolvedValue({
           result: { eligible: true },
-          performance: '5ms'
-        })
+          performance: '5ms',
+        }),
       };
 
       (engine as any).executionEngine.zenEngine = mockZenEngine;
@@ -191,13 +202,14 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
 
     it('should handle rule execution errors', async () => {
       const mockZenEngine = {
-        evaluate: jest.fn().mockRejectedValue(new Error('Rule execution failed'))
+        evaluate: jest.fn().mockRejectedValue(new Error('Rule execution failed')),
       };
 
       (engine as any).executionEngine.zenEngine = mockZenEngine;
 
-      await expect(engine.executeRule('age-validation', { age: 25 }))
-        .rejects.toThrow(MinimalGoRulesError);
+      await expect(engine.executeRule('age-validation', { age: 25 })).rejects.toThrow(
+        MinimalGoRulesError,
+      );
     });
 
     it('should validate rule existence', async () => {
@@ -214,18 +226,19 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
       // Initialize with test rules
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          rules: [
-            {
-              id: 'rule1',
-              name: 'Test Rule 1',
-              version: '1.0.0',
-              tags: ['test'],
-              lastModified: new Date().toISOString(),
-              content: Buffer.from(JSON.stringify({ test: 'rule' })).toString('base64')
-            }
-          ]
-        })
+        json: () =>
+          Promise.resolve({
+            rules: [
+              {
+                id: 'rule1',
+                name: 'Test Rule 1',
+                version: '1.0.0',
+                tags: ['test'],
+                lastModified: new Date().toISOString(),
+                content: Buffer.from(JSON.stringify({ test: 'rule' })).toString('base64'),
+              },
+            ],
+          }),
       });
 
       await engine.initialize();
@@ -266,18 +279,19 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
       // Initialize with test rules
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          rules: [
-            {
-              id: 'rule1',
-              name: 'Test Rule 1',
-              version: '1.0.0',
-              tags: ['test'],
-              lastModified: new Date().toISOString(),
-              content: Buffer.from(JSON.stringify({ test: 'rule' })).toString('base64')
-            }
-          ]
-        })
+        json: () =>
+          Promise.resolve({
+            rules: [
+              {
+                id: 'rule1',
+                name: 'Test Rule 1',
+                version: '1.0.0',
+                tags: ['test'],
+                lastModified: new Date().toISOString(),
+                content: Buffer.from(JSON.stringify({ test: 'rule' })).toString('base64'),
+              },
+            ],
+          }),
       });
 
       await engine.initialize();
@@ -287,18 +301,19 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
       // Mock version check response
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          rules: [
-            {
-              id: 'rule1',
-              name: 'Test Rule 1',
-              version: '2.0.0', // Updated version
-              tags: ['test'],
-              lastModified: new Date().toISOString(),
-              content: Buffer.from(JSON.stringify({ test: 'updated-rule' })).toString('base64')
-            }
-          ]
-        })
+        json: () =>
+          Promise.resolve({
+            rules: [
+              {
+                id: 'rule1',
+                name: 'Test Rule 1',
+                version: '2.0.0', // Updated version
+                tags: ['test'],
+                lastModified: new Date().toISOString(),
+                content: Buffer.from(JSON.stringify({ test: 'updated-rule' })).toString('base64'),
+              },
+            ],
+          }),
       });
 
       const versionCheck = await engine.checkVersions();
@@ -311,14 +326,15 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
       // Mock refresh response
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          id: 'rule1',
-          name: 'Test Rule 1',
-          version: '2.0.0',
-          tags: ['test'],
-          lastModified: new Date().toISOString(),
-          content: Buffer.from(JSON.stringify({ test: 'updated-rule' })).toString('base64')
-        })
+        json: () =>
+          Promise.resolve({
+            id: 'rule1',
+            name: 'Test Rule 1',
+            version: '2.0.0',
+            tags: ['test'],
+            lastModified: new Date().toISOString(),
+            content: Buffer.from(JSON.stringify({ test: 'updated-rule' })).toString('base64'),
+          }),
       });
 
       const refreshResult = await engine.refreshCache(['rule1']);
@@ -331,18 +347,19 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
       // Mock force refresh response
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          rules: [
-            {
-              id: 'rule1',
-              name: 'Test Rule 1',
-              version: '2.0.0',
-              tags: ['test'],
-              lastModified: new Date().toISOString(),
-              content: Buffer.from(JSON.stringify({ test: 'updated-rule' })).toString('base64')
-            }
-          ]
-        })
+        json: () =>
+          Promise.resolve({
+            rules: [
+              {
+                id: 'rule1',
+                name: 'Test Rule 1',
+                version: '2.0.0',
+                tags: ['test'],
+                lastModified: new Date().toISOString(),
+                content: Buffer.from(JSON.stringify({ test: 'updated-rule' })).toString('base64'),
+              },
+            ],
+          }),
       });
 
       const status = await engine.forceRefreshCache();
@@ -373,7 +390,7 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
     it('should update engine configuration', () => {
       engine.updateConfig({
         httpTimeout: 10000,
-        batchSize: 20
+        batchSize: 20,
       });
 
       const updatedConfig = engine.getConfig();
@@ -385,7 +402,7 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
       // Initialize first
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ rules: [] })
+        json: () => Promise.resolve({ rules: [] }),
       });
 
       await engine.initialize();
@@ -399,53 +416,64 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
 
   describe('Error Handling', () => {
     it('should handle uninitialized engine operations', async () => {
-      await expect(engine.executeRule('rule1', {}))
-        .rejects.toThrow('Engine not initialized');
+      await expect(engine.executeRule('rule1', {})).rejects.toThrow('Engine not initialized');
 
-      await expect(engine.executeRules(['rule1'], {}))
-        .rejects.toThrow('Engine not initialized');
+      await expect(engine.executeRules(['rule1'], {})).rejects.toThrow('Engine not initialized');
 
-      await expect(engine.executeByTags(['tag1'], {}))
-        .rejects.toThrow('Engine not initialized');
+      await expect(engine.executeByTags(['tag1'], {})).rejects.toThrow('Engine not initialized');
     });
 
     it('should handle invalid configuration', () => {
-      expect(() => new MinimalGoRulesEngine({} as any))
-        .toThrow('Configuration is required');
+      expect(() => new MinimalGoRulesEngine({} as any)).toThrow('Configuration is required');
 
-      expect(() => new MinimalGoRulesEngine({
-        apiUrl: '',
-        apiKey: 'key',
-        projectId: 'project'
-      })).toThrow('API URL is required');
+      expect(
+        () =>
+          new MinimalGoRulesEngine({
+            apiUrl: '',
+            apiKey: 'key',
+            projectId: 'project',
+          }),
+      ).toThrow('API URL is required');
 
-      expect(() => new MinimalGoRulesEngine({
-        apiUrl: 'url',
-        apiKey: '',
-        projectId: 'project'
-      })).toThrow('API key is required');
+      expect(
+        () =>
+          new MinimalGoRulesEngine({
+            apiUrl: 'url',
+            apiKey: '',
+            projectId: 'project',
+          }),
+      ).toThrow('API key is required');
 
-      expect(() => new MinimalGoRulesEngine({
-        apiUrl: 'url',
-        apiKey: 'key',
-        projectId: ''
-      })).toThrow('Project ID is required');
+      expect(
+        () =>
+          new MinimalGoRulesEngine({
+            apiUrl: 'url',
+            apiKey: 'key',
+            projectId: '',
+          }),
+      ).toThrow('Project ID is required');
     });
 
     it('should handle invalid numeric configuration values', () => {
-      expect(() => new MinimalGoRulesEngine({
-        apiUrl: 'url',
-        apiKey: 'key',
-        projectId: 'project',
-        cacheMaxSize: 0
-      })).toThrow('Cache max size must be greater than 0');
+      expect(
+        () =>
+          new MinimalGoRulesEngine({
+            apiUrl: 'url',
+            apiKey: 'key',
+            projectId: 'project',
+            cacheMaxSize: 0,
+          }),
+      ).toThrow('Cache max size must be greater than 0');
 
-      expect(() => new MinimalGoRulesEngine({
-        apiUrl: 'url',
-        apiKey: 'key',
-        projectId: 'project',
-        httpTimeout: -1
-      })).toThrow('HTTP timeout must be greater than 0');
+      expect(
+        () =>
+          new MinimalGoRulesEngine({
+            apiUrl: 'url',
+            apiKey: 'key',
+            projectId: 'project',
+            httpTimeout: -1,
+          }),
+      ).toThrow('HTTP timeout must be greater than 0');
     });
   });
 
@@ -457,7 +485,7 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
         enablePerformanceMetrics: true,
         enableConnectionPooling: true,
         enableRequestBatching: true,
-        enableCompression: true
+        enableCompression: true,
       };
 
       const optimizedEngine = new MinimalGoRulesEngine(optimizedConfig);
@@ -465,7 +493,7 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
       // Mock successful initialization
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ rules: [] })
+        json: () => Promise.resolve({ rules: [] }),
       });
 
       const status = await optimizedEngine.initialize();
@@ -482,23 +510,24 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
       const optimizedEngine = new MinimalGoRulesEngine({
         ...config,
         enablePerformanceOptimizations: true,
-        enablePerformanceMetrics: true
+        enablePerformanceMetrics: true,
       });
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          rules: [
-            {
-              id: 'perf-rule',
-              name: 'Performance Test Rule',
-              version: '1.0.0',
-              tags: ['performance'],
-              lastModified: new Date().toISOString(),
-              content: Buffer.from(JSON.stringify({ test: 'rule' })).toString('base64')
-            }
-          ]
-        })
+        json: () =>
+          Promise.resolve({
+            rules: [
+              {
+                id: 'perf-rule',
+                name: 'Performance Test Rule',
+                version: '1.0.0',
+                tags: ['performance'],
+                lastModified: new Date().toISOString(),
+                content: Buffer.from(JSON.stringify({ test: 'rule' })).toString('base64'),
+              },
+            ],
+          }),
       });
 
       await optimizedEngine.initialize();
@@ -515,19 +544,22 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
       // Initialize with test rules
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          rules: Array.from({ length: 10 }, (_, i) => ({
-            id: `rule${i + 1}`,
-            name: `Test Rule ${i + 1}`,
-            version: '1.0.0',
-            tags: ['test', `group${i % 3}`],
-            lastModified: new Date().toISOString(),
-            content: Buffer.from(JSON.stringify({
-              conditions: [{ field: 'value', operator: 'gt', value: i }],
-              actions: [{ type: 'set', field: 'result', value: i * 10 }]
-            })).toString('base64')
-          }))
-        })
+        json: () =>
+          Promise.resolve({
+            rules: Array.from({ length: 10 }, (_, i) => ({
+              id: `rule${i + 1}`,
+              name: `Test Rule ${i + 1}`,
+              version: '1.0.0',
+              tags: ['test', `group${i % 3}`],
+              lastModified: new Date().toISOString(),
+              content: Buffer.from(
+                JSON.stringify({
+                  conditions: [{ field: 'value', operator: 'gt', value: i }],
+                  actions: [{ type: 'set', field: 'result', value: i * 10 }],
+                }),
+              ).toString('base64'),
+            })),
+          }),
       });
 
       await engine.initialize();
@@ -535,19 +567,19 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
 
     it('should handle concurrent rule executions', async () => {
       const mockZenEngine = {
-        evaluate: jest.fn().mockImplementation((ruleId, input) => 
+        evaluate: jest.fn().mockImplementation((ruleId, input) =>
           Promise.resolve({
             result: { processed: true, ruleId },
-            performance: '5ms'
-          })
-        )
+            performance: '5ms',
+          }),
+        ),
       };
 
       (engine as any).executionEngine.zenEngine = mockZenEngine;
 
       // Execute multiple rules concurrently
       const promises = Array.from({ length: 5 }, (_, i) =>
-        engine.executeRule(`rule${i + 1}`, { value: i * 2 })
+        engine.executeRule(`rule${i + 1}`, { value: i * 2 }),
       );
 
       const results = await Promise.all(promises);
@@ -565,7 +597,7 @@ describe('MinimalGoRulesEngine Integration Tests', () => {
         engine.getRuleMetadata('rule1'),
         engine.getRuleMetadata('rule2'),
         engine.getRulesByTags(['test']),
-        engine.getAllRuleMetadata()
+        engine.getAllRuleMetadata(),
       ];
 
       const results = await Promise.all(promises);

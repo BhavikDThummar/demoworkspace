@@ -20,7 +20,7 @@ describe('Minimal GoRules Engine Performance Tests', () => {
       maxLatency: 50, // 50ms max latency
       minThroughput: 1000, // 1000 ops/sec minimum
       maxMemoryPerOperation: 1024 * 1024, // 1MB per operation
-      maxMemoryGrowthRate: 1024 // 1KB growth per operation
+      maxMemoryGrowthRate: 1024, // 1KB growth per operation
     };
 
     benchmark = new PerformanceBenchmark(
@@ -29,9 +29,9 @@ describe('Minimal GoRules Engine Performance Tests', () => {
         warmupIterations: 100,
         concurrency: 10,
         timeout: 30000,
-        sampleDataSize: 1024
+        sampleDataSize: 1024,
       },
-      requirements
+      requirements,
     );
 
     memoryManager = new MemoryManager();
@@ -48,7 +48,7 @@ describe('Minimal GoRules Engine Performance Tests', () => {
         const stats = memoryManager.getCurrentStats();
         const percentage = memoryManager.getMemoryUsagePercentage();
         const trend = memoryManager.getMemoryTrend();
-        
+
         // Simulate some memory operations
         const data = Buffer.alloc(1024);
         data.fill(0);
@@ -72,7 +72,7 @@ describe('Minimal GoRules Engine Performance Tests', () => {
         // Simulate memory pressure
         const largeBuffer = Buffer.alloc(10 * 1024); // 10KB
         largeBuffer.fill(Math.random() * 255);
-        
+
         // Check memory stats
         const stats = memoryManager.getCurrentStats();
         expect(stats.heapUsed).toBeGreaterThan(0);
@@ -94,8 +94,8 @@ describe('Minimal GoRules Engine Performance Tests', () => {
           maxConnections: 5,
           maxRequestsPerConnection: 10,
           connectionTimeout: 1000,
-          requestTimeout: 2000
-        }
+          requestTimeout: 2000,
+        },
       );
     });
 
@@ -111,13 +111,13 @@ describe('Minimal GoRules Engine Performance Tests', () => {
         status: 200,
         statusText: 'OK',
         headers: new Map(),
-        text: () => Promise.resolve('{"result": "success"}')
+        text: () => Promise.resolve('{"result": "success"}'),
       } as any);
 
       const result = await benchmark.runThroughputTest('connection-pool-concurrent', async () => {
         await connectionPool.request({
           method: 'GET',
-          path: '/test'
+          path: '/test',
         });
       });
 
@@ -138,21 +138,21 @@ describe('Minimal GoRules Engine Performance Tests', () => {
           status: 200,
           statusText: 'OK',
           headers: new Map(),
-          text: () => Promise.resolve('{"result": "success"}')
+          text: () => Promise.resolve('{"result": "success"}'),
         });
       });
 
       const result = await benchmark.runTest('connection-reuse', async () => {
         await connectionPool.request({
           method: 'GET',
-          path: '/test'
+          path: '/test',
         });
       });
 
       global.fetch = originalFetch;
 
       expect(result.success).toBe(true);
-      
+
       const stats = connectionPool.getStats();
       expect(stats.connectionReuses).toBeGreaterThan(0);
     });
@@ -173,14 +173,14 @@ describe('Minimal GoRules Engine Performance Tests', () => {
             results,
             errors: new Map(),
             batchSize: requests.size,
-            executionTime: 10
+            executionTime: 10,
           };
         },
         {
           maxBatchSize: 10,
           maxWaitTime: 50,
-          maxConcurrentBatches: 2
-        }
+          maxConcurrentBatches: 2,
+        },
       );
     });
 
@@ -192,7 +192,7 @@ describe('Minimal GoRules Engine Performance Tests', () => {
 
       expect(result.success).toBe(true);
       expect(result.throughput).toBeGreaterThan(500); // Should handle batching efficiently
-      
+
       const stats = batcher.getStats();
       expect(stats.batchEfficiency).toBeGreaterThan(0.5); // At least 50% batch efficiency
     });
@@ -213,13 +213,15 @@ describe('Minimal GoRules Engine Performance Tests', () => {
   });
 
   describe('Compression Performance', () => {
-    const testData = Buffer.from(JSON.stringify({
-      rules: Array.from({ length: 100 }, (_, i) => ({
-        id: `rule-${i}`,
-        name: `Test Rule ${i}`,
-        content: `{"conditions": [{"field": "age", "operator": "gt", "value": ${i}}], "actions": [{"type": "set", "field": "result", "value": "approved"}]}`
-      }))
-    }));
+    const testData = Buffer.from(
+      JSON.stringify({
+        rules: Array.from({ length: 100 }, (_, i) => ({
+          id: `rule-${i}`,
+          name: `Test Rule ${i}`,
+          content: `{"conditions": [{"field": "age", "operator": "gt", "value": ${i}}], "actions": [{"type": "set", "field": "result", "value": "approved"}]}`,
+        })),
+      }),
+    );
 
     it('should compress data efficiently', async () => {
       const result = await benchmark.runTest('compression', async () => {
@@ -232,7 +234,7 @@ describe('Minimal GoRules Engine Performance Tests', () => {
 
     it('should decompress data efficiently', async () => {
       const compressed = await compressionManager.compress(testData);
-      
+
       const result = await benchmark.runTest('decompression', async () => {
         await compressionManager.decompress(compressed.data, compressed.algorithm);
       });
@@ -269,21 +271,21 @@ describe('Minimal GoRules Engine Performance Tests', () => {
           test: async () => {
             memoryManager.getCurrentStats();
             memoryManager.getMemoryUsagePercentage();
-          }
+          },
         },
         {
           name: 'Data Compression',
           test: async () => {
             const data = Buffer.from('{"test": "data"}');
             await compressionManager.compress(data);
-          }
+          },
         },
         {
           name: 'Memory Cleanup',
           test: async () => {
             await memoryManager.performCleanup();
           },
-          type: 'latency'
+          type: 'latency',
         },
         {
           name: 'Compression Throughput',
@@ -291,8 +293,8 @@ describe('Minimal GoRules Engine Performance Tests', () => {
             const data = Buffer.from('{"test": "data"}');
             await compressionManager.compress(data);
           },
-          type: 'throughput'
-        }
+          type: 'throughput',
+        },
       ]);
 
       expect(suiteResult.passed).toBeGreaterThan(0);
@@ -311,11 +313,11 @@ describe('Minimal GoRules Engine Performance Tests', () => {
         await benchmark.runThroughputTest('high-throughput', async () => {
           // Simulate high throughput operation
           Math.random();
-        })
+        }),
       ];
 
       const validation = benchmark.validateRequirements(testResults);
-      
+
       expect(validation.passed).toBe(true);
       expect(validation.violations).toHaveLength(0);
     });
@@ -324,12 +326,12 @@ describe('Minimal GoRules Engine Performance Tests', () => {
   describe('Memory Leak Detection', () => {
     it('should not leak memory during repeated operations', async () => {
       const initialMemory = memoryManager.getCurrentStats().heapUsed;
-      
+
       // Perform many operations
       for (let i = 0; i < 100; i++) {
         const data = Buffer.alloc(1024);
         await compressionManager.compress(data);
-        
+
         // Force garbage collection periodically
         if (i % 10 === 0 && global.gc) {
           global.gc();
@@ -343,7 +345,7 @@ describe('Minimal GoRules Engine Performance Tests', () => {
 
       const finalMemory = memoryManager.getCurrentStats().heapUsed;
       const memoryGrowth = finalMemory - initialMemory;
-      
+
       // Memory growth should be minimal (less than 1MB)
       expect(memoryGrowth).toBeLessThan(1024 * 1024);
     });
@@ -358,17 +360,15 @@ function createMockRuleData(size: number): Buffer {
     conditions: Array.from({ length: size / 100 }, (_, i) => ({
       field: `field${i}`,
       operator: 'eq',
-      value: `value${i}`
+      value: `value${i}`,
     })),
-    actions: [
-      { type: 'set', field: 'result', value: 'approved' }
-    ]
+    actions: [{ type: 'set', field: 'result', value: 'approved' }],
   };
-  
+
   return Buffer.from(JSON.stringify(rule));
 }
 
 // Helper function to simulate network delay
 function simulateNetworkDelay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

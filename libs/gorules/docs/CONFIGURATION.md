@@ -72,7 +72,7 @@ For complex configuration scenarios:
       useFactory: async (configService: ConfigService) => {
         // Load configuration from external source
         const externalConfig = await loadExternalConfig();
-        
+
         return {
           apiUrl: configService.get('GORULES_API_URL'),
           apiKey: configService.get('GORULES_API_KEY'),
@@ -127,6 +127,7 @@ GORULES_CIRCUIT_BREAKER_SUCCESS_THRESHOLD=3
 ### Environment File Examples
 
 #### Development (.env.development)
+
 ```env
 GORULES_API_URL=https://dev.gorules.io
 GORULES_API_KEY=dev-api-key
@@ -139,6 +140,7 @@ GORULES_ENABLE_METRICS=true
 ```
 
 #### Production (.env.production)
+
 ```env
 GORULES_API_URL=https://triveni.gorules.io
 GORULES_API_KEY=${GORULES_PROD_API_KEY}
@@ -151,6 +153,7 @@ GORULES_ENABLE_METRICS=true
 ```
 
 #### Testing (.env.test)
+
 ```env
 GORULES_API_URL=https://test.gorules.io
 GORULES_API_KEY=test-api-key
@@ -171,45 +174,45 @@ interface GoRulesConfig {
   apiUrl: string;
   apiKey: string;
   projectId: string;
-  
+
   // Performance Configuration
-  timeout?: number;                    // Default: 30000ms
-  retryAttempts?: number;             // Default: 3
-  
+  timeout?: number; // Default: 30000ms
+  retryAttempts?: number; // Default: 3
+
   // Logging Configuration
-  enableLogging?: boolean;            // Default: false
+  enableLogging?: boolean; // Default: false
   logLevel?: 'error' | 'warn' | 'info' | 'debug' | 'verbose'; // Default: 'info'
-  maxLogEntries?: number;             // Default: 1000
-  logRetentionMs?: number;            // Default: 24 hours
-  
+  maxLogEntries?: number; // Default: 1000
+  logRetentionMs?: number; // Default: 24 hours
+
   // Monitoring Configuration
-  enableMetrics?: boolean;            // Default: true
+  enableMetrics?: boolean; // Default: true
   performanceThresholds?: {
-    executionTime?: number;           // Default: 5000ms
-    errorRate?: number;               // Default: 0.1 (10%)
-    memoryUsage?: number;             // Default: 80%
+    executionTime?: number; // Default: 5000ms
+    errorRate?: number; // Default: 0.1 (10%)
+    memoryUsage?: number; // Default: 80%
   };
-  
+
   // Circuit Breaker Configuration
   circuitBreakerOptions?: {
-    failureThreshold?: number;        // Default: 5
-    resetTimeout?: number;            // Default: 60000ms
-    successThreshold?: number;        // Default: 3
-    requestTimeout?: number;          // Default: same as timeout
+    failureThreshold?: number; // Default: 5
+    resetTimeout?: number; // Default: 60000ms
+    successThreshold?: number; // Default: 3
+    requestTimeout?: number; // Default: same as timeout
   };
-  
+
   // HTTP Configuration
   httpOptions?: {
-    maxRedirects?: number;            // Default: 5
-    keepAlive?: boolean;              // Default: true
-    keepAliveMsecs?: number;          // Default: 1000ms
-    maxSockets?: number;              // Default: Infinity
-    maxFreeSockets?: number;          // Default: 256
+    maxRedirects?: number; // Default: 5
+    keepAlive?: boolean; // Default: true
+    keepAliveMsecs?: number; // Default: 1000ms
+    maxSockets?: number; // Default: Infinity
+    maxFreeSockets?: number; // Default: 256
   };
-  
+
   // Security Configuration
   security?: {
-    validateCertificates?: boolean;   // Default: true
+    validateCertificates?: boolean; // Default: true
     allowInsecureConnections?: boolean; // Default: false
     customCertificates?: string[];
   };
@@ -224,7 +227,7 @@ export class CustomGoRulesConfigFactory {
   constructor(
     private readonly configService: ConfigService,
     private readonly databaseService: DatabaseService,
-    private readonly secretsService: SecretsService
+    private readonly secretsService: SecretsService,
   ) {}
 
   async createGoRulesConfig(): Promise<GoRulesConfig> {
@@ -352,7 +355,7 @@ GoRulesModule.forRootAsync({
     return config;
   },
   inject: [ConfigService],
-})
+});
 ```
 
 ## Environment-Specific Settings
@@ -361,13 +364,13 @@ GoRulesModule.forRootAsync({
 
 ```typescript
 const developmentConfig: Partial<GoRulesConfig> = {
-  timeout: 45000,           // Longer timeout for debugging
-  retryAttempts: 5,         // More retries for unstable dev environment
-  enableLogging: true,      // Enable detailed logging
-  logLevel: 'debug',        // Verbose logging
-  enableMetrics: true,      // Enable performance monitoring
+  timeout: 45000, // Longer timeout for debugging
+  retryAttempts: 5, // More retries for unstable dev environment
+  enableLogging: true, // Enable detailed logging
+  logLevel: 'debug', // Verbose logging
+  enableMetrics: true, // Enable performance monitoring
   performanceThresholds: {
-    executionTime: 10000,   // More lenient thresholds
+    executionTime: 10000, // More lenient thresholds
     errorRate: 0.2,
     memoryUsage: 90,
   },
@@ -378,19 +381,19 @@ const developmentConfig: Partial<GoRulesConfig> = {
 
 ```typescript
 const productionConfig: Partial<GoRulesConfig> = {
-  timeout: 30000,           // Standard timeout
-  retryAttempts: 3,         // Conservative retry count
-  enableLogging: false,     // Disable detailed logging for performance
-  logLevel: 'error',        // Only log errors
-  enableMetrics: true,      // Keep metrics for monitoring
+  timeout: 30000, // Standard timeout
+  retryAttempts: 3, // Conservative retry count
+  enableLogging: false, // Disable detailed logging for performance
+  logLevel: 'error', // Only log errors
+  enableMetrics: true, // Keep metrics for monitoring
   performanceThresholds: {
-    executionTime: 5000,    // Strict performance requirements
-    errorRate: 0.05,        // Low error tolerance
-    memoryUsage: 80,        // Conservative memory usage
+    executionTime: 5000, // Strict performance requirements
+    errorRate: 0.05, // Low error tolerance
+    memoryUsage: 80, // Conservative memory usage
   },
   circuitBreakerOptions: {
-    failureThreshold: 3,    // Fail fast in production
-    resetTimeout: 30000,    // Quick recovery
+    failureThreshold: 3, // Fail fast in production
+    resetTimeout: 30000, // Quick recovery
   },
 };
 ```
@@ -399,13 +402,13 @@ const productionConfig: Partial<GoRulesConfig> = {
 
 ```typescript
 const testConfig: Partial<GoRulesConfig> = {
-  timeout: 5000,            // Fast timeouts for quick tests
-  retryAttempts: 1,         // Minimal retries
-  enableLogging: false,     // Disable logging for clean test output
-  enableMetrics: false,     // Disable metrics for test performance
+  timeout: 5000, // Fast timeouts for quick tests
+  retryAttempts: 1, // Minimal retries
+  enableLogging: false, // Disable logging for clean test output
+  enableMetrics: false, // Disable metrics for test performance
   circuitBreakerOptions: {
-    failureThreshold: 10,   // High threshold to avoid interference
-    resetTimeout: 1000,     // Quick reset for tests
+    failureThreshold: 10, // High threshold to avoid interference
+    resetTimeout: 1000, // Quick reset for tests
   },
 };
 ```
@@ -419,21 +422,21 @@ const highThroughputConfig: GoRulesConfig = {
   apiUrl: 'https://triveni.gorules.io',
   apiKey: process.env.GORULES_API_KEY!,
   projectId: process.env.GORULES_PROJECT_ID!,
-  
+
   // Optimized for high throughput
-  timeout: 15000,           // Shorter timeout
-  retryAttempts: 2,         // Fewer retries
-  enableLogging: false,     // Disable logging for performance
-  enableMetrics: true,      // Keep metrics for monitoring
-  
+  timeout: 15000, // Shorter timeout
+  retryAttempts: 2, // Fewer retries
+  enableLogging: false, // Disable logging for performance
+  enableMetrics: true, // Keep metrics for monitoring
+
   // HTTP optimizations
   httpOptions: {
     keepAlive: true,
     keepAliveMsecs: 30000,
-    maxSockets: 100,        // Increase connection pool
+    maxSockets: 100, // Increase connection pool
     maxFreeSockets: 50,
   },
-  
+
   // Aggressive circuit breaker
   circuitBreakerOptions: {
     failureThreshold: 3,
@@ -450,20 +453,20 @@ const lowLatencyConfig: GoRulesConfig = {
   apiUrl: 'https://triveni.gorules.io',
   apiKey: process.env.GORULES_API_KEY!,
   projectId: process.env.GORULES_PROJECT_ID!,
-  
+
   // Optimized for low latency
-  timeout: 5000,            // Very short timeout
-  retryAttempts: 1,         // Minimal retries
-  enableLogging: false,     // No logging overhead
-  enableMetrics: false,     // No metrics overhead
-  
+  timeout: 5000, // Very short timeout
+  retryAttempts: 1, // Minimal retries
+  enableLogging: false, // No logging overhead
+  enableMetrics: false, // No metrics overhead
+
   // Performance thresholds
   performanceThresholds: {
-    executionTime: 2000,    // Strict latency requirements
+    executionTime: 2000, // Strict latency requirements
     errorRate: 0.01,
     memoryUsage: 70,
   },
-  
+
   // HTTP optimizations
   httpOptions: {
     keepAlive: true,
@@ -483,7 +486,7 @@ const secureConfig: GoRulesConfig = {
   apiUrl: 'https://triveni.gorules.io',
   apiKey: process.env.GORULES_API_KEY!,
   projectId: process.env.GORULES_PROJECT_ID!,
-  
+
   // Security settings
   security: {
     validateCertificates: true,
@@ -493,17 +496,17 @@ const secureConfig: GoRulesConfig = {
       process.env.CUSTOM_CA_CERT,
     ].filter(Boolean),
   },
-  
+
   // Secure HTTP options
   httpOptions: {
-    maxRedirects: 0,        // Disable redirects for security
+    maxRedirects: 0, // Disable redirects for security
     keepAlive: true,
   },
-  
+
   // Conservative timeouts
   timeout: 30000,
   retryAttempts: 3,
-  
+
   // Enable monitoring for security
   enableLogging: true,
   logLevel: 'info',
@@ -518,13 +521,13 @@ const devWithSelfSignedConfig: GoRulesConfig = {
   apiUrl: 'https://dev.gorules.local',
   apiKey: process.env.GORULES_DEV_API_KEY!,
   projectId: process.env.GORULES_DEV_PROJECT_ID!,
-  
+
   // Allow self-signed certificates in development
   security: {
     validateCertificates: false,
     allowInsecureConnections: true,
   },
-  
+
   enableLogging: true,
   logLevel: 'debug',
 };
@@ -539,20 +542,20 @@ const monitoringConfig: GoRulesConfig = {
   apiUrl: 'https://triveni.gorules.io',
   apiKey: process.env.GORULES_API_KEY!,
   projectId: process.env.GORULES_PROJECT_ID!,
-  
+
   // Enable all monitoring features
   enableLogging: true,
   logLevel: 'info',
   maxLogEntries: 5000,
   logRetentionMs: 7 * 24 * 60 * 60 * 1000, // 7 days
-  
+
   enableMetrics: true,
   performanceThresholds: {
     executionTime: 3000,
     errorRate: 0.05,
     memoryUsage: 75,
   },
-  
+
   // Circuit breaker for monitoring
   circuitBreakerOptions: {
     failureThreshold: 5,
@@ -569,13 +572,13 @@ const minimalMonitoringConfig: GoRulesConfig = {
   apiUrl: 'https://triveni.gorules.io',
   apiKey: process.env.GORULES_API_KEY!,
   projectId: process.env.GORULES_PROJECT_ID!,
-  
+
   // Minimal monitoring for performance
   enableLogging: false,
-  enableMetrics: true,      // Keep basic metrics
-  maxLogEntries: 100,       // Minimal log storage
+  enableMetrics: true, // Keep basic metrics
+  maxLogEntries: 100, // Minimal log storage
   logRetentionMs: 60 * 60 * 1000, // 1 hour
-  
+
   performanceThresholds: {
     executionTime: 5000,
     errorRate: 0.1,
@@ -638,7 +641,7 @@ const currentConfig = configs[process.env.NODE_ENV || 'development'];
 ```typescript
 /**
  * GoRules configuration for the application
- * 
+ *
  * Environment Variables:
  * - GORULES_API_KEY: API key for GoRules service (required)
  * - GORULES_PROJECT_ID: Project ID in GoRules (required)

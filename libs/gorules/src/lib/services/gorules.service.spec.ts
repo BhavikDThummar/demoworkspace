@@ -37,7 +37,7 @@ describe('GoRulesService', () => {
     result: { approved: true, score: 85 },
     performance: '150',
     trace: {
-      'step1': {
+      step1: {
         id: 'step1',
         name: 'Input Validation',
         input: { amount: 1000 },
@@ -153,46 +153,40 @@ describe('GoRulesService', () => {
         },
       });
 
-      expect(mockZenEngine.evaluate).toHaveBeenCalledWith(
-        testRuleId,
-        testInput,
-        {
-          trace: false,
-          maxDepth: 100,
-        }
-      );
+      expect(mockZenEngine.evaluate).toHaveBeenCalledWith(testRuleId, testInput, {
+        trace: false,
+        maxDepth: 100,
+      });
     });
 
     it('should execute rule with trace enabled', async () => {
       const options: RuleExecutionOptions = { trace: true };
-      
+
       const result = await service.executeRule(testRuleId, testInput, options);
 
       expect(result.trace).toEqual({
-        steps: [{
-          id: 'step1',
-          name: 'Input Validation',
-          duration: 50,
-          input: { amount: 1000 },
-          output: { valid: true },
-        }],
+        steps: [
+          {
+            id: 'step1',
+            name: 'Input Validation',
+            duration: 50,
+            input: { amount: 1000 },
+            output: { valid: true },
+          },
+        ],
         duration: expect.any(Number),
         rulesEvaluated: [testRuleId],
       });
 
-      expect(mockZenEngine.evaluate).toHaveBeenCalledWith(
-        testRuleId,
-        testInput,
-        {
-          trace: true,
-          maxDepth: 100,
-        }
-      );
+      expect(mockZenEngine.evaluate).toHaveBeenCalledWith(testRuleId, testInput, {
+        trace: true,
+        maxDepth: 100,
+      });
     });
 
     it('should execute rule with custom timeout', async () => {
       const options: RuleExecutionOptions = { timeout: 5000 };
-      
+
       await service.executeRule(testRuleId, testInput, options);
 
       expect(mockZenEngine.evaluate).toHaveBeenCalled();
@@ -204,8 +198,8 @@ describe('GoRulesService', () => {
           GoRulesErrorCode.INVALID_INPUT,
           'Rule ID must be a non-empty string',
           { ruleId: '' },
-          false
-        )
+          false,
+        ),
       );
     });
 
@@ -215,8 +209,8 @@ describe('GoRulesService', () => {
           GoRulesErrorCode.INVALID_INPUT,
           'Input must be a valid object',
           { input: 'object' },
-          false
-        )
+          false,
+        ),
       );
     });
 
@@ -229,8 +223,8 @@ describe('GoRulesService', () => {
           GoRulesErrorCode.INTERNAL_ERROR,
           'Rule execution failed: Zen engine error',
           expect.objectContaining({ ruleId: testRuleId }),
-          false
-        )
+          false,
+        ),
       );
     });
 
@@ -243,8 +237,8 @@ describe('GoRulesService', () => {
           GoRulesErrorCode.TIMEOUT,
           'Rule execution failed: timeout',
           expect.objectContaining({ ruleId: testRuleId }),
-          true
-        )
+          true,
+        ),
       );
     });
 
@@ -326,23 +320,21 @@ describe('GoRulesService', () => {
           GoRulesErrorCode.INVALID_INPUT,
           'Batch executions must be a non-empty array',
           expect.any(Object),
-          false
-        )
+          false,
+        ),
       );
     });
 
     it('should throw error for invalid batch execution', async () => {
-      const invalidExecutions = [
-        { ruleId: '', input: { amount: 1000 } },
-      ] as BatchRuleExecution[];
+      const invalidExecutions = [{ ruleId: '', input: { amount: 1000 } }] as BatchRuleExecution[];
 
       await expect(service.executeBatch(invalidExecutions)).rejects.toThrow(
         new GoRulesException(
           GoRulesErrorCode.INVALID_INPUT,
           'Batch execution at index 0 is missing ruleId',
           expect.any(Object),
-          false
-        )
+          false,
+        ),
       );
     });
   });
@@ -371,8 +363,8 @@ describe('GoRulesService', () => {
           GoRulesErrorCode.INVALID_INPUT,
           'Rule ID must be a non-empty string',
           { ruleId: '' },
-          false
-        )
+          false,
+        ),
       );
     });
   });
@@ -404,8 +396,8 @@ describe('GoRulesService', () => {
           GoRulesErrorCode.INVALID_INPUT,
           'Rule ID must be a non-empty string',
           { ruleId: '' },
-          false
-        )
+          false,
+        ),
       );
     });
   });
@@ -430,7 +422,7 @@ describe('GoRulesService', () => {
 
       expect(result.isValid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
-      expect(result.errors.some(error => error.code === 'RULE_NOT_FOUND')).toBe(true);
+      expect(result.errors.some((error) => error.code === 'RULE_NOT_FOUND')).toBe(true);
     });
 
     it('should handle decision load errors', async () => {
@@ -480,7 +472,7 @@ describe('GoRulesService', () => {
         .mockRejectedValueOnce(new Error('Execution failed'));
 
       await service.executeRule('rule1', { amount: 1000 });
-      
+
       try {
         await service.executeRule('rule1', { amount: 2000 });
       } catch {
@@ -498,9 +490,9 @@ describe('GoRulesService', () => {
 
     it('should clear execution statistics', async () => {
       await service.executeRule('rule1', { amount: 1000 });
-      
+
       service.clearExecutionStatistics();
-      
+
       const stats = service.getExecutionStatistics();
       expect(Object.keys(stats)).toHaveLength(0);
     });
@@ -510,10 +502,19 @@ describe('GoRulesService', () => {
     it('should map different error types correctly', async () => {
       const testCases = [
         { error: new Error('timeout occurred'), expectedCode: GoRulesErrorCode.TIMEOUT },
-        { error: new Error('network connection failed'), expectedCode: GoRulesErrorCode.NETWORK_ERROR },
+        {
+          error: new Error('network connection failed'),
+          expectedCode: GoRulesErrorCode.NETWORK_ERROR,
+        },
         { error: new Error('rule not found'), expectedCode: GoRulesErrorCode.RULE_NOT_FOUND },
-        { error: new Error('unauthorized access'), expectedCode: GoRulesErrorCode.AUTHENTICATION_FAILED },
-        { error: new Error('rate limit exceeded'), expectedCode: GoRulesErrorCode.RATE_LIMIT_EXCEEDED },
+        {
+          error: new Error('unauthorized access'),
+          expectedCode: GoRulesErrorCode.AUTHENTICATION_FAILED,
+        },
+        {
+          error: new Error('rate limit exceeded'),
+          expectedCode: GoRulesErrorCode.RATE_LIMIT_EXCEEDED,
+        },
         { error: new Error('invalid input data'), expectedCode: GoRulesErrorCode.INVALID_INPUT },
         { error: new Error('unknown error'), expectedCode: GoRulesErrorCode.INTERNAL_ERROR },
       ];
@@ -536,7 +537,7 @@ describe('GoRulesService', () => {
         GoRulesErrorCode.RULE_NOT_FOUND,
         'Custom error',
         { custom: 'data' },
-        true
+        true,
       );
 
       mockZenEngine.evaluate.mockRejectedValue(originalError);
@@ -554,15 +555,14 @@ describe('GoRulesService', () => {
     it('should throw error when not initialized', async () => {
       const uninitializedService = new GoRulesService(configService);
 
-      await expect(uninitializedService.executeRule('test-rule', { amount: 1000 }))
-        .rejects.toThrow(
-          new GoRulesException(
-            GoRulesErrorCode.INTERNAL_ERROR,
-            'GoRules service is not initialized',
-            {},
-            false
-          )
-        );
+      await expect(uninitializedService.executeRule('test-rule', { amount: 1000 })).rejects.toThrow(
+        new GoRulesException(
+          GoRulesErrorCode.INTERNAL_ERROR,
+          'GoRules service is not initialized',
+          {},
+          false,
+        ),
+      );
     });
   });
 });

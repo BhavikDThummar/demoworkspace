@@ -14,13 +14,14 @@ This application demonstrates the integration of GoRules business rules engine w
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 - GoRules account and API key
 
 ### Environment Configuration
 
 1. Copy the example environment file:
+
    ```bash
    cp .env.example .env
    ```
@@ -66,7 +67,7 @@ Validates BOM data using business rules.
       "id": "item1",
       "name": "Electronic Component",
       "quantity": 100,
-      "unitPrice": 25.50,
+      "unitPrice": 25.5,
       "category": "electronics"
     }
   ],
@@ -225,5 +226,6 @@ All GoRules configuration is managed through environment variables and the `@org
 ## Support
 
 For issues related to:
+
 - GoRules platform: Contact GoRules support
 - Application code: Create an issue in the project repository

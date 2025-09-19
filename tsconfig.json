@@ -11,6 +11,15 @@
     },
     {
       "path": "./libs/gorules"
+    },
+    {
+      "path": "./apps/bomdemoapiv2-e2e"
+    },
+    {
+      "path": "./apps/bomdemoapiv2"
+    },
+    {
+      "path": "./libs/minimal-gorules"
     }
   ]
 }

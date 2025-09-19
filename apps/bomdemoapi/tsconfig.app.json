@@ -13,6 +13,9 @@
   "exclude": ["eslint.config.js", "eslint.config.cjs", "eslint.config.mjs"],
   "references": [
     {
+      "path": "../../libs/minimal-gorules/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/gorules/tsconfig.lib.json"
     }
   ]

@@ -4,6 +4,9 @@
   "include": [],
   "references": [
     {
+      "path": "../../libs/minimal-gorules"
+    },
+    {
       "path": "../../libs/gorules"
     },
     {

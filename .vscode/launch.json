@@ -6,24 +6,30 @@
       "request": "launch",
       "name": "Debug @org/bomdemoapi with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": [
-        "nx",
-        "serve",
-        "@org/bomdemoapi"
-      ],
+      "runtimeArgs": ["nx", "serve", "@org/bomdemoapi"],
       "env": {
         "NODE_OPTIONS": "--inspect=9229"
       },
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
-      "outFiles": [
-        "${workspaceFolder}/apps/bomdemoapi/dist/**/*.(m|c|)js",
-        "!**/node_modules/**"
-      ]
+      "outFiles": ["${workspaceFolder}/apps/bomdemoapi/dist/**/*.(m|c|)js", "!**/node_modules/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug bomdemoapiv2 with Nx",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "bomdemoapiv2"],
+      "env": {
+        "NODE_OPTIONS": "--inspect=9230"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/apps/bomdemoapiv2/dist/**/*.(m|c|)js", "!**/node_modules/**"]
     }
   ]
 }

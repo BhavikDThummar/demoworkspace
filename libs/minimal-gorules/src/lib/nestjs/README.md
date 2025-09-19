@@ -46,7 +46,7 @@ GORULES_API_URL=https://api.gorules.io
 GORULES_API_KEY=your-api-key
 GORULES_PROJECT_ID=your-project-id
 GORULES_CACHE_MAX_SIZE=1000
-GORULES_HTTP_TIMEOUT=5000
+GORULES_TIMEOUT=5000
 GORULES_BATCH_SIZE=50
 ```
 
@@ -111,7 +111,7 @@ MinimalGoRulesModule.forRootAsync({
     apiKey: configService.get('GORULES_API_KEY'),
     projectId: configService.get('GORULES_PROJECT_ID'),
     cacheMaxSize: configService.get('GORULES_CACHE_MAX_SIZE', 1000),
-    httpTimeout: configService.get('GORULES_HTTP_TIMEOUT', 5000),
+    httpTimeout: configService.get('GORULES_TIMEOUT', 5000),
     batchSize: configService.get('GORULES_BATCH_SIZE', 50),
     platform: 'node',
   }),
@@ -177,7 +177,7 @@ GORULES_API_URL=https://api.gorules.io
 GORULES_API_KEY=your-api-key
 GORULES_PROJECT_ID=your-project-id
 GORULES_CACHE_MAX_SIZE=1000
-GORULES_HTTP_TIMEOUT=5000
+GORULES_TIMEOUT=5000
 GORULES_BATCH_SIZE=50
 ```
 

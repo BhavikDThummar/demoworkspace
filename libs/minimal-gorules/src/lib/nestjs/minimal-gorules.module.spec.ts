@@ -156,7 +156,7 @@ describe('MinimalGoRulesModule', () => {
       process.env.GORULES_API_KEY = mockConfig.apiKey;
       process.env.GORULES_PROJECT_ID = mockConfig.projectId;
       process.env.GORULES_CACHE_MAX_SIZE = mockConfig.cacheMaxSize?.toString();
-      process.env.GORULES_HTTP_TIMEOUT = mockConfig.httpTimeout?.toString();
+      process.env.GORULES_TIMEOUT = mockConfig.httpTimeout?.toString();
       process.env.GORULES_BATCH_SIZE = mockConfig.batchSize?.toString();
 
       try {
@@ -186,7 +186,7 @@ describe('MinimalGoRulesModule', () => {
       delete process.env.GORULES_API_KEY;
       delete process.env.GORULES_PROJECT_ID;
       delete process.env.GORULES_CACHE_MAX_SIZE;
-      delete process.env.GORULES_HTTP_TIMEOUT;
+      delete process.env.GORULES_TIMEOUT;
       delete process.env.GORULES_BATCH_SIZE;
 
       if (module) {

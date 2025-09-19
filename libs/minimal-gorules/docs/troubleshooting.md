@@ -412,7 +412,7 @@ const config = ConfigFactory.create({
   apiUrl: process.env.GORULES_API_URL || 'https://api.gorules.io',
   apiKey: process.env.GORULES_API_KEY!,
   projectId: process.env.GORULES_PROJECT_ID!,
-  cacheMaxSize: parseInt(process.env.GORULES_CACHE_SIZE || '1000'),
+  cacheMaxSize: parseInt(process.env.GORULES_CACHE_MAX_SIZE || '1000'),
   httpTimeout: parseInt(process.env.GORULES_TIMEOUT || '5000'),
 });
 

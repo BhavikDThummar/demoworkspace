@@ -525,7 +525,7 @@ export class GoRulesController {
           apiUrl: configService.get<string>('GORULES_API_URL', 'https://api.gorules.io'),
           apiKey: configService.get<string>('GORULES_API_KEY')!,
           projectId: configService.get<string>('GORULES_PROJECT_ID')!,
-          cacheMaxSize: configService.get<number>('GORULES_CACHE_SIZE', 1000),
+          cacheMaxSize: configService.get<number>('GORULES_CACHE_MAX_SIZE', 1000),
           httpTimeout: configService.get<number>('GORULES_TIMEOUT', 5000),
           batchSize: configService.get<number>('GORULES_BATCH_SIZE', 50),
           platform: 'node' as const,

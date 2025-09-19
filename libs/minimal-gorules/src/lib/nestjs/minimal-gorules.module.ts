@@ -131,7 +131,6 @@ export class MinimalGoRulesModule {
       useFactory: (configService: ConfigService): MinimalGoRulesConfig => {
         const config = configService.get(configKey);
 
-        debugger;
         // Support both nested config object and flat environment variables
         // If nested config doesn't exist, try to build from environment variables
         const apiUrl = config?.apiUrl || configService.get('GORULES_API_URL');
@@ -149,9 +148,9 @@ export class MinimalGoRulesModule {
           apiUrl,
           apiKey,
           projectId,
-          cacheMaxSize: config?.cacheMaxSize || configService.get('GORULES_CACHE_MAX_SIZE', 1000),
-          httpTimeout: config?.httpTimeout || configService.get('GORULES_HTTP_TIMEOUT', 5000),
-          batchSize: config?.batchSize || configService.get('GORULES_BATCH_SIZE', 50),
+          cacheMaxSize: config?.cacheMaxSize || +configService.get('GORULES_CACHE_MAX_SIZE', 1000),
+          httpTimeout: config?.httpTimeout || +configService.get('GORULES_TIMEOUT', 5000),
+          batchSize: config?.batchSize || +configService.get('GORULES_BATCH_SIZE', 50),
           platform: 'node',
         };
       },

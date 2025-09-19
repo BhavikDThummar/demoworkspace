@@ -41,7 +41,7 @@ import { GoRulesService } from './gorules.service';
         apiUrl: configService.get<string>('GORULES_API_URL'),
         apiKey: configService.get<string>('GORULES_API_KEY'),
         projectId: configService.get<string>('GORULES_PROJECT_ID'),
-        cacheMaxSize: configService.get<number>('GORULES_CACHE_SIZE', 1000),
+        cacheMaxSize: configService.get<number>('GORULES_CACHE_MAX_SIZE', 1000),
         httpTimeout: configService.get<number>('GORULES_TIMEOUT', 5000),
         platform: 'node' as const,
       }),
@@ -79,7 +79,7 @@ import { GoRulesService } from './gorules.service';
         apiUrl: configService.get<string>('GORULES_API_URL'),
         apiKey: configService.get<string>('GORULES_API_KEY'),
         projectId: configService.get<string>('GORULES_PROJECT_ID'),
-        cacheMaxSize: configService.get<number>('GORULES_CACHE_SIZE', 5000),
+        cacheMaxSize: configService.get<number>('GORULES_CACHE_MAX_SIZE', 5000),
         httpTimeout: configService.get<number>('GORULES_TIMEOUT', 10000),
         batchSize: configService.get<number>('GORULES_BATCH_SIZE', 100),
         platform: 'node' as const,
@@ -126,7 +126,7 @@ Set up your environment variables:
 GORULES_API_URL=https://api.gorules.io
 GORULES_API_KEY=your-api-key-here
 GORULES_PROJECT_ID=your-project-id
-GORULES_CACHE_SIZE=1000
+GORULES_CACHE_MAX_SIZE=1000
 GORULES_TIMEOUT=5000
 GORULES_BATCH_SIZE=50
 ```
@@ -153,7 +153,7 @@ export class GoRulesConfig {
   @IsOptional()
   @IsNumber()
   @Transform(({ value }) => parseInt(value))
-  GORULES_CACHE_SIZE?: number = 1000;
+  GORULES_CACHE_MAX_SIZE?: number = 1000;
 
   @IsOptional()
   @IsNumber()

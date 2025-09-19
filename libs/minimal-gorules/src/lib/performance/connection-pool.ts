@@ -343,7 +343,7 @@ export class ConnectionPool {
       };
 
       if (options.body) {
-        requestOptions.body = options.body as BodyInit;
+        requestOptions.body = options.body as any;
       }
 
       const startTime = performance.now();

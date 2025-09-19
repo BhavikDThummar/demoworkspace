@@ -6,11 +6,22 @@
   "tags": ["type:library", "scope:shared", "performance:high"],
   "targets": {
     "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
       "options": {
-        "outputPath": "libs/minimal-gorules/dist",
-        "main": "libs/minimal-gorules/src/index.ts",
+        "commands": [
+          "nx build-node @org/minimal-gorules",
+          "nx build-browser @org/minimal-gorules"
+        ],
+        "parallel": true
+      }
+    },
+    "build-node": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{projectRoot}/dist/node"],
+      "options": {
+        "outputPath": "libs/minimal-gorules/dist/node",
+        "main": "libs/minimal-gorules/src/index.node.ts",
         "tsConfig": "libs/minimal-gorules/tsconfig.lib.json",
         "assets": [
           "libs/minimal-gorules/*.md",
@@ -20,6 +31,121 @@
             "output": "src/lib/jdm_directory"
           }
         ]
+      }
+    },
+    "build-browser": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{projectRoot}/dist/browser"],
+      "options": {
+        "outputPath": "libs/minimal-gorules/dist/browser",
+        "main": "libs/minimal-gorules/src/index.browser.ts",
+        "tsConfig": "libs/minimal-gorules/tsconfig.browser.json",
+        "assets": [
+          "libs/minimal-gorules/*.md"
+        ]
+      }
+    },
+    "build-prod": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "commands": [
+          "nx build-node-prod @org/minimal-gorules",
+          "nx build-browser-prod @org/minimal-gorules"
+        ],
+        "parallel": true
+      }
+    },
+    "build-node-prod": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{projectRoot}/dist/node"],
+      "options": {
+        "outputPath": "libs/minimal-gorules/dist/node",
+        "main": "libs/minimal-gorules/src/index.node.ts",
+        "tsConfig": "libs/minimal-gorules/tsconfig.lib.json",
+        "assets": [
+          "libs/minimal-gorules/*.md",
+          {
+            "glob": "**/*",
+            "input": "libs/gorules/src/lib/jdm_directory",
+            "output": "src/lib/jdm_directory"
+          }
+        ]
+      },
+      "configurations": {
+        "production": {
+          "sourceMap": false,
+          "declaration": true,
+          "declarationMap": false
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "build-browser-prod": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{projectRoot}/dist/browser"],
+      "options": {
+        "outputPath": "libs/minimal-gorules/dist/browser",
+        "main": "libs/minimal-gorules/src/index.browser.ts",
+        "tsConfig": "libs/minimal-gorules/tsconfig.browser.json",
+        "assets": [
+          "libs/minimal-gorules/*.md"
+        ]
+      },
+      "configurations": {
+        "production": {
+          "sourceMap": false,
+          "declaration": true,
+          "declarationMap": false
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "bundle": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist/bundle"],
+      "options": {
+        "commands": [
+          "nx bundle-node @org/minimal-gorules",
+          "nx bundle-browser @org/minimal-gorules"
+        ],
+        "parallel": true
+      }
+    },
+    "bundle-node": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{projectRoot}/dist/bundle/node"],
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "libs/minimal-gorules/dist/bundle/node",
+        "main": "libs/minimal-gorules/src/index.node.ts",
+        "tsConfig": "libs/minimal-gorules/tsconfig.lib.json",
+        "webpackConfig": "libs/minimal-gorules/webpack.config.cjs",
+        "optimization": true,
+        "outputHashing": "none",
+        "sourceMap": false,
+        "extractLicenses": false,
+        "vendorChunk": false,
+        "buildLibsFromSource": true
+      }
+    },
+    "bundle-browser": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{projectRoot}/dist/bundle/browser"],
+      "options": {
+        "target": "web",
+        "compiler": "tsc",
+        "outputPath": "libs/minimal-gorules/dist/bundle/browser",
+        "main": "libs/minimal-gorules/src/index.browser.ts",
+        "tsConfig": "libs/minimal-gorules/tsconfig.browser.json",
+        "webpackConfig": "libs/minimal-gorules/webpack.config.cjs",
+        "optimization": true,
+        "outputHashing": "none",
+        "sourceMap": false,
+        "extractLicenses": false,
+        "vendorChunk": false,
+        "buildLibsFromSource": true
       }
     },
     "build:watch": {

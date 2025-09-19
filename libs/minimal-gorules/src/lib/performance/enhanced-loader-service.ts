@@ -381,7 +381,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
       };
 
       if (options.body) {
-        requestOptions.body = options.body as BodyInit;
+        requestOptions.body = options.body as any;
       }
 
       const response = await fetch(url, requestOptions);

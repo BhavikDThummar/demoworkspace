@@ -2,16 +2,50 @@
   "name": "@org/minimal-gorules",
   "version": "0.0.1",
   "private": true,
+
   "sideEffects": false,
-  "main": "./src/index.js",
-  "types": "./src/index.d.ts",
+  "main": "./dist/node/index.node.js",
+  "module": "./dist/browser/index.browser.js",
+  "browser": "./dist/browser/index.browser.js",
+  "types": "./dist/node/index.node.d.ts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
       "@org/source": "./src/index.ts",
-      "types": "./src/index.d.ts",
-      "require": "./src/index.js",
-      "default": "./src/index.js"
+      "node": {
+        "types": "./dist/node/index.node.d.ts",
+        "require": "./dist/node/index.node.js",
+        "default": "./dist/node/index.node.js"
+      },
+      "browser": {
+        "types": "./dist/browser/index.browser.d.ts",
+        "import": "./dist/browser/index.browser.js",
+        "default": "./dist/browser/index.browser.js"
+      },
+      "types": "./dist/node/index.node.d.ts",
+      "require": "./dist/node/index.node.js",
+      "default": "./dist/node/index.node.js"
+    },
+    "./node": {
+      "types": "./dist/node/index.node.d.ts",
+      "require": "./dist/node/index.node.js",
+      "default": "./dist/node/index.node.js"
+    },
+    "./browser": {
+      "types": "./dist/browser/index.browser.d.ts",
+      "import": "./dist/browser/index.browser.js",
+      "default": "./dist/browser/index.browser.js"
+    },
+    "./bundle/node": {
+      "types": "./dist/node/index.node.d.ts",
+      "require": "./dist/bundle/node/main.js",
+      "import": "./dist/bundle/node/main.js",
+      "default": "./dist/bundle/node/main.js"
+    },
+    "./bundle/browser": {
+      "types": "./dist/browser/index.browser.d.ts",
+      "import": "./dist/bundle/browser/main.js",
+      "default": "./dist/bundle/browser/main.js"
     }
   },
   "dependencies": {

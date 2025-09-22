@@ -4,6 +4,9 @@
   "include": [],
   "references": [
     {
+      "path": "../../libs/gorules"
+    },
+    {
       "path": "./tsconfig.app.json"
     }
   ]

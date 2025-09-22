@@ -109,7 +109,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
       ...config,
     };
 
-    this.projectId = config.projectId;
+    this.projectId = config.projectId || '';
     this.initializeOptimizations();
   }
 

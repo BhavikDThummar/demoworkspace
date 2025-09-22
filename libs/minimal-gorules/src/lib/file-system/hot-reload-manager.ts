@@ -4,7 +4,6 @@
  */
 
 import * as chokidar from 'chokidar';
-import * as path from 'path';
 import { MinimalGoRulesError, MinimalErrorCode } from '../errors/index.js';
 import { 
   CrossPlatformPathUtils, 

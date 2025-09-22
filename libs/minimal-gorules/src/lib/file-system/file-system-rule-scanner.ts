@@ -4,7 +4,6 @@
  */
 
 import * as fs from 'fs';
-import * as path from 'path';
 import { promisify } from 'util';
 import { MinimalRuleMetadata } from '../interfaces/index.js';
 import { MinimalGoRulesError, MinimalErrorCode } from '../errors/index.js';

@@ -152,8 +152,8 @@ export class MinimalGoRulesEngine {
       let allRules: Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>;
       
       if (ruleSource === 'local') {
-        // For local rules, we don't need a projectId
-        allRules = await this.loaderService.loadAllRules();
+        // For local rules, we still need to pass a projectId (can be empty string)
+        allRules = await this.loaderService.loadAllRules(targetProjectId || 'local');
       } else {
         // For cloud rules, we need a projectId
         if (!targetProjectId) {
@@ -583,7 +583,7 @@ export class MinimalGoRulesEngine {
       initialized: this.initialized,
       rulesLoaded: metadata.size,
       lastUpdate: this.lastInitialization,
-      projectId: this.config.projectId,
+      projectId: this.config.projectId || 'local',
       version: '1.0.0',
       ruleSource: this.config.ruleSource || 'cloud',
       enableHotReload: this.config.enableHotReload,

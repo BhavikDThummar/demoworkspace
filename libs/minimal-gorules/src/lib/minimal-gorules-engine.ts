@@ -14,7 +14,7 @@ import {
 } from './interfaces/index';
 import { ConfigFactory } from './config/index';
 import { MinimalRuleCacheManager } from './cache/index';
-import { MinimalRuleLoaderService } from './loader/index';
+import { RuleLoaderFactory, IRuleLoaderFactory } from './loader/index';
 import {
   EnhancedRuleLoaderService,
   MemoryManager,
@@ -41,6 +41,8 @@ export interface EngineStatus {
   lastUpdate: number;
   projectId: string;
   version: string;
+  ruleSource?: 'cloud' | 'local';
+  enableHotReload?: boolean;
   performance?: {
     memoryUsage: number;
     cacheHitRate?: number;
@@ -83,6 +85,7 @@ export class MinimalGoRulesEngine {
   private lastInitialization = 0;
   private memoryManager?: MemoryManager;
   private useEnhancedLoader = false;
+  private ruleLoaderFactory: IRuleLoaderFactory;
 
   constructor(config: MinimalGoRulesConfig) {
     // Use ConfigFactory for validation
@@ -97,6 +100,7 @@ export class MinimalGoRulesEngine {
 
     // Initialize all components
     this.cacheManager = new MinimalRuleCacheManager(config.cacheMaxSize);
+    this.ruleLoaderFactory = new RuleLoaderFactory();
 
     // Use enhanced loader if performance optimizations are enabled
     const enhancedConfig = config as any;
@@ -119,7 +123,8 @@ export class MinimalGoRulesEngine {
       // Start memory monitoring
       this.memoryManager.startMonitoring(5000);
     } else {
-      this.loaderService = new MinimalRuleLoaderService(config);
+      // Use factory to create appropriate loader based on ruleSource
+      this.loaderService = this.ruleLoaderFactory.createLoader(config);
     }
 
     this.tagManager = new TagManager();
@@ -137,13 +142,28 @@ export class MinimalGoRulesEngine {
    */
   async initialize(projectId?: string): Promise<EngineStatus> {
     const targetProjectId = projectId || this.config.projectId;
+    const ruleSource = this.config.ruleSource || 'cloud';
 
     try {
       // Clear existing cache
       await this.cacheManager.clear();
 
-      // Load all rules from GoRules Cloud
-      const allRules = await this.loaderService.loadAllRules(targetProjectId);
+      // Load all rules based on rule source
+      let allRules: Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>;
+      
+      if (ruleSource === 'local') {
+        // For local rules, we don't need a projectId
+        allRules = await this.loaderService.loadAllRules();
+      } else {
+        // For cloud rules, we need a projectId
+        if (!targetProjectId) {
+          throw new MinimalGoRulesError(
+            MinimalErrorCode.INVALID_INPUT,
+            'Project ID is required for cloud rule loading'
+          );
+        }
+        allRules = await this.loaderService.loadAllRules(targetProjectId);
+      }
 
       // Store all rules in cache
       await this.cacheManager.setMultiple(allRules);
@@ -156,8 +176,10 @@ export class MinimalGoRulesEngine {
         initialized: true,
         rulesLoaded: allRules.size,
         lastUpdate: this.lastInitialization,
-        projectId: targetProjectId,
+        projectId: targetProjectId || 'local',
         version: '1.0.0',
+        ruleSource: this.config.ruleSource || 'cloud',
+        enableHotReload: this.config.enableHotReload,
         performance: this.getPerformanceStats(),
       };
 
@@ -563,6 +585,8 @@ export class MinimalGoRulesEngine {
       lastUpdate: this.lastInitialization,
       projectId: this.config.projectId,
       version: '1.0.0',
+      ruleSource: this.config.ruleSource || 'cloud',
+      enableHotReload: this.config.enableHotReload,
       performance: this.getPerformanceStats(),
     };
   }
@@ -579,6 +603,7 @@ export class MinimalGoRulesEngine {
    */
   updateConfig(newConfig: Partial<MinimalGoRulesConfig>): void {
     const oldProjectId = this.config.projectId;
+    const oldRuleSource = this.config.ruleSource;
     this.config = { ...this.config, ...newConfig };
 
     // If project ID changed, mark as uninitialized
@@ -586,9 +611,17 @@ export class MinimalGoRulesEngine {
       this.initialized = false;
     }
 
-    // Update loader service if API-related config changed
-    if (newConfig.apiUrl || newConfig.apiKey || newConfig.httpTimeout) {
-      this.loaderService = new MinimalRuleLoaderService(this.config);
+    // Update loader service if rule source or API-related config changed
+    if (newConfig.ruleSource !== oldRuleSource || 
+        newConfig.apiUrl || 
+        newConfig.apiKey || 
+        newConfig.httpTimeout ||
+        newConfig.localRulesPath) {
+      // Don't update if using enhanced loader
+      if (!this.useEnhancedLoader) {
+        this.loaderService = this.ruleLoaderFactory.createLoader(this.config);
+        this.versionManager = new VersionManager(this.cacheManager, this.loaderService);
+      }
     }
 
     // Update cache manager if cache size changed

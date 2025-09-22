@@ -146,6 +146,14 @@ async function testVersionManager() {
   }
 }
 
+// Jest test
+describe('Version Manager Simple Test', () => {
+  it('should pass basic functionality test', async () => {
+    const result = await testVersionManager();
+    expect(result).toBe(true);
+  });
+});
+
 // Run the test if this file is executed directly
 if (require.main === module) {
   testVersionManager().then((success) => {

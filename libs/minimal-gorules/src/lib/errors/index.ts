@@ -3,3 +3,4 @@
  */
 
 export * from './minimal-errors.js';
+export * from './file-system-error-handler.js';

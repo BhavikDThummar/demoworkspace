@@ -3,13 +3,39 @@
  */
 
 /**
+ * File system watch options for hot reload functionality
+ */
+export interface FileSystemWatchOptions {
+  ignored?: string | RegExp | (string | RegExp)[];
+  persistent?: boolean;
+  ignoreInitial?: boolean;
+}
+
+/**
+ * File system options for local rule loading
+ */
+export interface FileSystemOptions {
+  recursive?: boolean; // default: true
+  watchOptions?: FileSystemWatchOptions;
+}
+
+/**
  * Minimal GoRules engine configuration
  */
 export interface MinimalGoRulesConfig {
-  // Required
-  apiUrl: string;
-  apiKey: string;
-  projectId: string;
+  // Rule source configuration
+  ruleSource?: 'cloud' | 'local'; // default: 'cloud'
+
+  // Cloud-specific configuration (required when ruleSource === 'cloud')
+  apiUrl?: string;
+  apiKey?: string;
+  projectId?: string;
+
+  // Local rule configuration (required when ruleSource === 'local')
+  localRulesPath?: string;
+  enableHotReload?: boolean; // default: false, only for local rules
+  metadataFilePattern?: string; // default: '*.meta.json'
+  fileSystemOptions?: FileSystemOptions;
 
   // Optional performance settings
   cacheMaxSize?: number; // default: 1000

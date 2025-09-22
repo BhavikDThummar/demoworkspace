@@ -131,28 +131,62 @@ export class MinimalGoRulesModule {
       useFactory: (configService: ConfigService): MinimalGoRulesConfig => {
         const config = configService.get(configKey);
 
-        // Support both nested config object and flat environment variables
-        // If nested config doesn't exist, try to build from environment variables
-        const apiUrl = config?.apiUrl || configService.get('GORULES_API_URL');
-        const apiKey = config?.apiKey || configService.get('GORULES_API_KEY');
-        const projectId = config?.projectId || configService.get('GORULES_PROJECT_ID');
+        // Determine rule source from config or environment
+        const ruleSource = config?.ruleSource || configService.get('GORULES_RULE_SOURCE', 'cloud') as 'cloud' | 'local';
 
-        if (!apiUrl || !apiKey || !projectId) {
-          throw new Error(
-            `Missing required configuration. Either provide a '${configKey}' config object or set environment variables: ` +
-              'GORULES_API_URL, GORULES_API_KEY, GORULES_PROJECT_ID',
-          );
+        // Build configuration based on rule source
+        if (ruleSource === 'local') {
+          // Local rule configuration
+          const localRulesPath = config?.localRulesPath || configService.get('GORULES_LOCAL_RULES_PATH');
+          
+          if (!localRulesPath) {
+            throw new Error(
+              `Missing required configuration for local rule loading. Either provide a '${configKey}.localRulesPath' config or set environment variable: GORULES_LOCAL_RULES_PATH`,
+            );
+          }
+
+          return {
+            ruleSource: 'local',
+            localRulesPath,
+            enableHotReload: config?.enableHotReload ?? configService.get('GORULES_ENABLE_HOT_RELOAD') === 'true',
+            metadataFilePattern: config?.metadataFilePattern || configService.get('GORULES_METADATA_FILE_PATTERN', '*.meta.json'),
+            fileSystemOptions: {
+              recursive: config?.fileSystemOptions?.recursive ?? configService.get('GORULES_FS_RECURSIVE') !== 'false',
+              watchOptions: {
+                ignored: config?.fileSystemOptions?.watchOptions?.ignored || configService.get('GORULES_WATCH_IGNORED'),
+                persistent: config?.fileSystemOptions?.watchOptions?.persistent ?? configService.get('GORULES_WATCH_PERSISTENT') !== 'false',
+                ignoreInitial: config?.fileSystemOptions?.watchOptions?.ignoreInitial ?? configService.get('GORULES_WATCH_IGNORE_INITIAL') === 'true',
+              },
+            },
+            cacheMaxSize: config?.cacheMaxSize || +configService.get('GORULES_CACHE_MAX_SIZE', 1000),
+            httpTimeout: config?.httpTimeout || +configService.get('GORULES_TIMEOUT', 5000),
+            batchSize: config?.batchSize || +configService.get('GORULES_BATCH_SIZE', 50),
+            platform: 'node',
+          };
+        } else {
+          // Cloud rule configuration (existing logic)
+          const apiUrl = config?.apiUrl || configService.get('GORULES_API_URL');
+          const apiKey = config?.apiKey || configService.get('GORULES_API_KEY');
+          const projectId = config?.projectId || configService.get('GORULES_PROJECT_ID');
+
+          if (!apiUrl || !apiKey || !projectId) {
+            throw new Error(
+              `Missing required configuration for cloud rule loading. Either provide a '${configKey}' config object or set environment variables: ` +
+                'GORULES_API_URL, GORULES_API_KEY, GORULES_PROJECT_ID',
+            );
+          }
+
+          return {
+            ruleSource: 'cloud',
+            apiUrl,
+            apiKey,
+            projectId,
+            cacheMaxSize: config?.cacheMaxSize || +configService.get('GORULES_CACHE_MAX_SIZE', 1000),
+            httpTimeout: config?.httpTimeout || +configService.get('GORULES_TIMEOUT', 5000),
+            batchSize: config?.batchSize || +configService.get('GORULES_BATCH_SIZE', 50),
+            platform: 'node',
+          };
         }
-
-        return {
-          apiUrl,
-          apiKey,
-          projectId,
-          cacheMaxSize: config?.cacheMaxSize || +configService.get('GORULES_CACHE_MAX_SIZE', 1000),
-          httpTimeout: config?.httpTimeout || +configService.get('GORULES_TIMEOUT', 5000),
-          batchSize: config?.batchSize || +configService.get('GORULES_BATCH_SIZE', 50),
-          platform: 'node',
-        };
       },
       inject: [ConfigService],
       autoInitialize: options?.autoInitialize,

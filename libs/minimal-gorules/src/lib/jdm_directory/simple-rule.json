@@ -1,0 +1,171 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "type": "inputNode",
+      "content": {
+        "schema": ""
+      },
+      "id": "4a90d06a-7a6b-4ad1-9ed9-60f6d2bc88dd",
+      "name": "request",
+      "position": {
+        "x": 110,
+        "y": 114
+      }
+    },
+    {
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "rules": [
+          {
+            "_id": "25f82163-ec8e-4647-99ca-6f614d5fcfe9",
+            "_description": "",
+            "1f6e948b-a519-4c39-8c1d-463a9452edad": "",
+            "77ed54a5-ec44-4dd7-b108-e386460dd6f8": "\"gold\"",
+            "8291672a-a88c-4c0a-98ee-f8bceecb4924": "\"US\"",
+            "cb195c72-0ca0-47f7-93f6-4636e322f041": "2",
+            "e3bdd5eb-16f1-4f6c-9a3b-f569c91f41ec": "> 1000"
+          },
+          {
+            "_id": "95da2a3a-109d-4aed-9a04-475eba312e94",
+            "_description": "",
+            "1f6e948b-a519-4c39-8c1d-463a9452edad": "",
+            "77ed54a5-ec44-4dd7-b108-e386460dd6f8": "",
+            "8291672a-a88c-4c0a-98ee-f8bceecb4924": "\"US\"",
+            "cb195c72-0ca0-47f7-93f6-4636e322f041": "3",
+            "e3bdd5eb-16f1-4f6c-9a3b-f569c91f41ec": "> 1000"
+          },
+          {
+            "_id": "fc51ae08-c4c7-4908-a996-c04946053e88",
+            "_description": "",
+            "1f6e948b-a519-4c39-8c1d-463a9452edad": "25",
+            "77ed54a5-ec44-4dd7-b108-e386460dd6f8": "",
+            "8291672a-a88c-4c0a-98ee-f8bceecb4924": "\"US\"",
+            "cb195c72-0ca0-47f7-93f6-4636e322f041": "",
+            "e3bdd5eb-16f1-4f6c-9a3b-f569c91f41ec": ""
+          },
+          {
+            "_id": "bd14fb01-089c-465d-9e72-d6f21ddfc0ac",
+            "_description": "",
+            "1f6e948b-a519-4c39-8c1d-463a9452edad": "",
+            "77ed54a5-ec44-4dd7-b108-e386460dd6f8": "",
+            "8291672a-a88c-4c0a-98ee-f8bceecb4924": "\"CA\",\"MX\"",
+            "cb195c72-0ca0-47f7-93f6-4636e322f041": "5",
+            "e3bdd5eb-16f1-4f6c-9a3b-f569c91f41ec": "> 1000"
+          },
+          {
+            "_id": "d3351007-aabc-4503-8f79-1e6ada3ebf20",
+            "_description": "",
+            "1f6e948b-a519-4c39-8c1d-463a9452edad": "50",
+            "77ed54a5-ec44-4dd7-b108-e386460dd6f8": "",
+            "8291672a-a88c-4c0a-98ee-f8bceecb4924": "\"CA\",\"MX\"",
+            "cb195c72-0ca0-47f7-93f6-4636e322f041": "",
+            "e3bdd5eb-16f1-4f6c-9a3b-f569c91f41ec": ""
+          },
+          {
+            "_id": "fbd715f9-6a96-498e-8ae4-a0094dd32e8c",
+            "_description": "",
+            "1f6e948b-a519-4c39-8c1d-463a9452edad": "",
+            "77ed54a5-ec44-4dd7-b108-e386460dd6f8": "",
+            "8291672a-a88c-4c0a-98ee-f8bceecb4924": "\"IE\",\"FRI','IDE\"",
+            "cb195c72-0ca0-47f7-93f6-4636e322f041": "10",
+            "e3bdd5eb-16f1-4f6c-9a3b-f569c91f41ec": "> 1000"
+          },
+          {
+            "_id": "229dfcb6-39d2-444c-806e-218f372a6dc6",
+            "_description": "",
+            "1f6e948b-a519-4c39-8c1d-463a9452edad": "100",
+            "77ed54a5-ec44-4dd7-b108-e386460dd6f8": "",
+            "8291672a-a88c-4c0a-98ee-f8bceecb4924": "\"IE\",\"FRI','IDE\"",
+            "cb195c72-0ca0-47f7-93f6-4636e322f041": "",
+            "e3bdd5eb-16f1-4f6c-9a3b-f569c91f41ec": ""
+          },
+          {
+            "_id": "cb1626c8-02b5-46aa-b267-969e35fc7e6c",
+            "_description": "",
+            "1f6e948b-a519-4c39-8c1d-463a9452edad": "",
+            "77ed54a5-ec44-4dd7-b108-e386460dd6f8": "",
+            "8291672a-a88c-4c0a-98ee-f8bceecb4924": "",
+            "cb195c72-0ca0-47f7-93f6-4636e322f041": "15",
+            "e3bdd5eb-16f1-4f6c-9a3b-f569c91f41ec": "> 1000"
+          },
+          {
+            "_id": "833f78ad-d58a-4688-b9f4-4d0442944e56",
+            "_description": "",
+            "1f6e948b-a519-4c39-8c1d-463a9452edad": "150",
+            "77ed54a5-ec44-4dd7-b108-e386460dd6f8": "",
+            "8291672a-a88c-4c0a-98ee-f8bceecb4924": "",
+            "cb195c72-0ca0-47f7-93f6-4636e322f041": "",
+            "e3bdd5eb-16f1-4f6c-9a3b-f569c91f41ec": ""
+          }
+        ],
+        "inputs": [
+          {
+            "id": "e3bdd5eb-16f1-4f6c-9a3b-f569c91f41ec",
+            "name": "Cart total",
+            "field": "cart.total"
+          },
+          {
+            "id": "8291672a-a88c-4c0a-98ee-f8bceecb4924",
+            "name": "Customer country",
+            "field": "customer.country"
+          },
+          {
+            "id": "77ed54a5-ec44-4dd7-b108-e386460dd6f8",
+            "name": "Customer tier",
+            "field": "customer.tier"
+          }
+        ],
+        "outputs": [
+          {
+            "id": "1f6e948b-a519-4c39-8c1d-463a9452edad",
+            "name": "Fees Flat ($)",
+            "field": "fees.flat"
+          },
+          {
+            "id": "cb195c72-0ca0-47f7-93f6-4636e322f041",
+            "name": "Fees Percentage",
+            "field": "fees.percentage"
+          }
+        ],
+        "passThrough": true,
+        "inputField": null,
+        "outputPath": null,
+        "executionMode": "single"
+      },
+      "id": "bdd3873a-623b-411b-a323-20b567ef610b",
+      "name": "Fees",
+      "position": {
+        "x": 430,
+        "y": 114
+      }
+    },
+    {
+      "type": "outputNode",
+      "content": {
+        "schema": "{\r\n  \"fees\": {\r\n    \"flat\": 250,\r\n    \"abcd\": 5\r\n  }\r\n}"
+      },
+      "id": "897379c2-087d-430e-8a7a-b5f7fe474f79",
+      "name": "response",
+      "position": {
+        "x": 775,
+        "y": 115
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "b5ef1304-f4ec-4dde-adbd-d22501c88a29",
+      "sourceId": "4a90d06a-7a6b-4ad1-9ed9-60f6d2bc88dd",
+      "targetId": "bdd3873a-623b-411b-a323-20b567ef610b",
+      "type": "edge"
+    },
+    {
+      "id": "d4139e13-8318-4eba-9d6b-435a614a72d1",
+      "sourceId": "bdd3873a-623b-411b-a323-20b567ef610b",
+      "targetId": "897379c2-087d-430e-8a7a-b5f7fe474f79",
+      "type": "edge"
+    }
+  ]
+}

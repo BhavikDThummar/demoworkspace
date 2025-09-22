@@ -662,4 +662,268 @@ describe('MinimalGoRulesEngine', () => {
       expect(result.results.size).toBe(10);
     });
   });
+
+  describe('Hybrid Rule Loading Integration', () => {
+    describe('Cloud Rule Source', () => {
+      it('should initialize with cloud rule source by default', async () => {
+        const cloudConfig: MinimalGoRulesConfig = {
+          ...testConfig,
+          // ruleSource not specified, should default to 'cloud'
+        };
+
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: async () => ({
+            rules: Object.values(mockRuleData),
+          }),
+        });
+
+        const cloudEngine = new MinimalGoRulesEngine(cloudConfig);
+        const status = await cloudEngine.initialize();
+
+        expect(status.initialized).toBe(true);
+        expect(status.rulesLoaded).toBe(3);
+        expect(status.projectId).toBe('test-project');
+      });
+
+      it('should initialize with explicit cloud rule source', async () => {
+        const cloudConfig: MinimalGoRulesConfig = {
+          ...testConfig,
+          ruleSource: 'cloud',
+        };
+
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: async () => ({
+            rules: Object.values(mockRuleData),
+          }),
+        });
+
+        const cloudEngine = new MinimalGoRulesEngine(cloudConfig);
+        const status = await cloudEngine.initialize();
+
+        expect(status.initialized).toBe(true);
+        expect(status.rulesLoaded).toBe(3);
+        expect(status.projectId).toBe('test-project');
+      });
+
+      it('should require projectId for cloud rule source', () => {
+        const cloudConfig: MinimalGoRulesConfig = {
+          apiUrl: 'https://api.gorules.io',
+          apiKey: 'test-api-key',
+          ruleSource: 'cloud',
+          // projectId missing
+        };
+
+        expect(() => new MinimalGoRulesEngine(cloudConfig)).toThrow(
+          expect.objectContaining({
+            message: expect.stringContaining('Project ID is required')
+          })
+        );
+      });
+    });
+
+    describe('Local Rule Source', () => {
+      it('should require localRulesPath for local rule source', () => {
+        const invalidConfig: MinimalGoRulesConfig = {
+          ruleSource: 'local',
+          // localRulesPath missing
+        };
+
+        expect(() => new MinimalGoRulesEngine(invalidConfig)).toThrow(
+          expect.objectContaining({
+            message: expect.stringContaining('Local rules path is required when rule source is "local"')
+          })
+        );
+      });
+
+      it('should use RuleLoaderFactory for local rule source', () => {
+        // Test that the engine uses the factory correctly for local rules
+        // We expect this to fail with file system validation, but it should get past the factory logic
+        const localConfig: MinimalGoRulesConfig = {
+          ruleSource: 'local',
+          localRulesPath: './non-existent-path',
+          enableHotReload: false,
+        };
+
+        expect(() => new MinimalGoRulesEngine(localConfig)).toThrow(
+          expect.objectContaining({
+            message: expect.stringContaining('localRulesPath does not exist')
+          })
+        );
+      });
+
+      it('should not require cloud configuration for local rule source', () => {
+        const localConfigWithoutCloudSettings: MinimalGoRulesConfig = {
+          ruleSource: 'local',
+          localRulesPath: './non-existent-path',
+          // No apiUrl, apiKey, or projectId required for local rules
+        };
+
+        // Should fail with file system validation, not cloud configuration validation
+        expect(() => new MinimalGoRulesEngine(localConfigWithoutCloudSettings)).toThrow(
+          expect.objectContaining({
+            message: expect.stringContaining('localRulesPath does not exist')
+          })
+        );
+      });
+    });
+
+    describe('Configuration Switching', () => {
+      it('should update configuration from cloud to local rule source', async () => {
+        // Start with cloud configuration
+        const cloudConfig: MinimalGoRulesConfig = {
+          ...testConfig,
+          ruleSource: 'cloud',
+        };
+
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: async () => ({
+            rules: Object.values(mockRuleData),
+          }),
+        });
+
+        const engine = new MinimalGoRulesEngine(cloudConfig);
+        await engine.initialize();
+
+        let status = await engine.getStatus();
+        expect(status.rulesLoaded).toBe(3);
+        expect(status.projectId).toBe('test-project');
+
+        // Update configuration to local (this will trigger factory recreation)
+        // We expect this to fail with file system validation, but it shows the factory is working
+        expect(() => {
+          engine.updateConfig({
+            ruleSource: 'local',
+            localRulesPath: './non-existent-path',
+          });
+        }).toThrow(
+          expect.objectContaining({
+            message: expect.stringContaining('localRulesPath does not exist')
+          })
+        );
+      });
+
+      it('should update configuration properties correctly', () => {
+        // Test that configuration updates work correctly
+        const engine = new MinimalGoRulesEngine({
+          ...testConfig,
+          ruleSource: 'cloud', // Explicitly set rule source
+        });
+        
+        // Update some configuration
+        engine.updateConfig({
+          cacheMaxSize: 2000,
+          httpTimeout: 10000,
+        });
+
+        const config = engine.getConfig();
+        expect(config.cacheMaxSize).toBe(2000);
+        expect(config.httpTimeout).toBe(10000);
+        expect(config.ruleSource).toBe('cloud'); // Should remain unchanged
+      });
+    });
+
+    describe('Backward Compatibility', () => {
+      it('should maintain backward compatibility with existing configurations', async () => {
+        // Configuration without ruleSource should default to cloud
+        const legacyConfig: MinimalGoRulesConfig = {
+          apiUrl: 'https://api.gorules.io',
+          apiKey: 'test-api-key',
+          projectId: 'test-project',
+          cacheMaxSize: 100,
+        };
+
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: async () => ({
+            rules: Object.values(mockRuleData),
+          }),
+        });
+
+        const legacyEngine = new MinimalGoRulesEngine(legacyConfig);
+        const status = await legacyEngine.initialize();
+
+        expect(status.initialized).toBe(true);
+        expect(status.rulesLoaded).toBe(3);
+        expect(status.projectId).toBe('test-project');
+
+        // Should work exactly like before
+        const result = await legacyEngine.executeRule('rule-1', { input: 'test' });
+        expect(result).toBeDefined();
+      });
+
+      it('should handle existing API methods with both rule sources', async () => {
+        // Test with cloud source
+        const cloudEngine = new MinimalGoRulesEngine({
+          ...testConfig,
+          ruleSource: 'cloud',
+        });
+
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: async () => ({
+            rules: Object.values(mockRuleData),
+          }),
+        });
+
+        await cloudEngine.initialize();
+
+        // All existing methods should work
+        expect(await cloudEngine.validateRule('rule-1')).toBe(true);
+        expect(await cloudEngine.getRuleMetadata('rule-1')).toBeDefined();
+        expect((await cloudEngine.getAllRuleMetadata()).size).toBe(3);
+        expect((await cloudEngine.getRulesByTags(['test'])).length).toBeGreaterThan(0);
+
+        const cloudStatus = await cloudEngine.getStatus();
+        expect(cloudStatus.initialized).toBe(true);
+        expect(cloudStatus.rulesLoaded).toBe(3);
+      });
+    });
+
+    describe('Error Handling for Hybrid Loading', () => {
+      it('should handle invalid rule source configuration', () => {
+        const invalidConfig: MinimalGoRulesConfig = {
+          ruleSource: 'invalid' as unknown,
+          apiUrl: 'https://api.gorules.io',
+          apiKey: 'test-api-key',
+          projectId: 'test-project',
+        };
+
+        expect(() => new MinimalGoRulesEngine(invalidConfig)).toThrow(
+          expect.objectContaining({
+            message: expect.stringContaining('Rule source must be either "cloud" or "local"')
+          })
+        );
+      });
+
+      it('should handle missing cloud configuration', () => {
+        const incompleteCloudConfig: MinimalGoRulesConfig = {
+          ruleSource: 'cloud',
+          apiUrl: 'https://api.gorules.io',
+          // apiKey and projectId missing
+        };
+
+        expect(() => new MinimalGoRulesEngine(incompleteCloudConfig)).toThrow(
+          expect.objectContaining({
+            message: expect.stringContaining('API key is required')
+          })
+        );
+      });
+
+      it('should handle missing local configuration', () => {
+        const incompleteLocalConfig: MinimalGoRulesConfig = {
+          ruleSource: 'local',
+          // localRulesPath missing
+        };
+
+        expect(() => new MinimalGoRulesEngine(incompleteLocalConfig)).toThrow(
+          expect.objectContaining({
+            message: expect.stringContaining('Local rules path is required when rule source is "local"')
+          })
+        );
+      });
+    });
+  });
 });

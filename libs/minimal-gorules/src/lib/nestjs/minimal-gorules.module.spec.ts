@@ -245,6 +245,7 @@ describe('MinimalGoRulesModule', () => {
       const config = module.get<MinimalGoRulesConfig>(MINIMAL_GORULES_CONFIG_TOKEN);
       expect(config).toEqual({
         ...mockConfig,
+        ruleSource: 'cloud', // Default value added by forRootWithConfig
         platform: 'node',
       });
     });
@@ -299,6 +300,238 @@ describe('MinimalGoRulesModule', () => {
           ],
         }).compile(),
       ).rejects.toThrow('Missing required configuration');
+    });
+  });
+
+  describe('local rule loading integration', () => {
+    const mockLocalConfig: MinimalGoRulesConfig = {
+      ruleSource: 'local',
+      localRulesPath: './test-rules',
+      enableHotReload: false,
+      metadataFilePattern: '*.meta.json',
+      fileSystemOptions: {
+        recursive: true,
+        watchOptions: {
+          persistent: false,
+          ignoreInitial: true,
+        },
+      },
+      cacheMaxSize: 100,
+      platform: 'node',
+    };
+
+    // Mock the file system to avoid actual directory checks during testing
+    beforeAll(() => {
+      // Mock fs.existsSync to return true for test directories
+      const fs = require('fs');
+      const originalExistsSync = fs.existsSync;
+      jest.spyOn(fs, 'existsSync').mockImplementation((path: string) => {
+        if (typeof path === 'string' && path.includes('test-rules')) {
+          return true;
+        }
+        return originalExistsSync(path);
+      });
+
+      // Mock fs.statSync to return directory stats for test directories
+      const originalStatSync = fs.statSync;
+      jest.spyOn(fs, 'statSync').mockImplementation((path: string) => {
+        if (typeof path === 'string' && path.includes('test-rules')) {
+          return { isDirectory: () => true };
+        }
+        return originalStatSync(path);
+      });
+    });
+
+    afterAll(() => {
+      jest.restoreAllMocks();
+    });
+
+    describe('forRoot with local configuration', () => {
+      let module: TestingModule;
+      let service: MinimalGoRulesService;
+      let engine: MinimalGoRulesEngine;
+      let config: MinimalGoRulesConfig;
+
+      beforeEach(async () => {
+        try {
+          module = await Test.createTestingModule({
+            imports: [
+              MinimalGoRulesModule.forRoot({
+                config: mockLocalConfig,
+                autoInitialize: false, // Disable auto-init for testing
+              }),
+            ],
+          }).compile();
+
+          service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
+          engine = module.get<MinimalGoRulesEngine>(MINIMAL_GORULES_ENGINE_TOKEN);
+          config = module.get<MinimalGoRulesConfig>(MINIMAL_GORULES_CONFIG_TOKEN);
+        } catch (error) {
+          module = undefined as any;
+          throw error;
+        }
+      });
+
+      afterEach(async () => {
+        if (module) {
+          await module.close();
+        }
+      });
+
+      it('should create module with local rule configuration', () => {
+        expect(service).toBeDefined();
+        expect(service).toBeInstanceOf(MinimalGoRulesService);
+      });
+
+      it('should provide local rule configuration', () => {
+        expect(config).toBeDefined();
+        expect(config.ruleSource).toBe('local');
+        expect(config.localRulesPath).toBe('./test-rules');
+        expect(config.enableHotReload).toBe(false);
+      });
+
+      it('should have engine configured for local rules', () => {
+        expect(engine).toBeDefined();
+        expect(engine).toBeInstanceOf(MinimalGoRulesEngine);
+      });
+    });
+
+    describe('forRootWithConfig with local environment variables', () => {
+      let module: TestingModule;
+      let service: MinimalGoRulesService;
+
+      beforeEach(async () => {
+        // Set up environment variables for local rule loading
+        process.env.GORULES_RULE_SOURCE = 'local';
+        process.env.GORULES_LOCAL_RULES_PATH = './test-rules';
+        process.env.GORULES_ENABLE_HOT_RELOAD = 'true';
+        process.env.GORULES_METADATA_FILE_PATTERN = '*.meta.json';
+        process.env.GORULES_FS_RECURSIVE = 'true';
+        process.env.GORULES_WATCH_PERSISTENT = 'false';
+        process.env.GORULES_WATCH_IGNORE_INITIAL = 'true';
+
+        try {
+          module = await Test.createTestingModule({
+            imports: [
+              ConfigModule.forRoot({
+                isGlobal: true,
+                envFilePath: [],
+              }),
+              MinimalGoRulesModule.forRootWithConfig({
+                autoInitialize: false,
+              }),
+            ],
+          }).compile();
+
+          service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
+        } catch (error) {
+          module = undefined as any;
+          throw error;
+        }
+      });
+
+      afterEach(async () => {
+        // Clean up environment variables
+        delete process.env.GORULES_RULE_SOURCE;
+        delete process.env.GORULES_LOCAL_RULES_PATH;
+        delete process.env.GORULES_ENABLE_HOT_RELOAD;
+        delete process.env.GORULES_METADATA_FILE_PATTERN;
+        delete process.env.GORULES_FS_RECURSIVE;
+        delete process.env.GORULES_WATCH_PERSISTENT;
+        delete process.env.GORULES_WATCH_IGNORE_INITIAL;
+
+        if (module) {
+          await module.close();
+        }
+      });
+
+      it('should create module with local rule environment configuration', () => {
+        expect(service).toBeDefined();
+        expect(service).toBeInstanceOf(MinimalGoRulesService);
+      });
+
+      it('should load local rule configuration from environment variables', () => {
+        const config = module.get<MinimalGoRulesConfig>(MINIMAL_GORULES_CONFIG_TOKEN);
+        expect(config.ruleSource).toBe('local');
+        expect(config.localRulesPath).toBe('./test-rules');
+        expect(config.enableHotReload).toBe(true);
+        expect(config.metadataFilePattern).toBe('*.meta.json');
+        expect(config.fileSystemOptions?.recursive).toBe(true);
+        expect(config.fileSystemOptions?.watchOptions?.persistent).toBe(false);
+        expect(config.fileSystemOptions?.watchOptions?.ignoreInitial).toBe(true);
+      });
+    });
+
+    describe('forRootWithConfig with nested local config', () => {
+      let module: TestingModule;
+      let service: MinimalGoRulesService;
+
+      beforeEach(async () => {
+        try {
+          module = await Test.createTestingModule({
+            imports: [
+              ConfigModule.forRoot({
+                isGlobal: true,
+                load: [
+                  () => ({
+                    minimalGoRules: mockLocalConfig,
+                  }),
+                ],
+              }),
+              MinimalGoRulesModule.forRootWithConfig({
+                autoInitialize: false,
+              }),
+            ],
+          }).compile();
+
+          service = module.get<MinimalGoRulesService>(MinimalGoRulesService);
+        } catch (error) {
+          module = undefined as unknown;
+          throw error;
+        }
+      });
+
+      afterEach(async () => {
+        if (module) {
+          await module.close();
+        }
+      });
+
+      it('should create module with nested local configuration', () => {
+        expect(service).toBeDefined();
+        expect(service).toBeInstanceOf(MinimalGoRulesService);
+      });
+
+      it('should load local configuration from nested config object', () => {
+        const config = module.get<MinimalGoRulesConfig>(MINIMAL_GORULES_CONFIG_TOKEN);
+        expect(config.ruleSource).toBe('local');
+        expect(config.localRulesPath).toBe('./test-rules');
+        expect(config.enableHotReload).toBe(false);
+        expect(config.platform).toBe('node');
+      });
+    });
+
+    describe('error handling for local rules', () => {
+      it('should throw error when localRulesPath is missing for local rule source', async () => {
+        process.env.GORULES_RULE_SOURCE = 'local';
+        // Don't set GORULES_LOCAL_RULES_PATH
+
+        await expect(
+          Test.createTestingModule({
+            imports: [
+              ConfigModule.forRoot({
+                isGlobal: true,
+                envFilePath: [],
+              }),
+              MinimalGoRulesModule.forRootWithConfig({
+                autoInitialize: false,
+              }),
+            ],
+          }).compile(),
+        ).rejects.toThrow('Missing required configuration for local rule loading');
+
+        delete process.env.GORULES_RULE_SOURCE;
+      });
     });
   });
 });

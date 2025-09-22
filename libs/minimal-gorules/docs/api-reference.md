@@ -384,10 +384,19 @@ await engine.cleanup();
 
 ```typescript
 interface MinimalGoRulesConfig {
-  // Required
-  apiUrl: string; // GoRules API URL
-  apiKey: string; // API authentication key
-  projectId: string; // GoRules project identifier
+  // Rule source configuration
+  ruleSource?: 'cloud' | 'local'; // Rule loading source (default: 'cloud')
+
+  // Cloud-specific configuration (required when ruleSource === 'cloud')
+  apiUrl?: string; // GoRules API URL
+  apiKey?: string; // API authentication key
+  projectId?: string; // GoRules project identifier
+
+  // Local rule configuration (required when ruleSource === 'local')
+  localRulesPath?: string; // Path to local rules directory
+  enableHotReload?: boolean; // Enable hot reload for local rules (default: false)
+  metadataFilePattern?: string; // Metadata file pattern (default: '*.meta.json')
+  fileSystemOptions?: FileSystemOptions; // File system options
 
   // Optional performance settings
   cacheMaxSize?: number; // Max cached rules (default: 1000)
@@ -408,24 +417,66 @@ interface MinimalGoRulesConfig {
   enableCompression?: boolean; // Enable response compression
   compressionAlgorithm?: 'gzip' | 'deflate' | 'none'; // Compression algorithm
 }
+
+interface FileSystemOptions {
+  recursive?: boolean; // Recursive directory scanning (default: true)
+  watchOptions?: FileSystemWatchOptions; // File watching options
+}
+
+interface FileSystemWatchOptions {
+  ignored?: string | RegExp | (string | RegExp)[]; // Files/patterns to ignore
+  persistent?: boolean; // Keep process alive for watching
+  ignoreInitial?: boolean; // Ignore initial file scan
+}
 ```
 
 ### Configuration Examples
 
-#### Basic Configuration
+#### Cloud Rule Loading (Default)
 
 ```typescript
 const config: MinimalGoRulesConfig = {
+  ruleSource: 'cloud', // Optional - this is the default
   apiUrl: 'https://api.gorules.io',
   apiKey: process.env.GORULES_API_KEY!,
   projectId: 'my-project-id',
 };
 ```
 
-#### High-Performance Configuration
+#### Local Rule Loading
 
 ```typescript
 const config: MinimalGoRulesConfig = {
+  ruleSource: 'local',
+  localRulesPath: './rules', // Path to local rules directory
+  enableHotReload: true, // Enable hot reload for development
+};
+```
+
+#### Local Rules with Custom Options
+
+```typescript
+const config: MinimalGoRulesConfig = {
+  ruleSource: 'local',
+  localRulesPath: './business-rules',
+  enableHotReload: true,
+  metadataFilePattern: '*.metadata.json',
+  fileSystemOptions: {
+    recursive: true,
+    watchOptions: {
+      ignored: ['**/node_modules/**', '**/.git/**'],
+      persistent: true,
+      ignoreInitial: false,
+    },
+  },
+};
+```
+
+#### High-Performance Cloud Configuration
+
+```typescript
+const config: MinimalGoRulesConfig = {
+  ruleSource: 'cloud',
   apiUrl: 'https://api.gorules.io',
   apiKey: process.env.GORULES_API_KEY!,
   projectId: 'my-project-id',
@@ -440,16 +491,51 @@ const config: MinimalGoRulesConfig = {
 };
 ```
 
-#### Browser Configuration
+#### Browser Configuration (Cloud)
 
 ```typescript
 const config: MinimalGoRulesConfig = {
+  ruleSource: 'cloud',
   apiUrl: 'https://api.gorules.io',
   apiKey: process.env.REACT_APP_GORULES_API_KEY!,
   projectId: 'my-project-id',
   platform: 'browser',
   cacheMaxSize: 500, // Smaller cache for browser
   httpTimeout: 8000,
+};
+```
+
+#### Environment-Specific Configuration
+
+```typescript
+// Development - use local rules for fast iteration
+const devConfig: MinimalGoRulesConfig = {
+  ruleSource: 'local',
+  localRulesPath: './dev-rules',
+  enableHotReload: true,
+  enablePerformanceMetrics: true,
+};
+
+// Staging - use cloud rules with performance monitoring
+const stagingConfig: MinimalGoRulesConfig = {
+  ruleSource: 'cloud',
+  apiUrl: 'https://staging-api.gorules.io',
+  apiKey: process.env.GORULES_STAGING_API_KEY!,
+  projectId: process.env.GORULES_STAGING_PROJECT_ID!,
+  enablePerformanceMetrics: true,
+};
+
+// Production - use cloud rules with full optimizations
+const prodConfig: MinimalGoRulesConfig = {
+  ruleSource: 'cloud',
+  apiUrl: 'https://api.gorules.io',
+  apiKey: process.env.GORULES_API_KEY!,
+  projectId: process.env.GORULES_PROJECT_ID!,
+  enablePerformanceOptimizations: true,
+  enableConnectionPooling: true,
+  enableRequestBatching: true,
+  enableCompression: true,
+  cacheMaxSize: 10000,
 };
 ```
 
@@ -663,3 +749,101 @@ import { React } from '@your-org/minimal-gorules';
 ```
 
 See [React Integration Guide](./react-integration.md) for detailed examples and patterns.
+
+## Hybrid Rule Loading
+
+The engine supports both cloud-based and local file system rule loading, allowing you to choose the best approach for your deployment scenario.
+
+### Rule Source Configuration
+
+Use the `ruleSource` configuration option to specify where rules should be loaded from:
+
+- `'cloud'` (default): Load rules from GoRules Cloud API
+- `'local'`: Load rules from local file system
+
+### Local Rule Directory Structure
+
+When using local rule loading, organize your rules in a directory structure:
+
+```
+rules/
+├── pricing/
+│   ├── shipping-fees.json
+│   ├── shipping-fees.meta.json
+│   └── discount-rules.json
+├── validation/
+│   ├── order-validation.json
+│   └── customer-validation.json
+└── approval/
+    └── workflow-rules.json
+```
+
+### Rule ID Mapping
+
+Rule IDs are generated from file paths:
+- `pricing/shipping-fees.json` → Rule ID: `pricing/shipping-fees`
+- `validation/order-validation.json` → Rule ID: `validation/order-validation`
+- `approval/workflow-rules.json` → Rule ID: `approval/workflow-rules`
+
+### Metadata Files
+
+Optional metadata files provide additional rule information:
+
+```json
+{
+  "version": "1.0.0",
+  "tags": ["pricing", "shipping"],
+  "description": "Shipping fee calculation rules",
+  "lastModified": "2024-01-15T10:30:00Z",
+  "author": "development-team",
+  "environment": "development"
+}
+```
+
+### Hot Reload
+
+Enable hot reload for local rules during development:
+
+```typescript
+const config: MinimalGoRulesConfig = {
+  ruleSource: 'local',
+  localRulesPath: './rules',
+  enableHotReload: true, // Automatically reload changed files
+};
+```
+
+### Migration Between Sources
+
+#### From Cloud to Local
+
+1. Export rules from your GoRules project
+2. Organize them in the local directory structure
+3. Update configuration to use `ruleSource: 'local'`
+4. Test rule execution to ensure compatibility
+
+#### From Local to Cloud
+
+1. Upload local rules to your GoRules project
+2. Update configuration to use `ruleSource: 'cloud'`
+3. Verify rule IDs match between local and cloud versions
+4. Test rule execution to ensure compatibility
+
+### Best Practices
+
+#### Development Environment
+- Use local rules with hot reload enabled
+- Organize rules by feature or domain
+- Use metadata files for documentation
+- Enable performance metrics for optimization
+
+#### Production Environment
+- Use cloud rules for centralized management
+- Enable performance optimizations
+- Use connection pooling and request batching
+- Monitor cache hit rates and memory usage
+
+#### Hybrid Deployment
+- Use local rules for some services, cloud for others
+- Implement fallback strategies for high availability
+- Synchronize rules between local and cloud via CI/CD
+- Use version control for local rule management

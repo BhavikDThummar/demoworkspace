@@ -249,7 +249,7 @@ export class EnhancedRuleLoaderService implements IRuleLoaderService {
    */
   private initializeOptimizations(): void {
     // Initialize connection pooling
-    if (this.config.enableConnectionPooling) {
+    if (this.config.enableConnectionPooling && this.config.apiUrl) {
       const baseUrl = this.config.apiUrl.endsWith('/')
         ? this.config.apiUrl.slice(0, -1)
         : this.config.apiUrl;

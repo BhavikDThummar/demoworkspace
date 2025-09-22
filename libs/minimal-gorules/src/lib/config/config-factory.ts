@@ -263,25 +263,45 @@ export class ConfigFactory {
       return { isValid: false, errors };
     }
 
-    if (!config.apiUrl) {
-      errors.push('API URL is required');
-    } else if (!this.isValidUrl(config.apiUrl)) {
-      errors.push('API URL must be a valid URL');
+    // Determine rule source (default to 'cloud' for backward compatibility)
+    const ruleSource = config.ruleSource || 'cloud';
+
+    // Validate rule source
+    if (ruleSource !== 'cloud' && ruleSource !== 'local') {
+      errors.push('Rule source must be either "cloud" or "local"');
     }
 
-    if (!config.apiKey) {
-      errors.push('API key is required');
-    } else if (typeof config.apiKey !== 'string' || config.apiKey.trim().length === 0) {
-      errors.push('API key must be a non-empty string');
+    // Cloud-specific validation
+    if (ruleSource === 'cloud') {
+      if (!config.apiUrl) {
+        errors.push('API URL is required');
+      } else if (!this.isValidUrl(config.apiUrl)) {
+        errors.push('API URL must be a valid URL');
+      }
+
+      if (!config.apiKey) {
+        errors.push('API key is required');
+      } else if (typeof config.apiKey !== 'string' || config.apiKey.trim().length === 0) {
+        errors.push('API key must be a non-empty string');
+      }
+
+      if (
+        !config.projectId ||
+        (typeof config.projectId === 'string' && config.projectId.trim().length === 0)
+      ) {
+        errors.push('Project ID is required');
+      } else if (typeof config.projectId !== 'string') {
+        errors.push('Project ID must be a non-empty string');
+      }
     }
 
-    if (
-      !config.projectId ||
-      (typeof config.projectId === 'string' && config.projectId.trim().length === 0)
-    ) {
-      errors.push('Project ID is required');
-    } else if (typeof config.projectId !== 'string') {
-      errors.push('Project ID must be a non-empty string');
+    // Local-specific validation
+    if (ruleSource === 'local') {
+      if (!config.localRulesPath) {
+        errors.push('Local rules path is required when rule source is "local"');
+      } else if (typeof config.localRulesPath !== 'string' || config.localRulesPath.trim().length === 0) {
+        errors.push('Local rules path must be a non-empty string');
+      }
     }
 
     // Optional numeric validations

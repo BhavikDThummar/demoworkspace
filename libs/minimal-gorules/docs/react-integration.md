@@ -73,6 +73,114 @@ export class GoRulesController {
 }
 ```
 
+### Hybrid Rule Loading for React Applications
+
+The Minimal GoRules Engine supports hybrid rule loading, allowing your NestJS backend to load rules from either GoRules Cloud API or local file system. This provides flexibility for different deployment scenarios:
+
+#### Cloud Rules (Production)
+```typescript
+// Backend: app.module.ts - Production configuration
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env.production'],
+    }),
+    MinimalGoRulesModule.forRootWithConfig({
+      autoInitialize: true,
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+```bash
+# .env.production
+GORULES_RULE_SOURCE=cloud
+GORULES_API_URL=https://api.gorules.io
+GORULES_API_KEY=your-production-api-key
+GORULES_PROJECT_ID=your-project-id
+```
+
+#### Local Rules (Development/Testing)
+```typescript
+// Backend: app.module.ts - Development configuration
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env.development'],
+    }),
+    MinimalGoRulesModule.forRootWithConfig({
+      autoInitialize: true,
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+```bash
+# .env.development
+GORULES_RULE_SOURCE=local
+GORULES_LOCAL_RULES_PATH=./rules
+GORULES_ENABLE_HOT_RELOAD=true
+GORULES_METADATA_FILE_PATTERN=*.meta.json
+```
+
+#### Local Rule Directory Structure
+```
+backend/
+├── rules/
+│   ├── pricing/
+│   │   ├── shipping-fees.json
+│   │   ├── shipping-fees.meta.json
+│   │   ├── discount-rules.json
+│   │   └── discount-rules.meta.json
+│   ├── validation/
+│   │   ├── order-validation.json
+│   │   └── customer-validation.json
+│   └── approval/
+│       ├── workflow-rules.json
+│       └── workflow-rules.meta.json
+├── src/
+└── package.json
+```
+
+#### Environment-Specific Configuration
+```typescript
+// Backend: src/config/gorules.config.ts
+export const getGoRulesConfig = () => {
+  const environment = process.env.NODE_ENV || 'development';
+  
+  if (environment === 'production') {
+    return {
+      ruleSource: 'cloud' as const,
+      apiUrl: process.env.GORULES_API_URL,
+      apiKey: process.env.GORULES_API_KEY,
+      projectId: process.env.GORULES_PROJECT_ID,
+    };
+  }
+  
+  return {
+    ruleSource: 'local' as const,
+    localRulesPath: process.env.GORULES_LOCAL_RULES_PATH || './rules',
+    enableHotReload: process.env.GORULES_ENABLE_HOT_RELOAD === 'true',
+    metadataFilePattern: process.env.GORULES_METADATA_FILE_PATTERN || '*.meta.json',
+  };
+};
+
+// Usage in module
+@Module({
+  imports: [
+    MinimalGoRulesModule.forRoot({
+      config: getGoRulesConfig(),
+      autoInitialize: true,
+    }),
+  ],
+})
+export class AppModule {}
+```
+
 ### Frontend Setup
 
 Install the React integration:
@@ -80,6 +188,189 @@ Install the React integration:
 ```bash
 npm install @your-org/minimal-gorules
 ```
+
+### Alternative: Bundling Local Rules in React (Advanced)
+
+For scenarios where you need to bundle rules directly in your React application (e.g., offline-first applications), you can include rule files in your build process:
+
+#### Webpack Configuration
+```javascript
+// webpack.config.js or craco.config.js
+const path = require('path');
+
+module.exports = {
+  // ... other config
+  resolve: {
+    alias: {
+      '@rules': path.resolve(__dirname, 'src/rules'),
+    },
+  },
+  module: {
+    rules: [
+      {
+        test: /\.rule\.json$/,
+        type: 'json',
+      },
+    ],
+  },
+};
+```
+
+#### Rule Files in React Project
+```
+src/
+├── rules/
+│   ├── pricing/
+│   │   ├── shipping-fees.rule.json
+│   │   └── discount-rules.rule.json
+│   ├── validation/
+│   │   └── order-validation.rule.json
+│   └── index.ts
+├── services/
+│   └── localRulesService.ts
+└── components/
+```
+
+#### Local Rules Service for React
+```typescript
+// src/services/localRulesService.ts
+import shippingFeesRule from '@rules/pricing/shipping-fees.rule.json';
+import discountRulesRule from '@rules/pricing/discount-rules.rule.json';
+import orderValidationRule from '@rules/validation/order-validation.rule.json';
+
+interface LocalRule {
+  id: string;
+  data: any;
+  metadata: {
+    version: string;
+    tags: string[];
+    lastModified: string;
+  };
+}
+
+class LocalRulesService {
+  private rules: Map<string, LocalRule> = new Map();
+
+  constructor() {
+    this.loadRules();
+  }
+
+  private loadRules() {
+    // Load bundled rules
+    this.rules.set('pricing/shipping-fees', {
+      id: 'pricing/shipping-fees',
+      data: shippingFeesRule,
+      metadata: {
+        version: '1.0.0',
+        tags: ['pricing', 'shipping'],
+        lastModified: new Date().toISOString(),
+      },
+    });
+
+    this.rules.set('pricing/discount-rules', {
+      id: 'pricing/discount-rules',
+      data: discountRulesRule,
+      metadata: {
+        version: '1.0.0',
+        tags: ['pricing', 'discount'],
+        lastModified: new Date().toISOString(),
+      },
+    });
+
+    this.rules.set('validation/order-validation', {
+      id: 'validation/order-validation',
+      data: orderValidationRule,
+      metadata: {
+        version: '1.0.0',
+        tags: ['validation', 'order'],
+        lastModified: new Date().toISOString(),
+      },
+    });
+  }
+
+  async executeRule<T = unknown>(ruleId: string, input: Record<string, unknown>): Promise<T> {
+    const rule = this.rules.get(ruleId);
+    if (!rule) {
+      throw new Error(`Rule not found: ${ruleId}`);
+    }
+
+    // Execute rule using a lightweight rule engine
+    // This is a simplified example - you'd need a proper rule execution engine
+    return this.executeRuleData(rule.data, input) as T;
+  }
+
+  private executeRuleData(ruleData: any, input: Record<string, unknown>): any {
+    // Simplified rule execution logic
+    // In a real implementation, you'd use a proper rule engine
+    console.log('Executing rule with input:', input);
+    return { result: 'executed', input, rule: ruleData };
+  }
+
+  getRuleMetadata(ruleId: string) {
+    const rule = this.rules.get(ruleId);
+    return rule ? rule.metadata : null;
+  }
+
+  getAllRuleMetadata() {
+    const metadata = new Map();
+    this.rules.forEach((rule, id) => {
+      metadata.set(id, rule.metadata);
+    });
+    return metadata;
+  }
+}
+
+export const localRulesService = new LocalRulesService();
+```
+
+#### React Hook for Local Rules
+```typescript
+// src/hooks/useLocalRules.ts
+import { useState, useCallback } from 'react';
+import { localRulesService } from '../services/localRulesService';
+
+export function useLocalRules() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const executeRule = useCallback(
+    async <T = unknown>(ruleId: string, input: Record<string, unknown>): Promise<T | null> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const result = await localRulesService.executeRule<T>(ruleId, input);
+        return result;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        setError(errorMessage);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
+  const getRuleMetadata = useCallback((ruleId: string) => {
+    return localRulesService.getRuleMetadata(ruleId);
+  }, []);
+
+  const getAllRuleMetadata = useCallback(() => {
+    return localRulesService.getAllRuleMetadata();
+  }, []);
+
+  return {
+    executeRule,
+    getRuleMetadata,
+    getAllRuleMetadata,
+    loading,
+    error,
+  };
+}
+```
+
+**Note:** This approach requires implementing a client-side rule execution engine, which is complex. The API-based approach with hybrid backend loading is recommended for most use cases.
 
 ## React Service
 

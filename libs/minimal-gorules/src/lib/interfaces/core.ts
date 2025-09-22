@@ -7,6 +7,7 @@
  */
 export interface MinimalRuleMetadata {
   id: string;
+  name?: string;
   version: string;
   tags: string[];
   lastModified: number; // timestamp for fast comparison

@@ -7,10 +7,28 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app/app.module';
+import { loadSSLCertificates } from './utils/ssl-config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const configService = app.get(ConfigService);
+  const configService = new ConfigService();
+  
+  // Check if HTTPS is enabled
+  let enableHttps = configService.get('ENABLE_HTTPS', 'false') === 'true';
+  
+  let httpsOptions = {};
+  if (enableHttps) {
+    const sslConfig = loadSSLCertificates();
+    if (sslConfig) {
+      httpsOptions = sslConfig;
+    } else {
+      Logger.warn('⚠️  HTTPS requested but certificates not found, falling back to HTTP mode');
+      enableHttps = false;
+    }
+  }
+
+  const app = await NestFactory.create(AppModule, {
+    httpsOptions: enableHttps ? httpsOptions : undefined,
+  });
 
   // Global prefix from environment or default
   const globalPrefix = configService.get('API_PREFIX', 'api');
@@ -39,8 +57,10 @@ async function bootstrap() {
 
   await app.listen(port);
 
-  Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
+  const protocol = enableHttps ? 'https' : 'http';
+  Logger.log(`🚀 Application is running on: ${protocol}://localhost:${port}/${globalPrefix}`);
   Logger.log(`🌍 Environment: ${nodeEnv}`);
+  Logger.log(`🔒 HTTPS: ${enableHttps ? 'Enabled' : 'Disabled'}`);
   Logger.log(`🔗 CORS enabled for: ${corsOrigin}`);
 }
 

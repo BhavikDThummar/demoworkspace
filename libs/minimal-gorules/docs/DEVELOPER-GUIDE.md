@@ -58,7 +58,7 @@ results.get('shipping');   // shipping result
 ## 🏗️ Understanding the Flow
 
 ### The Big Picture
-
+![The Big Picture](./attachments/The%20Big%20Picture.png)
 ```mermaid
 graph LR
     A[Your App] --> B[Engine] --> C[Cache] --> D[Rules] --> E[Results]
@@ -80,7 +80,7 @@ graph LR
 4. **Return Result**: You get the result back
 
 ### Detailed Execution Flow
-
+![Detailed Execution Flow](./attachments//Detailed%20Execution%20Flow.png)
 ```mermaid
 sequenceDiagram
     participant App as Your Application

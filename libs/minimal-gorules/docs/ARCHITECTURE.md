@@ -28,7 +28,7 @@ console.log(result); // { fee: 15.99, estimatedDays: 5 }
 ## 🏗️ High-Level Architecture
 
 The library consists of 5 main components that work together:
-
+![High-Level Architecture](./attachments/High-Level%20Architecture.png)
 ```mermaid
 graph TB
     subgraph "Your Application"
@@ -141,7 +141,7 @@ Helps find rules by tags instead of remembering specific rule IDs.
 ## 🔄 How It All Works Together
 
 ### Complete Flow: From Your Code to Rule Result
-
+![Complete Flow: From Your Code to Rule Result](./attachments//Complete%20Flow%20From%20Your%20Code%20to%20Rule%20Result.png)
 ```mermaid
 sequenceDiagram
     participant You as Your Application
@@ -189,10 +189,10 @@ sequenceDiagram
 ```
 
 ### Engine Initialization: What Happens When You Call `initialize()`
-
+![Initialization: What Happens When You Call `initialize()`](./attachments/Initialization%20What%20Happens%20When%20You%20Call%20`initialize()`.png)
 ```mermaid
 flowchart TD
-    START[engine.initialize()] --> VALIDATE[Validate Configuration]
+    START["engine.initialize()"] --> VALIDATE[Validate Configuration]
     VALIDATE --> CREATE[Create All Components]
 
     CREATE --> CACHE[Create Cache Manager<br/>LRU cache with tag indexing]
@@ -207,7 +207,7 @@ flowchart TD
     TAG --> LOAD
     VERSION --> LOAD
 
-    LOAD --> API_CALL[loader.loadAllRules()]
+    LOAD --> API_CALL["loader.loadAllRules()"]
     API_CALL --> FETCH[Fetch from GoRules API]
     FETCH --> STORE[Store in Cache]
     STORE --> INDEX[Build Tag Index]
@@ -219,18 +219,19 @@ flowchart TD
     style START fill:#e3f2fd
     style READY fill:#c8e6c9
     style ERROR fill:#ffcdd2
+
 ```
 
 ### Rule Execution Modes: How Different Execution Types Work
-
+![Rule Execution Modes: How Different Execution Types Work](./attachments/Rule%20Execution%20Modes%20How%20Different%20Execution%20Types%20Work.png)
 ```mermaid
 flowchart TD
     EXECUTE[Execute Request] --> MODE{Execution Mode?}
 
-    MODE -->|Single Rule| SINGLE[executeRule('id', data)]
-    MODE -->|Multiple IDs| PARALLEL[executeRules(['id1', 'id2'], data)]
-    MODE -->|By Tags| TAGS[executeByTags(['pricing'], data)]
-    MODE -->|Custom Selector| CUSTOM[execute(selector, data)]
+    MODE -->|Single Rule| SINGLE[executeRule]
+    MODE -->|Multiple IDs| PARALLEL[executeRules]
+    MODE -->|By Tags| TAGS[executeByTags]
+    MODE -->|Custom Selector| CUSTOM[execute]
 
     SINGLE --> CACHE1[Get rule from cache]
     PARALLEL --> CACHE2[Get all rules from cache]
@@ -260,7 +261,7 @@ flowchart TD
 ## �️ Commponent Relationships
 
 ### How Components Connect and Communicate
-
+![How Components Connect and Communicate](./attachments//How%20Components%20Connect%20and%20Communicate.png)
 ```mermaid
 graph TB
     subgraph "Your Application Layer"
@@ -577,7 +578,7 @@ try {
 
 ### How the Cache Works
 
-The library uses an intelligent caching system to keep rules in memory for fast access:
+The library uses an intelligent caching system to keep rules in memory for fast access: ![image](./attachments//How%20the%20Cache%20Works.png)
 
 ```mermaid
 stateDiagram-v2
@@ -607,7 +608,8 @@ stateDiagram-v2
     }
 ```
 
-### Memory Management (When Performance Optimizations Enabled)
+### Memory Management (When Performance Optimizations Enabled) 
+![image](./attachments/Memory%20Management.png)
 
 ```mermaid
 flowchart TD
@@ -651,7 +653,7 @@ const result3 = await engine.executeRule('new-rule', data); // ~1ms
 ### Built-in Optimizations
 
 The library includes several performance optimizations that work automatically:
-
+![Built-in Optimizations](./attachments/Built-in%20Optimizations.png)
 ```mermaid
 graph TB
     subgraph "Always Active"
@@ -714,7 +716,7 @@ const config = {
 ### Available Integrations
 
 The library works across different platforms and frameworks:
-
+![Available Integrations](./attachments/Available%20Integrations.png)
 ```mermaid
 graph TB
     subgraph "Core Library"
@@ -744,6 +746,7 @@ graph TB
     style CORE fill:#e1f5fe
     style NEST fill:#c8e6c9
     style REACT fill:#ffecb3
+
 ```
 
 ### Import Paths
@@ -828,7 +831,7 @@ try {
 ### How Errors Are Handled
 
 The library uses a structured approach to error handling:
-
+![Error Handling](./attachments//Error%20Handling.png)
 ```mermaid
 flowchart TD
     START[Operation Starts] --> TRY{Try Operation}

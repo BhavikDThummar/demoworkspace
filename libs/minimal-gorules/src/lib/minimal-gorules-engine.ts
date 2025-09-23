@@ -117,7 +117,6 @@ export class MinimalGoRulesEngine {
    * Initialize the appropriate loader service based on configuration
    */
   private initializeLoaderService(): void {
-    debugger;
     // Always use factory to create appropriate loader based on ruleSource
     // This handles both local and cloud rules properly
     this.loaderService = this.ruleLoaderFactory.createLoader(this.config);
@@ -131,7 +130,6 @@ export class MinimalGoRulesEngine {
     const ruleSource = this.config.ruleSource || 'cloud';
     let targetProjectId: string;
 
-    debugger;
     // Determine project ID based on rule source
     if (ruleSource === 'local') {
       // For local rules, project ID is optional and can be used for organization

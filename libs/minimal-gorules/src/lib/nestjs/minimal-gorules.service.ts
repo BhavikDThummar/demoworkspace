@@ -30,7 +30,6 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit(): Promise<void> {
     if (this.autoInitialize) {
       this.logger.log('Auto-initializing Minimal GoRules Engine...');
-      debugger;
       try {
         const startTime = performance.now();
         const status = await this.engine.initialize();

@@ -32,7 +32,6 @@ export class RuleLoaderFactory implements IRuleLoaderFactory {
    * @throws MinimalGoRulesError if invalid ruleSource or missing required config
    */
   createLoader(config: MinimalGoRulesConfig): IRuleLoaderService {
-    debugger;
     // Default to 'cloud' for backward compatibility
     const ruleSource = config.ruleSource || 'cloud';
 

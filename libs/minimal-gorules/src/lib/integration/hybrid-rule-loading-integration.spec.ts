@@ -80,16 +80,16 @@ describe('Hybrid Rule Loading Integration Tests', () => {
       };
       (engine as any).executionEngine.zenEngine = mockZenEngine;
 
-      const result = await engine.executeRule('pricing/shipping-fees', { 
-        weight: 2.5, 
-        distance: 100 
+      const result = await engine.executeRule('pricing/shipping-fees', {
+        weight: 2.5,
+        distance: 100,
       });
 
       expect(result).toEqual({ approved: true, score: 85 });
-      expect(mockZenEngine.evaluate).toHaveBeenCalledWith(
-        'pricing/shipping-fees',
-        { weight: 2.5, distance: 100 }
-      );
+      expect(mockZenEngine.evaluate).toHaveBeenCalledWith('pricing/shipping-fees', {
+        weight: 2.5,
+        distance: 100,
+      });
     });
 
     it('should handle rule metadata from local files', async () => {
@@ -136,9 +136,9 @@ describe('Hybrid Rule Loading Integration Tests', () => {
       };
       (engine as any).executionEngine.zenEngine = mockZenEngine;
 
-      const result = await engine.executeByTags(['validation'], { 
+      const result = await engine.executeByTags(['validation'], {
         orderAmount: 100,
-        customerAge: 25 
+        customerAge: 25,
       });
 
       expect(result.results.size).toBe(1);
@@ -179,19 +179,20 @@ describe('Hybrid Rule Loading Integration Tests', () => {
 
       // Add a new rule file
       const newRulePath = path.join(tempDir, 'new-rule.json');
-      await fs.promises.writeFile(newRulePath, JSON.stringify({
-        name: 'New Rule',
-        nodes: [
-          { id: 'input', type: 'inputNode' },
-          { id: 'output', type: 'outputNode' }
-        ],
-        edges: [
-          { id: 'edge1', source: 'input', target: 'output' }
-        ]
-      }));
+      await fs.promises.writeFile(
+        newRulePath,
+        JSON.stringify({
+          name: 'New Rule',
+          nodes: [
+            { id: 'input', type: 'inputNode' },
+            { id: 'output', type: 'outputNode' },
+          ],
+          edges: [{ id: 'edge1', source: 'input', target: 'output' }],
+        }),
+      );
 
       // Wait for hot reload to detect the change
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // The new rule should be available
       const metadata = await engine.getRuleMetadata('new-rule');
@@ -212,21 +213,24 @@ describe('Hybrid Rule Loading Integration Tests', () => {
       // Mock successful cloud API response
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          rules: [
-            {
-              id: 'cloud-rule-1',
-              name: 'Cloud Rule 1',
-              version: '1.0.0',
-              tags: ['cloud', 'test'],
-              lastModified: new Date().toISOString(),
-              content: Buffer.from(JSON.stringify({
-                nodes: [{ id: 'input', type: 'inputNode' }],
-                edges: []
-              })).toString('base64'),
-            }
-          ]
-        })
+        json: () =>
+          Promise.resolve({
+            rules: [
+              {
+                id: 'cloud-rule-1',
+                name: 'Cloud Rule 1',
+                version: '1.0.0',
+                tags: ['cloud', 'test'],
+                lastModified: new Date().toISOString(),
+                content: Buffer.from(
+                  JSON.stringify({
+                    nodes: [{ id: 'input', type: 'inputNode' }],
+                    edges: [],
+                  }),
+                ).toString('base64'),
+              },
+            ],
+          }),
       });
 
       const config: MinimalGoRulesConfig = {
@@ -248,7 +252,7 @@ describe('Hybrid Rule Loading Integration Tests', () => {
       // Mock successful cloud API response
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ rules: [] })
+        json: () => Promise.resolve({ rules: [] }),
       });
 
       const config: MinimalGoRulesConfig = {
@@ -308,7 +312,7 @@ describe('Hybrid Rule Loading Integration Tests', () => {
       // Mock successful cloud API response
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ rules: [] })
+        json: () => Promise.resolve({ rules: [] }),
       });
 
       // Legacy configuration without ruleSource
@@ -375,7 +379,7 @@ describe('Hybrid Rule Loading Integration Tests', () => {
       };
 
       engine = new MinimalGoRulesEngine(config);
-      
+
       // Should handle invalid JSON gracefully during initialization
       await expect(engine.initialize()).rejects.toThrow(MinimalGoRulesError);
     });
@@ -393,8 +397,9 @@ describe('Hybrid Rule Loading Integration Tests', () => {
       await engine.initialize();
 
       // Try to execute non-existent rule
-      await expect(engine.executeRule('non-existent-rule', {}))
-        .rejects.toThrow(MinimalGoRulesError);
+      await expect(engine.executeRule('non-existent-rule', {})).rejects.toThrow(
+        MinimalGoRulesError,
+      );
     });
 
     it('should handle file system permission errors', async () => {
@@ -408,7 +413,7 @@ describe('Hybrid Rule Loading Integration Tests', () => {
       };
 
       engine = new MinimalGoRulesEngine(config);
-      
+
       // Should handle permission errors gracefully
       const status = await engine.initialize();
       expect(status.initialized).toBe(true);
@@ -436,14 +441,14 @@ describe('Hybrid Rule Loading Integration Tests', () => {
       };
 
       engine = new MinimalGoRulesEngine(config);
-      
+
       const startTime = Date.now();
       const status = await engine.initialize();
       const endTime = Date.now();
 
       expect(status.initialized).toBe(true);
       expect(status.rulesLoaded).toBe(10);
-      
+
       // Should load rules reasonably quickly (less than 1 second for 10 rules)
       expect(endTime - startTime).toBeLessThan(1000);
     });
@@ -494,13 +499,13 @@ async function createTestRuleFiles(baseDir: string): Promise<void> {
       nodes: [
         { id: 'input', type: 'inputNode' },
         { id: 'calculation', type: 'decisionNode' },
-        { id: 'output', type: 'outputNode' }
+        { id: 'output', type: 'outputNode' },
       ],
       edges: [
         { id: 'edge1', source: 'input', target: 'calculation' },
-        { id: 'edge2', source: 'calculation', target: 'output' }
-      ]
-    })
+        { id: 'edge2', source: 'calculation', target: 'output' },
+      ],
+    }),
   );
 
   await fs.promises.writeFile(
@@ -510,13 +515,13 @@ async function createTestRuleFiles(baseDir: string): Promise<void> {
       nodes: [
         { id: 'input', type: 'inputNode' },
         { id: 'validation', type: 'decisionNode' },
-        { id: 'output', type: 'outputNode' }
+        { id: 'output', type: 'outputNode' },
       ],
       edges: [
         { id: 'edge1', source: 'input', target: 'validation' },
-        { id: 'edge2', source: 'validation', target: 'output' }
-      ]
-    })
+        { id: 'edge2', source: 'validation', target: 'output' },
+      ],
+    }),
   );
 
   await fs.promises.writeFile(
@@ -526,13 +531,13 @@ async function createTestRuleFiles(baseDir: string): Promise<void> {
       nodes: [
         { id: 'input', type: 'inputNode' },
         { id: 'workflow', type: 'decisionNode' },
-        { id: 'output', type: 'outputNode' }
+        { id: 'output', type: 'outputNode' },
       ],
       edges: [
         { id: 'edge1', source: 'input', target: 'workflow' },
-        { id: 'edge2', source: 'workflow', target: 'output' }
-      ]
-    })
+        { id: 'edge2', source: 'workflow', target: 'output' },
+      ],
+    }),
   );
 
   // Create metadata files
@@ -542,8 +547,8 @@ async function createTestRuleFiles(baseDir: string): Promise<void> {
       version: '1.0.0',
       tags: ['pricing', 'shipping'],
       description: 'Calculates shipping fees based on weight and distance',
-      author: 'test-team'
-    })
+      author: 'test-team',
+    }),
   );
 
   await fs.promises.writeFile(
@@ -552,8 +557,8 @@ async function createTestRuleFiles(baseDir: string): Promise<void> {
       version: '1.1.0',
       tags: ['validation', 'orders'],
       description: 'Validates order data and business rules',
-      author: 'validation-team'
-    })
+      author: 'validation-team',
+    }),
   );
 
   await fs.promises.writeFile(
@@ -562,8 +567,8 @@ async function createTestRuleFiles(baseDir: string): Promise<void> {
       version: '2.0.0',
       tags: ['approval', 'workflow'],
       description: 'Manages approval workflow logic',
-      author: 'workflow-team'
-    })
+      author: 'workflow-team',
+    }),
   );
 }
 
@@ -577,17 +582,17 @@ async function createMultipleTestRules(baseDir: string, count: number): Promise<
       nodes: [
         { id: 'input', type: 'inputNode' },
         { id: `decision${i}`, type: 'decisionNode' },
-        { id: 'output', type: 'outputNode' }
+        { id: 'output', type: 'outputNode' },
       ],
       edges: [
         { id: 'edge1', source: 'input', target: `decision${i}` },
-        { id: 'edge2', source: `decision${i}`, target: 'output' }
-      ]
+        { id: 'edge2', source: `decision${i}`, target: 'output' },
+      ],
     };
 
     await fs.promises.writeFile(
       path.join(baseDir, `test-rule-${i}.json`),
-      JSON.stringify(ruleContent)
+      JSON.stringify(ruleContent),
     );
 
     // Create metadata for some rules
@@ -596,12 +601,12 @@ async function createMultipleTestRules(baseDir: string, count: number): Promise<
         version: `1.${i}.0`,
         tags: ['test', `group${i % 3}`],
         description: `Test rule number ${i}`,
-        author: 'test-suite'
+        author: 'test-suite',
       };
 
       await fs.promises.writeFile(
         path.join(baseDir, `test-rule-${i}.meta.json`),
-        JSON.stringify(metadataContent)
+        JSON.stringify(metadataContent),
       );
     }
   }

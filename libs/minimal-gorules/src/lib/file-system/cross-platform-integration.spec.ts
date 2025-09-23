@@ -28,22 +28,22 @@ describe('Cross-Platform Integration Tests', () => {
     // Create test rule files
     await fs.promises.writeFile(
       path.join(testDir, 'simple-rule.json'),
-      JSON.stringify({ nodes: [], edges: [] })
+      JSON.stringify({ nodes: [], edges: [] }),
     );
 
     await fs.promises.writeFile(
       path.join(testDir, 'pricing', 'shipping-fees.json'),
-      JSON.stringify({ nodes: [], edges: [] })
+      JSON.stringify({ nodes: [], edges: [] }),
     );
 
     await fs.promises.writeFile(
       path.join(testDir, 'validation', 'order-validation.json'),
-      JSON.stringify({ nodes: [], edges: [] })
+      JSON.stringify({ nodes: [], edges: [] }),
     );
 
     await fs.promises.writeFile(
       path.join(testDir, 'nested', 'deep', 'nested-rule.json'),
-      JSON.stringify({ nodes: [], edges: [] })
+      JSON.stringify({ nodes: [], edges: [] }),
     );
 
     // Create metadata files
@@ -52,8 +52,8 @@ describe('Cross-Platform Integration Tests', () => {
       JSON.stringify({
         version: '1.0.0',
         tags: ['pricing', 'shipping'],
-        description: 'Shipping fee calculation rules'
-      })
+        description: 'Shipping fee calculation rules',
+      }),
     );
   });
 
@@ -80,12 +80,12 @@ describe('Cross-Platform Integration Tests', () => {
       expect(rules).toHaveLength(4);
 
       // Check that rule IDs use forward slashes regardless of platform
-      const ruleIds = rules.map(rule => rule.id).sort();
+      const ruleIds = rules.map((rule) => rule.id).sort();
       expect(ruleIds).toEqual([
         'nested/deep/nested-rule',
         'pricing/shipping-fees',
         'simple-rule',
-        'validation/order-validation'
+        'validation/order-validation',
       ]);
     });
 
@@ -97,12 +97,12 @@ describe('Cross-Platform Integration Tests', () => {
       expect(rules).toHaveLength(4);
 
       // Check that rule IDs use forward slashes regardless of platform
-      const ruleIds = rules.map(rule => rule.id).sort();
+      const ruleIds = rules.map((rule) => rule.id).sort();
       expect(ruleIds).toEqual([
         'nested/deep/nested-rule',
         'pricing/shipping-fees',
         'simple-rule',
-        'validation/order-validation'
+        'validation/order-validation',
       ]);
     });
 
@@ -114,18 +114,18 @@ describe('Cross-Platform Integration Tests', () => {
       expect(rules).toHaveLength(4);
 
       // Check that rule IDs use forward slashes regardless of platform
-      const ruleIds = rules.map(rule => rule.id).sort();
+      const ruleIds = rules.map((rule) => rule.id).sort();
       expect(ruleIds).toEqual([
         'nested/deep/nested-rule',
         'pricing/shipping-fees',
         'simple-rule',
-        'validation/order-validation'
+        'validation/order-validation',
       ]);
     });
 
     it('should load metadata correctly across platforms', async () => {
       const rules = await scanner.scanDirectory();
-      const shippingRule = rules.find(rule => rule.id === 'pricing/shipping-fees');
+      const shippingRule = rules.find((rule) => rule.id === 'pricing/shipping-fees');
 
       expect(shippingRule).toBeDefined();
       expect(shippingRule!.metadata.version).toBe('1.0.0');
@@ -135,7 +135,7 @@ describe('Cross-Platform Integration Tests', () => {
     it('should handle file paths correctly across platforms', async () => {
       const testRuleId = 'pricing/shipping-fees';
       const rule = await scanner.loadRuleFile(
-        CrossPlatformPathUtils.joinPath(testDir, 'pricing', 'shipping-fees.json')
+        CrossPlatformPathUtils.joinPath(testDir, 'pricing', 'shipping-fees.json'),
       );
 
       expect(rule.id).toBe(testRuleId);
@@ -148,8 +148,14 @@ describe('Cross-Platform Integration Tests', () => {
     it('should convert rule IDs to file paths consistently', () => {
       const testCases = [
         { ruleId: 'simple-rule', expectedPath: 'simple-rule.json' },
-        { ruleId: 'pricing/shipping-fees', expectedPath: path.join('pricing', 'shipping-fees.json') },
-        { ruleId: 'nested/deep/nested-rule', expectedPath: path.join('nested', 'deep', 'nested-rule.json') },
+        {
+          ruleId: 'pricing/shipping-fees',
+          expectedPath: path.join('pricing', 'shipping-fees.json'),
+        },
+        {
+          ruleId: 'nested/deep/nested-rule',
+          expectedPath: path.join('nested', 'deep', 'nested-rule.json'),
+        },
       ];
 
       for (const testCase of testCases) {
@@ -161,8 +167,14 @@ describe('Cross-Platform Integration Tests', () => {
     it('should convert file paths to rule IDs consistently', () => {
       const testCases = [
         { filePath: 'simple-rule.json', expectedRuleId: 'simple-rule' },
-        { filePath: path.join('pricing', 'shipping-fees.json'), expectedRuleId: 'pricing/shipping-fees' },
-        { filePath: path.join('nested', 'deep', 'nested-rule.json'), expectedRuleId: 'nested/deep/nested-rule' },
+        {
+          filePath: path.join('pricing', 'shipping-fees.json'),
+          expectedRuleId: 'pricing/shipping-fees',
+        },
+        {
+          filePath: path.join('nested', 'deep', 'nested-rule.json'),
+          expectedRuleId: 'nested/deep/nested-rule',
+        },
       ];
 
       for (const testCase of testCases) {
@@ -185,7 +197,7 @@ describe('Cross-Platform Integration Tests', () => {
         const fullPath = CrossPlatformPathUtils.joinPath(testDir, maliciousPath);
         const resolvedPath = CrossPlatformPathUtils.resolvePath('.', fullPath);
         const isWithinBase = CrossPlatformPathUtils.isPathWithinBase(testDir, resolvedPath);
-        
+
         expect(isWithinBase).toBe(false);
       }
     });
@@ -201,7 +213,7 @@ describe('Cross-Platform Integration Tests', () => {
         const fullPath = CrossPlatformPathUtils.joinPath(testDir, validPath);
         const resolvedPath = CrossPlatformPathUtils.resolvePath('.', fullPath);
         const isWithinBase = CrossPlatformPathUtils.isPathWithinBase(testDir, resolvedPath);
-        
+
         expect(isWithinBase).toBe(true);
       }
     });
@@ -216,9 +228,9 @@ describe('Cross-Platform Integration Tests', () => {
       try {
         // Try to change permissions (may not work on all systems)
         await fs.promises.chmod(restrictedDir, 0o000);
-        
+
         const restrictedScanner = new FileSystemRuleScanner(restrictedDir);
-        
+
         // Should handle permission errors gracefully
         await expect(restrictedScanner.scanDirectory()).rejects.toThrow();
       } catch (error) {
@@ -247,10 +259,10 @@ describe('Cross-Platform Integration Tests', () => {
       await fs.promises.writeFile(invalidJsonFile, '{ invalid json content');
 
       const rules = await scanner.scanDirectory();
-      
+
       // Should continue loading other valid rules despite invalid JSON
       expect(rules.length).toBeGreaterThan(0);
-      
+
       // Clean up
       await fs.promises.unlink(invalidJsonFile);
     });
@@ -286,26 +298,26 @@ describe('HotReloadManager cross-platform behavior', () => {
   describe('platform-specific watch options', () => {
     it('should use platform-optimized settings on Windows', () => {
       mockOs.platform.mockReturnValue('win32');
-      
+
       hotReloadManager = new HotReloadManager(testDir);
-      
+
       // The debounce delay should be platform-specific
       expect(hotReloadManager).toBeDefined();
     });
 
     it('should use platform-optimized settings on macOS', () => {
       mockOs.platform.mockReturnValue('darwin');
-      
+
       hotReloadManager = new HotReloadManager(testDir);
-      
+
       expect(hotReloadManager).toBeDefined();
     });
 
     it('should use platform-optimized settings on Linux', () => {
       mockOs.platform.mockReturnValue('linux');
-      
+
       hotReloadManager = new HotReloadManager(testDir);
-      
+
       expect(hotReloadManager).toBeDefined();
     });
   });
@@ -319,16 +331,16 @@ describe('HotReloadManager cross-platform behavior', () => {
       const testCases = [
         {
           filePath: path.join(testDir, 'simple-rule.json'),
-          expectedRuleId: 'simple-rule'
+          expectedRuleId: 'simple-rule',
         },
         {
           filePath: path.join(testDir, 'pricing', 'shipping-fees.json'),
-          expectedRuleId: 'pricing/shipping-fees'
+          expectedRuleId: 'pricing/shipping-fees',
         },
         {
           filePath: path.join(testDir, 'nested', 'deep', 'rule.json'),
-          expectedRuleId: 'nested/deep/rule'
-        }
+          expectedRuleId: 'nested/deep/rule',
+        },
       ];
 
       for (const testCase of testCases) {
@@ -341,14 +353,14 @@ describe('HotReloadManager cross-platform behavior', () => {
     it('should ignore metadata files', () => {
       const metadataPath = path.join(testDir, 'rule.meta.json');
       const ruleId = (hotReloadManager as any).filePathToRuleId(metadataPath);
-      
+
       expect(ruleId).toBeNull();
     });
 
     it('should ignore non-JSON files', () => {
       const textPath = path.join(testDir, 'readme.txt');
       const ruleId = (hotReloadManager as any).filePathToRuleId(textPath);
-      
+
       expect(ruleId).toBeNull();
     });
   });
@@ -357,7 +369,7 @@ describe('HotReloadManager cross-platform behavior', () => {
     it('should initialize watcher successfully', async () => {
       hotReloadManager = new HotReloadManager(testDir, {
         debounceDelay: 100,
-        ignoreInitial: true
+        ignoreInitial: true,
       });
 
       await expect(hotReloadManager.start()).resolves.not.toThrow();
@@ -384,14 +396,14 @@ describe('Platform-specific behavior mocking', () => {
     it('should handle Windows path separators correctly', () => {
       const windowsPath = 'rules\\pricing\\shipping-fees.json';
       const normalized = CrossPlatformPathUtils.normalizePath(windowsPath);
-      
+
       expect(normalized).toBe(path.normalize(windowsPath));
     });
 
     it('should handle case-insensitive path comparisons on Windows', () => {
       const basePath = 'C:\\Rules';
       const targetPath = 'c:\\rules\\pricing\\shipping.json';
-      
+
       const isWithin = CrossPlatformPathUtils.isPathWithinBase(basePath, targetPath);
       expect(isWithin).toBe(true);
     });
@@ -405,14 +417,14 @@ describe('Platform-specific behavior mocking', () => {
     it('should handle Unix path separators correctly', () => {
       const unixPath = 'rules/pricing/shipping-fees.json';
       const normalized = CrossPlatformPathUtils.normalizePath(unixPath);
-      
+
       expect(normalized).toBe(path.normalize(unixPath));
     });
 
     it('should handle case-sensitive path comparisons on Unix', () => {
       const basePath = '/Rules';
       const targetPath = '/rules/pricing/shipping.json';
-      
+
       const isWithin = CrossPlatformPathUtils.isPathWithinBase(basePath, targetPath);
       expect(isWithin).toBe(false); // Case-sensitive, so should not match
     });
@@ -426,7 +438,7 @@ describe('Platform-specific behavior mocking', () => {
     it('should handle macOS case-insensitive behavior', () => {
       const basePath = '/Rules';
       const targetPath = '/rules/pricing/shipping.json';
-      
+
       const isWithin = CrossPlatformPathUtils.isPathWithinBase(basePath, targetPath);
       expect(isWithin).toBe(true); // macOS is case-insensitive by default
     });

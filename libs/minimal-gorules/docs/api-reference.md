@@ -781,6 +781,7 @@ rules/
 ### Rule ID Mapping
 
 Rule IDs are generated from file paths:
+
 - `pricing/shipping-fees.json` → Rule ID: `pricing/shipping-fees`
 - `validation/order-validation.json` → Rule ID: `validation/order-validation`
 - `approval/workflow-rules.json` → Rule ID: `approval/workflow-rules`
@@ -831,18 +832,21 @@ const config: MinimalGoRulesConfig = {
 ### Best Practices
 
 #### Development Environment
+
 - Use local rules with hot reload enabled
 - Organize rules by feature or domain
 - Use metadata files for documentation
 - Enable performance metrics for optimization
 
 #### Production Environment
+
 - Use cloud rules for centralized management
 - Enable performance optimizations
 - Use connection pooling and request batching
 - Monitor cache hit rates and memory usage
 
 #### Hybrid Deployment
+
 - Use local rules for some services, cloud for others
 - Implement fallback strategies for high availability
 - Synchronize rules between local and cloud via CI/CD

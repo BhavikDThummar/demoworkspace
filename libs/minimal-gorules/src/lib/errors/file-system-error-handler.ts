@@ -16,52 +16,52 @@ export class FileSystemErrorHandler {
     switch (nodeError.code) {
       case 'ENOENT':
         return MinimalGoRulesError.fileNotFound(filePath);
-      
+
       case 'EACCES':
       case 'EPERM':
         return MinimalGoRulesError.fileAccessDenied(filePath);
-      
+
       case 'EISDIR':
         return MinimalGoRulesError.fileSystemError(
           `Expected file but found directory: ${filePath}`,
           error,
-          filePath
+          filePath,
         );
-      
+
       case 'ENOTDIR':
         return MinimalGoRulesError.fileSystemError(
           `Expected directory but found file: ${filePath}`,
           error,
-          filePath
+          filePath,
         );
-      
+
       case 'EMFILE':
       case 'ENFILE':
         return MinimalGoRulesError.fileSystemError(
           `Too many open files: ${filePath}`,
           error,
-          filePath
+          filePath,
         );
-      
+
       case 'ENOSPC':
         return MinimalGoRulesError.fileSystemError(
           `No space left on device: ${filePath}`,
           error,
-          filePath
+          filePath,
         );
-      
+
       case 'EROFS':
         return MinimalGoRulesError.fileSystemError(
           `Read-only file system: ${filePath}`,
           error,
-          filePath
+          filePath,
         );
-      
+
       default:
         return MinimalGoRulesError.fileSystemError(
           `Unexpected file system error: ${error.message}`,
           error,
-          filePath
+          filePath,
         );
     }
   }
@@ -78,23 +78,23 @@ export class FileSystemErrorHandler {
     switch (nodeError.code) {
       case 'ENOENT':
         return MinimalGoRulesError.directoryNotFound(directoryPath);
-      
+
       case 'EACCES':
       case 'EPERM':
         return MinimalGoRulesError.fileAccessDenied(directoryPath);
-      
+
       case 'ENOTDIR':
         return MinimalGoRulesError.fileSystemError(
           `Expected directory but found file: ${directoryPath}`,
           error,
-          directoryPath
+          directoryPath,
         );
-      
+
       default:
         return MinimalGoRulesError.fileSystemError(
           `Directory operation failed: ${error.message}`,
           error,
-          directoryPath
+          directoryPath,
         );
     }
   }
@@ -115,7 +115,10 @@ export class FileSystemErrorHandler {
    * @param validationMessage - The specific validation error message
    * @returns A MinimalGoRulesError with validation details
    */
-  static handleFileValidationError(filePath: string, validationMessage: string): MinimalGoRulesError {
+  static handleFileValidationError(
+    filePath: string,
+    validationMessage: string,
+  ): MinimalGoRulesError {
     return MinimalGoRulesError.invalidFileFormat(filePath, validationMessage);
   }
 
@@ -125,10 +128,7 @@ export class FileSystemErrorHandler {
    * @param filePath - The file path for error context
    * @returns Promise that resolves with the operation result or rejects with MinimalGoRulesError
    */
-  static async wrapFileOperation<T>(
-    operation: () => Promise<T>,
-    filePath: string
-  ): Promise<T> {
+  static async wrapFileOperation<T>(operation: () => Promise<T>, filePath: string): Promise<T> {
     try {
       return await operation();
     } catch (error) {
@@ -144,7 +144,7 @@ export class FileSystemErrorHandler {
    */
   static async wrapDirectoryOperation<T>(
     operation: () => Promise<T>,
-    directoryPath: string
+    directoryPath: string,
   ): Promise<T> {
     try {
       return await operation();
@@ -169,19 +169,19 @@ export class FileSystemErrorHandler {
    */
   private static getFileSystemErrorCodes(): string[] {
     return [
-      'ENOENT',   // No such file or directory
-      'EACCES',   // Permission denied
-      'EPERM',    // Operation not permitted
-      'EISDIR',   // Is a directory
-      'ENOTDIR',  // Not a directory
-      'EMFILE',   // Too many open files
-      'ENFILE',   // File table overflow
-      'ENOSPC',   // No space left on device
-      'EROFS',    // Read-only file system
-      'EEXIST',   // File exists
-      'EBUSY',    // Device or resource busy
-      'EINVAL',   // Invalid argument
-      'EIO',      // I/O error
+      'ENOENT', // No such file or directory
+      'EACCES', // Permission denied
+      'EPERM', // Operation not permitted
+      'EISDIR', // Is a directory
+      'ENOTDIR', // Not a directory
+      'EMFILE', // Too many open files
+      'ENFILE', // File table overflow
+      'ENOSPC', // No space left on device
+      'EROFS', // Read-only file system
+      'EEXIST', // File exists
+      'EBUSY', // Device or resource busy
+      'EINVAL', // Invalid argument
+      'EIO', // I/O error
     ];
   }
 }

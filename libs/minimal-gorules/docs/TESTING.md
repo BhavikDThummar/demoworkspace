@@ -71,6 +71,7 @@ src/
 ## 🧪 Test Categories
 
 ### 1. Unit Tests
+
 Test individual components in isolation:
 
 ```typescript
@@ -79,16 +80,17 @@ describe('MinimalRuleCacheManager', () => {
   it('should cache rules correctly', async () => {
     const cache = new MinimalRuleCacheManager();
     const rule = { id: 'test-rule', content: 'rule-data' };
-    
+
     await cache.set('test-rule', rule);
     const cached = await cache.get('test-rule');
-    
+
     expect(cached).toEqual(rule);
   });
 });
 ```
 
 ### 2. Integration Tests
+
 Test component interactions:
 
 ```typescript
@@ -97,9 +99,9 @@ describe('Engine Integration', () => {
   it('should load and execute rules end-to-end', async () => {
     const engine = new MinimalGoRulesEngine(config);
     await engine.initialize();
-    
+
     const result = await engine.executeRule('shipping-rule', inputData);
-    
+
     expect(result.success).toBe(true);
     expect(result.output).toBeDefined();
   });
@@ -107,6 +109,7 @@ describe('Engine Integration', () => {
 ```
 
 ### 3. Performance Tests
+
 Test performance characteristics:
 
 ```typescript
@@ -118,13 +121,14 @@ describe('Performance Tests', () => {
         await engine.executeRule('fast-rule', testData);
       }
     }, 100); // Expected max time: 100ms
-    
+
     expect(duration).toBeLessThan(100);
   });
 });
 ```
 
 ### 4. Load Tests
+
 Test system under heavy load:
 
 ```typescript
@@ -132,17 +136,18 @@ Test system under heavy load:
 describe('Load Tests', () => {
   it('should handle 100 concurrent executions', async () => {
     const promises = Array.from({ length: 100 }, () =>
-      engine.executeRule('concurrent-rule', testData)
+      engine.executeRule('concurrent-rule', testData),
     );
-    
+
     const results = await Promise.all(promises);
-    
-    expect(results.every(r => r.success)).toBe(true);
+
+    expect(results.every((r) => r.success)).toBe(true);
   });
 });
 ```
 
 ### 5. Memory Tests
+
 Test memory usage and leaks:
 
 ```typescript
@@ -154,7 +159,7 @@ describe('Memory Tests', () => {
         await engine.executeRule('memory-test-rule', testData);
       }
     });
-    
+
     // Memory delta should be minimal (< 1MB)
     expect(memoryDelta).toBeLessThan(1024 * 1024);
   });
@@ -188,55 +193,61 @@ The library uses Jest with advanced configuration:
 ### Custom Test Utilities
 
 #### Performance Testing
+
 ```typescript
 import { measurePerformance } from '../test-setup';
 
 const { result, duration } = await measurePerformance(
   async () => await heavyOperation(),
-  1000 // Expected max time in ms
+  1000, // Expected max time in ms
 );
 ```
 
 #### Memory Testing
+
 ```typescript
 import { measureMemoryUsage } from '../test-setup';
 
 const { result, memoryDelta } = await measureMemoryUsage(
-  async () => await memoryIntensiveOperation()
+  async () => await memoryIntensiveOperation(),
 );
 ```
 
 #### Custom Matchers
+
 ```typescript
 // Custom Jest matcher for ranges
 expect(executionTime).toBeWithinRange(50, 150); // 50-150ms
 ```
 
 #### Mock Data Generators
+
 ```typescript
 import { generateMockRule, generateMockInput } from '../test-setup';
 
 const mockRule = generateMockRule('test-rule-1', {
-  conditions: [{ field: 'amount', operator: 'gt', value: 100 }]
+  conditions: [{ field: 'amount', operator: 'gt', value: 100 }],
 });
 
 const mockInput = generateMockInput({
   amount: 150,
-  currency: 'USD'
+  currency: 'USD',
 });
 ```
 
 ### Test Environment Setup
 
 #### Global Mocks
+
 ```typescript
 // Automatically mocked in test-setup.ts
-global.fetch        // HTTP requests
-global.performance  // Performance measurements
-process.memoryUsage // Memory usage
+global.fetch; // HTTP requests
+global.performance; // Performance measurements
+process.memoryUsage; // Memory usage
 ```
 
 #### Console Suppression
+
 ```typescript
 // Console.error and console.warn are suppressed in tests
 // Restore them when needed:
@@ -244,6 +255,7 @@ console.error = originalConsoleError;
 ```
 
 #### Cleanup Utilities
+
 ```typescript
 import { cleanupAfterTest } from '../test-setup';
 
@@ -255,6 +267,7 @@ afterEach(async () => {
 ## 📊 Coverage Reports
 
 ### Running Coverage
+
 ```bash
 # Generate coverage report
 nx test @org/minimal-gorules --coverage
@@ -264,20 +277,23 @@ nx test @org/minimal-gorules --coverage
 ```
 
 ### Coverage Formats
+
 - **Text**: Console output
 - **LCOV**: For CI/CD integration
 - **HTML**: Interactive browser report
 - **JSON**: Programmatic access
 
 ### Coverage Thresholds
+
 - **Branches**: 80% minimum
-- **Functions**: 85% minimum  
+- **Functions**: 85% minimum
 - **Lines**: 90% minimum
 - **Statements**: 90% minimum
 
 ## 🎯 Test Commands Reference
 
 ### Basic Commands
+
 ```bash
 # Run all tests
 nx test @org/minimal-gorules
@@ -296,6 +312,7 @@ nx test @org/minimal-gorules --verbose
 ```
 
 ### Filtering Tests
+
 ```bash
 # Run specific test file
 nx test @org/minimal-gorules --testPathPattern="cache"
@@ -311,6 +328,7 @@ nx test @org/minimal-gorules --onlyChanged
 ```
 
 ### Performance Testing
+
 ```bash
 # Run load tests specifically
 nx test @org/minimal-gorules --testPathPattern="load-tests"
@@ -323,6 +341,7 @@ nx test @org/minimal-gorules --expose-gc --testPathPattern="memory"
 ```
 
 ### Debugging Tests
+
 ```bash
 # Run tests with Node.js inspector
 nx test @org/minimal-gorules --inspect-brk
@@ -337,6 +356,7 @@ nx test @org/minimal-gorules --verbose --no-coverage
 ## 🔧 Writing Tests
 
 ### Test File Structure
+
 ```typescript
 /**
  * @fileoverview Tests for [Component Name]
@@ -361,10 +381,10 @@ describe('[ComponentName]', () => {
     it('should [expected behavior]', async () => {
       // Arrange
       const input = generateMockInput();
-      
+
       // Act
       const result = await component.process(input);
-      
+
       // Assert
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
@@ -377,7 +397,7 @@ describe('[ComponentName]', () => {
         () => component.heavyOperation(),
         100 // max 100ms
       );
-      
+
       expect(duration).toBeLessThan(100);
     });
   });
@@ -395,29 +415,32 @@ describe('[ComponentName]', () => {
 ### Best Practices
 
 1. **Use descriptive test names**
+
    ```typescript
    // ✅ Good
-   it('should cache rule and return it on subsequent requests')
-   
-   // ❌ Bad  
-   it('should work')
+   it('should cache rule and return it on subsequent requests');
+
+   // ❌ Bad
+   it('should work');
    ```
 
 2. **Follow AAA pattern**
+
    ```typescript
    it('should calculate shipping fee correctly', () => {
      // Arrange
      const order = { weight: 5, destination: 'US' };
-     
+
      // Act
      const fee = calculator.calculate(order);
-     
+
      // Assert
      expect(fee).toBe(15.99);
    });
    ```
 
 3. **Test edge cases**
+
    ```typescript
    describe('Edge Cases', () => {
      it('should handle empty input');
@@ -440,30 +463,35 @@ describe('[ComponentName]', () => {
 ### Common Issues
 
 #### Tests Timeout
+
 ```bash
 # Increase timeout for slow tests
 nx test @org/minimal-gorules --testTimeout=60000
 ```
 
 #### Memory Issues
+
 ```bash
 # Run with garbage collection exposed
 nx test @org/minimal-gorules --expose-gc --maxWorkers=1
 ```
 
 #### Coverage Issues
+
 ```bash
 # Check what's not covered
 nx test @org/minimal-gorules --coverage --coverageReporters=text-summary
 ```
 
 #### Watch Mode Issues
+
 ```bash
 # Clear Jest cache
 nx test @org/minimal-gorules --clearCache
 ```
 
 ### Debug Mode
+
 ```typescript
 // Add to test file for debugging
 console.log('Debug info:', JSON.stringify(data, null, 2));
@@ -477,6 +505,7 @@ fit('debug this test', () => {
 ## 📈 CI/CD Integration
 
 ### GitHub Actions Example
+
 ```yaml
 - name: Run Tests
   run: nx test @org/minimal-gorules --coverage --ci
@@ -488,6 +517,7 @@ fit('debug this test', () => {
 ```
 
 ### Coverage Badges
+
 ```markdown
 ![Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)
 ```

@@ -80,13 +80,13 @@ export interface MinimalGoRulesConfig {
   apiUrl: string;
   apiKey: string;
   projectId: string;
-  
+
   // New hybrid loading properties
   ruleSource?: 'cloud' | 'local'; // default: 'cloud'
   localRulesPath?: string; // required when ruleSource === 'local'
   enableHotReload?: boolean; // default: false, only for local rules
   metadataFilePattern?: string; // default: '*.meta.json'
-  
+
   // File system options
   fileSystemOptions?: {
     recursive?: boolean; // default: true
@@ -109,7 +109,7 @@ export interface IRuleLoaderFactory {
 export class RuleLoaderFactory implements IRuleLoaderFactory {
   createLoader(config: MinimalGoRulesConfig): IRuleLoaderService {
     const ruleSource = config.ruleSource || 'cloud';
-    
+
     switch (ruleSource) {
       case 'cloud':
         return new CloudRuleLoaderService(config);
@@ -130,7 +130,7 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
   private readonly enableHotReload: boolean;
   private readonly fileWatcher?: FileWatcher;
   private readonly metadataPattern: string;
-  
+
   constructor(config: MinimalGoRulesConfig) {
     // Initialize file system access and optional hot-reloading
   }
@@ -163,10 +163,7 @@ export interface FileSystemRule {
 }
 
 export class FileSystemRuleScanner {
-  async scanDirectory(
-    basePath: string, 
-    options: FileSystemScanOptions
-  ): Promise<FileSystemRule[]> {
+  async scanDirectory(basePath: string, options: FileSystemScanOptions): Promise<FileSystemRule[]> {
     // Cross-platform directory scanning
     // Handle recursive subdirectories
     // Generate rule IDs from file paths
@@ -197,10 +194,7 @@ export class HotReloadManager implements IHotReloadManager {
   private readonly watcher: FileWatcher;
   private readonly callbacks: Set<(ruleId: string, change: string) => void>;
 
-  constructor(
-    private readonly rulesPath: string,
-    private readonly options: WatchOptions
-  ) {
+  constructor(private readonly rulesPath: string, private readonly options: WatchOptions) {
     // Initialize file system watcher
   }
 
@@ -263,7 +257,7 @@ export class ConfigValidator {
       if (!config.localRulesPath) {
         errors.push('localRulesPath is required when ruleSource is "local"');
       }
-      
+
       if (config.localRulesPath && !this.isValidPath(config.localRulesPath)) {
         errors.push('localRulesPath must be a valid directory path');
       }
@@ -277,7 +271,7 @@ export class ConfigValidator {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 }
@@ -291,15 +285,17 @@ export class FileSystemErrorHandler {
     if (error.code === 'ENOENT') {
       return MinimalGoRulesError.ruleNotFound(`Rule file not found: ${filePath}`);
     }
-    
+
     if (error.code === 'EACCES') {
       return MinimalGoRulesError.configurationError(`Permission denied: ${filePath}`);
     }
-    
+
     if (error instanceof SyntaxError) {
-      return MinimalGoRulesError.ruleValidationError(`Invalid JSON in ${filePath}: ${error.message}`);
+      return MinimalGoRulesError.ruleValidationError(
+        `Invalid JSON in ${filePath}: ${error.message}`,
+      );
     }
-    
+
     return MinimalGoRulesError.fileSystemError(`File system error for ${filePath}`, error);
   }
 }

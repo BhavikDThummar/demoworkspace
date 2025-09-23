@@ -52,7 +52,9 @@ describe('FileSystemErrorHandler', () => {
 
       expect(result).toBeInstanceOf(MinimalGoRulesError);
       expect(result.code).toBe(MinimalErrorCode.FILE_SYSTEM_ERROR);
-      expect(result.message).toBe(`File system error for ${filePath}: Unexpected file system error: Unknown error`);
+      expect(result.message).toBe(
+        `File system error for ${filePath}: Unexpected file system error: Unknown error`,
+      );
       expect(result.originalError).toBe(error);
     });
   });
@@ -66,7 +68,9 @@ describe('FileSystemErrorHandler', () => {
 
       expect(result).toBeInstanceOf(MinimalGoRulesError);
       expect(result.code).toBe(MinimalErrorCode.JSON_PARSE_ERROR);
-      expect(result.message).toBe(`Invalid JSON in file ${filePath}: Unexpected token } in JSON at position 10`);
+      expect(result.message).toBe(
+        `Invalid JSON in file ${filePath}: Unexpected token } in JSON at position 10`,
+      );
       expect(result.originalError).toBe(parseError);
     });
   });

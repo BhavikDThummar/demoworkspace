@@ -23,7 +23,7 @@ describe('Essential Core Tests', () => {
         ruleSource: 'cloud',
         apiUrl: 'https://api.gorules.io',
         apiKey: 'test-key',
-        projectId: 'test-project'
+        projectId: 'test-project',
       };
 
       const loader = factory.createLoader(config);
@@ -34,7 +34,7 @@ describe('Essential Core Tests', () => {
       const config: MinimalGoRulesConfig = {
         apiUrl: 'https://api.gorules.io',
         apiKey: 'test-key',
-        projectId: 'test-project'
+        projectId: 'test-project',
       };
 
       const loader = factory.createLoader(config);
@@ -44,7 +44,7 @@ describe('Essential Core Tests', () => {
     it('should throw error for invalid ruleSource', () => {
       const config: MinimalGoRulesConfig = {
         ruleSource: 'invalid' as any,
-        apiUrl: 'https://api.gorules.io'
+        apiUrl: 'https://api.gorules.io',
       };
 
       expect(() => factory.createLoader(config)).toThrow(MinimalGoRulesError);
@@ -59,9 +59,10 @@ describe('Essential Core Tests', () => {
         { ruleSource: 'cloud', apiUrl: 'https://api.gorules.io', apiKey: 'key' }, // missing projectId
       ];
 
-      invalidConfigs.forEach(config => {
-        expect(() => new RuleLoaderFactory().createLoader(config as MinimalGoRulesConfig))
-          .toThrow(MinimalGoRulesError);
+      invalidConfigs.forEach((config) => {
+        expect(() => new RuleLoaderFactory().createLoader(config as MinimalGoRulesConfig)).toThrow(
+          MinimalGoRulesError,
+        );
       });
     });
 
@@ -70,7 +71,7 @@ describe('Essential Core Tests', () => {
         ruleSource: 'cloud',
         apiUrl: 'https://api.gorules.io',
         apiKey: 'test-key',
-        projectId: 'test-project'
+        projectId: 'test-project',
       };
 
       expect(() => new RuleLoaderFactory().createLoader(validCloudConfig)).not.toThrow();
@@ -87,8 +88,11 @@ describe('Essential Core Tests', () => {
 
     it('should preserve error context', () => {
       const originalError = new Error('Original message');
-      const wrappedError = MinimalGoRulesError.fileSystemError('File operation failed', originalError);
-      
+      const wrappedError = MinimalGoRulesError.fileSystemError(
+        'File operation failed',
+        originalError,
+      );
+
       expect(wrappedError.originalError).toBe(originalError);
       expect(wrappedError.message).toContain('File operation failed');
     });

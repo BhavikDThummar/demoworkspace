@@ -157,7 +157,7 @@ describe('Hybrid Rule Loading Core Unit Tests', () => {
 
       testCases.forEach((testCase, index) => {
         const result = ConfigValidator.validateHybridConfig(testCase.config);
-        
+
         if (testCase.shouldBeValid) {
           expect(result.isValid).toBe(true);
           expect(result.errors).toHaveLength(0);
@@ -205,7 +205,7 @@ describe('Hybrid Rule Loading Core Unit Tests', () => {
       const defaultCloudConfig = ConfigValidator.createDefaultCloudConfig(
         'https://api.gorules.io',
         'test-key',
-        'test-project'
+        'test-project',
       );
 
       expect(defaultCloudConfig.ruleSource).toBe('cloud');
@@ -254,7 +254,7 @@ describe('Hybrid Rule Loading Core Unit Tests', () => {
       errorCases.forEach((errorCase, index) => {
         const result = FileSystemErrorHandler.handleFileError(
           errorCase.error,
-          `/test/path/rule-${index}.json`
+          `/test/path/rule-${index}.json`,
         );
 
         expect(result).toBeInstanceOf(MinimalGoRulesError);
@@ -264,9 +264,9 @@ describe('Hybrid Rule Loading Core Unit Tests', () => {
     });
 
     it('should preserve original error information', () => {
-      const originalError = Object.assign(new Error('Original message'), { 
+      const originalError = Object.assign(new Error('Original message'), {
         code: 'ENOENT',
-        stack: 'Original stack trace'
+        stack: 'Original stack trace',
       });
 
       const result = FileSystemErrorHandler.handleFileError(originalError, '/test/path');
@@ -288,11 +288,13 @@ describe('Hybrid Rule Loading Core Unit Tests', () => {
       const nullError = null as any;
       const undefinedError = undefined as any;
 
-      expect(() => FileSystemErrorHandler.handleFileError(nullError, '/test/path'))
-        .toThrow(MinimalGoRulesError);
-      
-      expect(() => FileSystemErrorHandler.handleFileError(undefinedError, '/test/path'))
-        .toThrow(MinimalGoRulesError);
+      expect(() => FileSystemErrorHandler.handleFileError(nullError, '/test/path')).toThrow(
+        MinimalGoRulesError,
+      );
+
+      expect(() => FileSystemErrorHandler.handleFileError(undefinedError, '/test/path')).toThrow(
+        MinimalGoRulesError,
+      );
     });
   });
 
@@ -331,7 +333,7 @@ describe('Hybrid Rule Loading Core Unit Tests', () => {
 
     it('should handle paths with special characters', () => {
       const specialCharPath = path.join(tempDir, 'rules with spaces & symbols!');
-      
+
       // Create the directory
       fs.mkdirSync(specialCharPath, { recursive: true });
 
@@ -422,13 +424,13 @@ describe('Hybrid Rule Loading Core Unit Tests', () => {
         cacheMaxSize: 100 + i,
       }));
 
-      const validationPromises = configs.map(config => 
-        Promise.resolve(ConfigValidator.validateHybridConfig(config))
+      const validationPromises = configs.map((config) =>
+        Promise.resolve(ConfigValidator.validateHybridConfig(config)),
       );
 
       const results = await Promise.all(validationPromises);
 
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result.isValid).toBe(true);
         expect(result.errors).toHaveLength(0);
       });
@@ -442,13 +444,13 @@ describe('Hybrid Rule Loading Core Unit Tests', () => {
         cacheMaxSize: 100 + i,
       }));
 
-      const creationPromises = configs.map(config => 
-        Promise.resolve(factory.createLoader(config))
+      const creationPromises = configs.map((config) =>
+        Promise.resolve(factory.createLoader(config)),
       );
 
       const loaders = await Promise.all(creationPromises);
 
-      loaders.forEach(loader => {
+      loaders.forEach((loader) => {
         expect(loader).toBeInstanceOf(LocalRuleLoaderService);
       });
     });
@@ -519,13 +521,13 @@ describe('Hybrid Rule Loading Core Unit Tests', () => {
         },
       ];
 
-      commonMistakes.forEach(mistake => {
+      commonMistakes.forEach((mistake) => {
         const result = ConfigValidator.validateHybridConfig(mistake.config as any);
-        
+
         expect(result.isValid).toBe(false);
-        
+
         const allErrors = result.errors.join(' ').toLowerCase();
-        mistake.expectedErrorKeywords.forEach(keyword => {
+        mistake.expectedErrorKeywords.forEach((keyword) => {
           expect(allErrors).toContain(keyword.toLowerCase());
         });
       });
@@ -538,11 +540,9 @@ describe('Hybrid Rule Loading Core Unit Tests', () => {
       };
 
       const result = ConfigValidator.validateHybridConfig(config);
-      
+
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(error => 
-        error.includes('/non/existent/path')
-      )).toBe(true);
+      expect(result.errors.some((error) => error.includes('/non/existent/path'))).toBe(true);
     });
   });
 });

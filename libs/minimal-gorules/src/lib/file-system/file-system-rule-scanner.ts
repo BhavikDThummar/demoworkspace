@@ -8,10 +8,10 @@ import { promisify } from 'util';
 import { MinimalRuleMetadata } from '../interfaces/index.js';
 import { MinimalGoRulesError, MinimalErrorCode } from '../errors/index.js';
 import { FileSystemErrorHandler } from '../errors/file-system-error-handler.js';
-import { 
-  CrossPlatformPathUtils, 
-  CrossPlatformPermissionUtils, 
-  CrossPlatformValidationUtils 
+import {
+  CrossPlatformPathUtils,
+  CrossPlatformPermissionUtils,
+  CrossPlatformValidationUtils,
 } from './cross-platform-utils.js';
 
 // Promisify fs methods for async/await usage
@@ -63,7 +63,7 @@ export class FileSystemRuleScanner {
     // Validate and normalize the base path using cross-platform utilities
     CrossPlatformValidationUtils.validateFilePath(basePath);
     this.basePath = CrossPlatformPathUtils.resolvePath('.', basePath);
-    
+
     this.options = {
       recursive: options.recursive ?? true,
       fileExtension: options.fileExtension ?? '.json',
@@ -81,7 +81,7 @@ export class FileSystemRuleScanner {
 
       // Scan for all JSON files
       const ruleFiles = await this.findRuleFiles(this.basePath);
-      
+
       // Load each rule file
       const rules: FileSystemRule[] = [];
       const errors: Error[] = [];
@@ -98,14 +98,19 @@ export class FileSystemRuleScanner {
 
       // If we have errors but also some successful rules, log errors but continue
       if (errors.length > 0) {
-        console.warn(`Failed to load ${errors.length} rule files:`, errors.map(e => e.message));
+        console.warn(
+          `Failed to load ${errors.length} rule files:`,
+          errors.map((e) => e.message),
+        );
       }
 
       // If no rules were loaded and we had errors, throw
       if (rules.length === 0 && errors.length > 0) {
         throw new MinimalGoRulesError(
           MinimalErrorCode.CONFIG_ERROR,
-          `Failed to load any rules from ${this.basePath}. Errors: ${errors.map(e => e.message).join(', ')}`
+          `Failed to load any rules from ${this.basePath}. Errors: ${errors
+            .map((e) => e.message)
+            .join(', ')}`,
         );
       }
 
@@ -114,12 +119,12 @@ export class FileSystemRuleScanner {
       if (error instanceof MinimalGoRulesError) {
         throw error;
       }
-      
+
       // Use FileSystemErrorHandler for consistent error handling
       if (FileSystemErrorHandler.isFileSystemError(error as Error)) {
         throw FileSystemErrorHandler.handleDirectoryError(error as Error, this.basePath);
       }
-      
+
       throw this.handleFileSystemError(error, this.basePath);
     }
   }
@@ -159,12 +164,12 @@ export class FileSystemRuleScanner {
       if (error instanceof MinimalGoRulesError) {
         throw error;
       }
-      
+
       // Use FileSystemErrorHandler for consistent error handling
       if (FileSystemErrorHandler.isFileSystemError(error as Error)) {
         throw FileSystemErrorHandler.handleFileError(error as Error, filePath);
       }
-      
+
       throw this.handleFileSystemError(error, filePath);
     }
   }
@@ -177,13 +182,16 @@ export class FileSystemRuleScanner {
   private generateRuleId(filePath: string): string {
     // Get relative path from base path using cross-platform utilities
     const relativePath = CrossPlatformPathUtils.getRelativePath(this.basePath, filePath);
-    
+
     // Remove file extension
-    const withoutExtension = relativePath.replace(CrossPlatformPathUtils.getExtension(relativePath), '');
-    
+    const withoutExtension = relativePath.replace(
+      CrossPlatformPathUtils.getExtension(relativePath),
+      '',
+    );
+
     // Convert path separators to forward slashes for consistent rule IDs across platforms
     const ruleId = CrossPlatformPathUtils.toForwardSlashes(withoutExtension);
-    
+
     return ruleId;
   }
 
@@ -192,13 +200,13 @@ export class FileSystemRuleScanner {
    */
   private async findRuleFiles(dirPath: string): Promise<string[]> {
     const files: string[] = [];
-    
+
     try {
       const entries = await readdir(dirPath, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = CrossPlatformPathUtils.joinPath(dirPath, entry.name);
-        
+
         if (entry.isDirectory() && this.options.recursive) {
           // Check if subdirectory is accessible before recursing
           const isAccessible = await CrossPlatformPermissionUtils.isDirectoryAccessible(fullPath);
@@ -214,7 +222,11 @@ export class FileSystemRuleScanner {
             CrossPlatformValidationUtils.validateFilePath(fullPath);
             files.push(fullPath);
           } catch (error) {
-            console.warn(`Skipping invalid file path: ${fullPath} - ${error instanceof Error ? error.message : 'Unknown error'}`);
+            console.warn(
+              `Skipping invalid file path: ${fullPath} - ${
+                error instanceof Error ? error.message : 'Unknown error'
+              }`,
+            );
           }
         }
       }
@@ -225,7 +237,7 @@ export class FileSystemRuleScanner {
       }
       throw this.handleFileSystemError(error, dirPath);
     }
-    
+
     return files;
   }
 
@@ -242,9 +254,12 @@ export class FileSystemRuleScanner {
   /**
    * Load rule metadata from .meta.json file or generate default metadata
    */
-  private async loadRuleMetadata(ruleFilePath: string, ruleId: string): Promise<MinimalRuleMetadata> {
+  private async loadRuleMetadata(
+    ruleFilePath: string,
+    ruleId: string,
+  ): Promise<MinimalRuleMetadata> {
     const metadataPath = this.getMetadataPath(ruleFilePath);
-    
+
     // First, try to extract name from the rule file itself
     let ruleName: string | undefined;
     try {
@@ -254,22 +269,22 @@ export class FileSystemRuleScanner {
     } catch (error) {
       // Ignore errors when extracting name from rule file
     }
-    
+
     try {
       // Try to load metadata file
       await access(metadataPath, fs.constants.F_OK);
       const metadataContent = await readFile(metadataPath, 'utf-8');
       const metadataFile: RuleMetadataFile = JSON.parse(metadataContent);
-      
+
       // Get file stats for lastModified fallback
       const stats = await stat(ruleFilePath);
-      
+
       return {
         id: ruleId,
         name: ruleName, // Include name from rule file
         version: metadataFile.version || stats.mtime.getTime().toString(),
         tags: metadataFile.tags || [],
-        lastModified: metadataFile.lastModified 
+        lastModified: metadataFile.lastModified
           ? new Date(metadataFile.lastModified).getTime()
           : stats.mtime.getTime(),
       };
@@ -282,10 +297,14 @@ export class FileSystemRuleScanner {
   /**
    * Generate default metadata from file stats
    */
-  private async generateDefaultMetadata(ruleFilePath: string, ruleId: string, name?: string): Promise<MinimalRuleMetadata> {
+  private async generateDefaultMetadata(
+    ruleFilePath: string,
+    ruleId: string,
+    name?: string,
+  ): Promise<MinimalRuleMetadata> {
     try {
       const stats = await stat(ruleFilePath);
-      
+
       return {
         id: ruleId,
         name,
@@ -322,12 +341,12 @@ export class FileSystemRuleScanner {
       if (error instanceof MinimalGoRulesError) {
         throw error;
       }
-      
+
       // Use FileSystemErrorHandler for consistent error handling
       if (FileSystemErrorHandler.isFileSystemError(error as Error)) {
         throw FileSystemErrorHandler.handleDirectoryError(error as Error, this.basePath);
       }
-      
+
       throw this.handleFileSystemError(error, this.basePath);
     }
   }
@@ -339,7 +358,7 @@ export class FileSystemRuleScanner {
     if (!content || typeof content !== 'object') {
       throw FileSystemErrorHandler.handleFileValidationError(
         filePath,
-        `Rule ${ruleId} must be a valid JSON object`
+        `Rule ${ruleId} must be a valid JSON object`,
       );
     }
 
@@ -349,14 +368,14 @@ export class FileSystemRuleScanner {
     if (!rule.nodes || !Array.isArray(rule.nodes)) {
       throw FileSystemErrorHandler.handleFileValidationError(
         filePath,
-        `Rule ${ruleId} missing required 'nodes' array`
+        `Rule ${ruleId} missing required 'nodes' array`,
       );
     }
 
     if (!rule.edges || !Array.isArray(rule.edges)) {
       throw FileSystemErrorHandler.handleFileValidationError(
         filePath,
-        `Rule ${ruleId} missing required 'edges' array`
+        `Rule ${ruleId} missing required 'edges' array`,
       );
     }
   }
@@ -370,34 +389,34 @@ export class FileSystemRuleScanner {
     }
 
     const err = error as NodeJS.ErrnoException;
-    
+
     switch (err.code) {
       case 'ENOENT':
         return new MinimalGoRulesError(
           MinimalErrorCode.RULE_NOT_FOUND,
-          `File or directory not found: ${filePath}`
+          `File or directory not found: ${filePath}`,
         );
       case 'EACCES':
         return new MinimalGoRulesError(
           MinimalErrorCode.CONFIG_ERROR,
-          `Permission denied accessing: ${filePath}`
+          `Permission denied accessing: ${filePath}`,
         );
       case 'EISDIR':
         return new MinimalGoRulesError(
           MinimalErrorCode.CONFIG_ERROR,
-          `Expected file but found directory: ${filePath}`
+          `Expected file but found directory: ${filePath}`,
         );
       case 'ENOTDIR':
         return new MinimalGoRulesError(
           MinimalErrorCode.CONFIG_ERROR,
-          `Expected directory but found file: ${filePath}`
+          `Expected directory but found file: ${filePath}`,
         );
       default:
         return new MinimalGoRulesError(
           MinimalErrorCode.CONFIG_ERROR,
           `File system error for ${filePath}: ${err.message || 'Unknown error'}`,
           undefined,
-          err
+          err,
         );
     }
   }

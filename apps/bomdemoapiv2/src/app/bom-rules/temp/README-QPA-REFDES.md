@@ -56,6 +56,7 @@ GORULES_API_KEY=your-api-key
 ### Rule File Location
 
 The QPA vs RefDes rule is located at:
+
 ```
 libs/minimal-gorules/src/lib/jdm_directory/QPA vs RefDes.json
 ```
@@ -69,6 +70,7 @@ libs/minimal-gorules/src/lib/jdm_directory/QPA vs RefDes.json
 Validates a BOM item using the QPA vs RefDes rule.
 
 **Request Body:**
+
 ```json
 {
   "bomItem": {
@@ -108,6 +110,7 @@ Validates a BOM item using the QPA vs RefDes rule.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -128,6 +131,7 @@ Validates a BOM item using the QPA vs RefDes rule.
 Tests the rule with predefined sample data.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -148,6 +152,7 @@ Tests the rule with predefined sample data.
 Checks the health status of the QPA vs RefDes rule service.
 
 **Response:**
+
 ```json
 {
   "service": "QPA vs RefDes Rule Service",
@@ -165,6 +170,7 @@ Checks the health status of the QPA vs RefDes rule service.
 Gets metadata information about the QPA vs RefDes rule.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -186,6 +192,7 @@ Gets metadata information about the QPA vs RefDes rule.
 Validates that the QPA vs RefDes rule is available and executable.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -368,6 +375,7 @@ The application uses environment-based configuration with the following hierarch
 ### Debug Mode
 
 Enable debug logging by setting:
+
 ```bash
 LOG_LEVEL=debug
 ```

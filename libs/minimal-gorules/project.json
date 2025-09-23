@@ -42,10 +42,7 @@
         "outputPath": "libs/minimal-gorules/dist/browser",
         "main": "libs/minimal-gorules/src/index.browser.ts",
         "tsConfig": "libs/minimal-gorules/tsconfig.browser.json",
-        "assets": [
-          "libs/minimal-gorules/*.md",
-          "libs/minimal-gorules/package.json"
-        ]
+        "assets": ["libs/minimal-gorules/*.md", "libs/minimal-gorules/package.json"]
       }
     },
     "build-prod": {
@@ -92,10 +89,7 @@
         "outputPath": "libs/minimal-gorules/dist/browser",
         "main": "libs/minimal-gorules/src/index.browser.ts",
         "tsConfig": "libs/minimal-gorules/tsconfig.browser.json",
-        "assets": [
-          "libs/minimal-gorules/*.md",
-          "libs/minimal-gorules/package.json"
-        ]
+        "assets": ["libs/minimal-gorules/*.md", "libs/minimal-gorules/package.json"]
       },
       "configurations": {
         "production": {

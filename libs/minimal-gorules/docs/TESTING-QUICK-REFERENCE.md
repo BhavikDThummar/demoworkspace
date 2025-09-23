@@ -21,14 +21,14 @@ nx test @org/minimal-gorules --testNamePattern="should execute"
 
 ## 📊 Test Categories Available
 
-| Category | Location | Purpose |
-|----------|----------|---------|
-| **Unit Tests** | `src/lib/*/**.spec.ts` | Test individual components |
+| Category              | Location               | Purpose                     |
+| --------------------- | ---------------------- | --------------------------- |
+| **Unit Tests**        | `src/lib/*/**.spec.ts` | Test individual components  |
 | **Integration Tests** | `src/lib/integration/` | Test component interactions |
-| **Performance Tests** | `src/lib/performance/` | Test speed and efficiency |
-| **Load Tests** | `src/lib/load-tests/` | Test under heavy load |
-| **NestJS Tests** | `src/lib/nestjs/` | Test NestJS integration |
-| **React Tests** | `src/lib/react/` | Test React components/hooks |
+| **Performance Tests** | `src/lib/performance/` | Test speed and efficiency   |
+| **Load Tests**        | `src/lib/load-tests/`  | Test under heavy load       |
+| **NestJS Tests**      | `src/lib/nestjs/`      | Test NestJS integration     |
+| **React Tests**       | `src/lib/react/`       | Test React components/hooks |
 
 ## 🛠️ Test Utilities Available
 
@@ -37,7 +37,7 @@ nx test @org/minimal-gorules --testNamePattern="should execute"
 import { measurePerformance } from '../test-setup';
 const { result, duration } = await measurePerformance(() => operation(), 100);
 
-// Memory testing  
+// Memory testing
 import { measureMemoryUsage } from '../test-setup';
 const { result, memoryDelta } = await measureMemoryUsage(() => operation());
 
@@ -57,7 +57,7 @@ afterEach(() => cleanupAfterTest());
 ## 🎯 Coverage Thresholds
 
 - **Branches**: 80% minimum
-- **Functions**: 85% minimum  
+- **Functions**: 85% minimum
 - **Lines**: 90% minimum
 - **Statements**: 90% minimum
 
@@ -84,12 +84,12 @@ nx test @org/minimal-gorules --verbose --no-coverage
 
 ## 🚨 Quick Troubleshooting
 
-| Problem | Solution |
-|---------|----------|
-| Tests timeout | Add `--testTimeout=60000` |
-| Memory issues | Add `--expose-gc --maxWorkers=1` |
-| Watch mode broken | Add `--clearCache` |
-| Coverage too low | Check `--coverage --coverageReporters=text-summary` |
+| Problem           | Solution                                            |
+| ----------------- | --------------------------------------------------- |
+| Tests timeout     | Add `--testTimeout=60000`                           |
+| Memory issues     | Add `--expose-gc --maxWorkers=1`                    |
+| Watch mode broken | Add `--clearCache`                                  |
+| Coverage too low  | Check `--coverage --coverageReporters=text-summary` |
 
 ## 📝 Test Writing Template
 
@@ -108,10 +108,10 @@ describe('ComponentName', () => {
   it('should [expected behavior]', async () => {
     // Arrange
     const input = generateMockInput();
-    
+
     // Act
     const result = await component.process(input);
-    
+
     // Assert
     expect(result.success).toBe(true);
   });

@@ -343,8 +343,7 @@ export class GoRulesResilienceService {
           await this.waitForRateLimitSlot(limiter, rateLimitConfig);
           break;
 
-        case 'delay': // Calculate delay until next slot is available
-        {
+        case 'delay': { // Calculate delay until next slot is available
           const oldestRequest = limiter.requests[0];
           const delay = rateLimitConfig.windowSize - (now - oldestRequest.timestamp);
 

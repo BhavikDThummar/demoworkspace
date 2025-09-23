@@ -299,7 +299,10 @@ export class ConfigFactory {
     if (ruleSource === 'local') {
       if (!config.localRulesPath) {
         errors.push('Local rules path is required when rule source is "local"');
-      } else if (typeof config.localRulesPath !== 'string' || config.localRulesPath.trim().length === 0) {
+      } else if (
+        typeof config.localRulesPath !== 'string' ||
+        config.localRulesPath.trim().length === 0
+      ) {
         errors.push('Local rules path must be a non-empty string');
       }
     }

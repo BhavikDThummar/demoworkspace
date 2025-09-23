@@ -5,6 +5,7 @@ This guide helps you migrate between cloud-based and local file system rule load
 ## Overview
 
 The hybrid rule loading feature allows you to switch between:
+
 - **Cloud Loading**: Rules loaded from GoRules Cloud API
 - **Local Loading**: Rules loaded from local file system
 
@@ -13,6 +14,7 @@ The hybrid rule loading feature allows you to switch between:
 ### 1. Cloud to Local Migration
 
 #### When to Use Local Rules
+
 - **Development**: Faster iteration without API calls
 - **Offline Development**: Work without internet connectivity
 - **Testing**: Consistent test environments with version-controlled rules
@@ -21,12 +23,14 @@ The hybrid rule loading feature allows you to switch between:
 #### Step-by-Step Migration
 
 ##### Step 1: Export Cloud Rules
+
 ```bash
 # Use GoRules CLI or API to export your rules
 # This step depends on your GoRules setup
 ```
 
 ##### Step 2: Create Local Directory Structure
+
 ```
 project-root/
 └── rules/
@@ -42,6 +46,7 @@ project-root/
 ```
 
 ##### Step 3: Update Configuration
+
 ```typescript
 // Before (Cloud)
 const config: MinimalGoRulesConfig = {
@@ -60,7 +65,9 @@ const config: MinimalGoRulesConfig = {
 ```
 
 ##### Step 4: Verify Rule IDs
+
 Ensure rule IDs match between cloud and local versions:
+
 ```typescript
 // Test rule loading
 const engine = new MinimalGoRulesEngine(config);
@@ -72,6 +79,7 @@ console.log('Loaded rules:', Array.from(metadata.keys()));
 ```
 
 ##### Step 5: Test Rule Execution
+
 ```typescript
 // Test critical rules
 const result = await engine.executeRule('pricing/shipping-fees', {
@@ -85,6 +93,7 @@ console.log('Rule execution result:', result);
 ### 2. Local to Cloud Migration
 
 #### When to Use Cloud Rules
+
 - **Production**: Centralized rule management
 - **Multi-Environment**: Consistent rules across deployments
 - **Team Collaboration**: Shared rule repository
@@ -93,12 +102,14 @@ console.log('Rule execution result:', result);
 #### Step-by-Step Migration
 
 ##### Step 1: Upload Local Rules
+
 ```bash
 # Use GoRules CLI or web interface to upload rules
 # Maintain rule ID consistency
 ```
 
 ##### Step 2: Update Configuration
+
 ```typescript
 // Before (Local)
 const config: MinimalGoRulesConfig = {
@@ -117,6 +128,7 @@ const config: MinimalGoRulesConfig = {
 ```
 
 ##### Step 3: Verify Cloud Rules
+
 ```typescript
 const engine = new MinimalGoRulesEngine(config);
 await engine.initialize();
@@ -127,6 +139,7 @@ console.log('Version check:', versionCheck);
 ```
 
 ##### Step 4: Performance Optimization
+
 ```typescript
 // Enable optimizations for cloud usage
 const config: MinimalGoRulesConfig = {
@@ -144,6 +157,7 @@ const config: MinimalGoRulesConfig = {
 ## Environment-Specific Configurations
 
 ### Development Environment
+
 ```typescript
 const devConfig: MinimalGoRulesConfig = {
   ruleSource: 'local',
@@ -154,6 +168,7 @@ const devConfig: MinimalGoRulesConfig = {
 ```
 
 ### Staging Environment
+
 ```typescript
 const stagingConfig: MinimalGoRulesConfig = {
   ruleSource: 'cloud',
@@ -165,6 +180,7 @@ const stagingConfig: MinimalGoRulesConfig = {
 ```
 
 ### Production Environment
+
 ```typescript
 const prodConfig: MinimalGoRulesConfig = {
   ruleSource: 'cloud',
@@ -182,6 +198,7 @@ const prodConfig: MinimalGoRulesConfig = {
 ## Configuration Management
 
 ### Environment Variables
+
 ```bash
 # .env.development
 GORULES_RULE_SOURCE=local
@@ -202,10 +219,11 @@ GORULES_PROJECT_ID=prod-project
 ```
 
 ### Configuration Factory
+
 ```typescript
 export function createConfig(): MinimalGoRulesConfig {
-  const ruleSource = process.env.GORULES_RULE_SOURCE as 'cloud' | 'local' || 'cloud';
-  
+  const ruleSource = (process.env.GORULES_RULE_SOURCE as 'cloud' | 'local') || 'cloud';
+
   const baseConfig = {
     ruleSource,
     enablePerformanceMetrics: process.env.NODE_ENV !== 'production',
@@ -232,6 +250,7 @@ export function createConfig(): MinimalGoRulesConfig {
 ## Validation and Testing
 
 ### Configuration Validation
+
 ```typescript
 import { ConfigValidator } from '@your-org/minimal-gorules';
 
@@ -245,23 +264,24 @@ if (!validation.isValid) {
 ```
 
 ### Rule Compatibility Testing
+
 ```typescript
 describe('Rule Migration', () => {
   it('should execute same rules with same results', async () => {
-    const cloudConfig = { ruleSource: 'cloud', /* ... */ };
-    const localConfig = { ruleSource: 'local', /* ... */ };
-    
+    const cloudConfig = { ruleSource: 'cloud' /* ... */ };
+    const localConfig = { ruleSource: 'local' /* ... */ };
+
     const cloudEngine = new MinimalGoRulesEngine(cloudConfig);
     const localEngine = new MinimalGoRulesEngine(localConfig);
-    
+
     await cloudEngine.initialize();
     await localEngine.initialize();
-    
+
     const testInput = { userId: 123, amount: 100 };
-    
+
     const cloudResult = await cloudEngine.executeRule('test-rule', testInput);
     const localResult = await localEngine.executeRule('test-rule', testInput);
-    
+
     expect(localResult).toEqual(cloudResult);
   });
 });
@@ -272,6 +292,7 @@ describe('Rule Migration', () => {
 ### Common Issues
 
 #### Rule ID Mismatches
+
 **Problem**: Rule IDs don't match between cloud and local
 **Solution**: Ensure file paths match expected rule IDs
 
@@ -282,10 +303,12 @@ describe('Rule Migration', () => {
 ```
 
 #### Missing Dependencies
+
 **Problem**: Local rules reference cloud-only features
 **Solution**: Ensure rule format compatibility
 
 #### Performance Differences
+
 **Problem**: Local loading slower than expected
 **Solution**: Enable performance optimizations
 
@@ -299,6 +322,7 @@ const config: MinimalGoRulesConfig = {
 ```
 
 #### Hot Reload Not Working
+
 **Problem**: File changes not detected
 **Solution**: Check file system permissions and watch options
 
@@ -319,16 +343,19 @@ const config: MinimalGoRulesConfig = {
 ## Best Practices
 
 ### 1. Gradual Migration
+
 - Start with development environment
 - Test thoroughly before production migration
 - Keep both configurations available during transition
 
 ### 2. Version Control
+
 - Store local rules in version control
 - Use semantic versioning for rule changes
 - Tag releases for rollback capability
 
 ### 3. CI/CD Integration
+
 ```yaml
 # .github/workflows/rules-sync.yml
 name: Sync Rules
@@ -347,11 +374,13 @@ jobs:
 ```
 
 ### 4. Monitoring
+
 - Monitor rule execution performance
 - Track cache hit rates
 - Alert on rule loading failures
 
 ### 5. Backup Strategy
+
 - Backup cloud rules regularly
 - Keep local rule snapshots
 - Document rule dependencies
@@ -359,6 +388,7 @@ jobs:
 ## Support
 
 For additional help with migration:
+
 - Check the [Troubleshooting Guide](./troubleshooting.md)
 - Review [Performance Guide](./performance-guide.md)
 - See [API Reference](./api-reference.md) for detailed configuration options

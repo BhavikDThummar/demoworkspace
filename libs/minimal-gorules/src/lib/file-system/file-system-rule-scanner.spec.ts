@@ -45,10 +45,10 @@ describe('FileSystemRuleScanner', () => {
   beforeEach(async () => {
     // Clean up test directory if it exists
     await cleanupTestDir();
-    
+
     // Create test directory
     await mkdir(testDir, { recursive: true });
-    
+
     scanner = new FileSystemRuleScanner(testDir);
   });
 
@@ -69,7 +69,7 @@ describe('FileSystemRuleScanner', () => {
   async function removeDirectory(dirPath: string): Promise<void> {
     try {
       const entries = await promisify(fs.readdir)(dirPath, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(dirPath, entry.name);
         if (entry.isDirectory()) {
@@ -78,7 +78,7 @@ describe('FileSystemRuleScanner', () => {
           await unlink(fullPath);
         }
       }
-      
+
       await rmdir(dirPath);
     } catch (error) {
       // Ignore errors during cleanup
@@ -110,7 +110,7 @@ describe('FileSystemRuleScanner', () => {
 
     it('should throw error for non-existent directory', async () => {
       const nonExistentScanner = new FileSystemRuleScanner('/non/existent/path');
-      
+
       await expect(nonExistentScanner.scanDirectory()).rejects.toThrow(MinimalGoRulesError);
       await expect(nonExistentScanner.scanDirectory()).rejects.toThrow('not found');
     });
@@ -121,7 +121,7 @@ describe('FileSystemRuleScanner', () => {
       await writeFile(ruleFile, JSON.stringify(validRuleContent, null, 2));
 
       const rules = await scanner.scanDirectory();
-      
+
       expect(rules).toHaveLength(1);
       expect(rules[0].id).toBe('test-rule');
       expect(rules[0].filePath).toBe(ruleFile);
@@ -135,15 +135,15 @@ describe('FileSystemRuleScanner', () => {
       // Create multiple rule files
       const rule1File = path.join(testDir, 'rule1.json');
       const rule2File = path.join(testDir, 'rule2.json');
-      
+
       await writeFile(rule1File, JSON.stringify(validRuleContent, null, 2));
       await writeFile(rule2File, JSON.stringify(validRuleContent, null, 2));
 
       const rules = await scanner.scanDirectory();
-      
+
       expect(rules).toHaveLength(2);
-      
-      const ruleIds = rules.map(r => r.id).sort();
+
+      const ruleIds = rules.map((r) => r.id).sort();
       expect(ruleIds).toEqual(['rule1', 'rule2']);
     });
 
@@ -151,18 +151,18 @@ describe('FileSystemRuleScanner', () => {
       // Create nested directory structure
       const subDir = path.join(testDir, 'pricing');
       await mkdir(subDir, { recursive: true });
-      
+
       const rule1File = path.join(testDir, 'main-rule.json');
       const rule2File = path.join(subDir, 'shipping-fees.json');
-      
+
       await writeFile(rule1File, JSON.stringify(validRuleContent, null, 2));
       await writeFile(rule2File, JSON.stringify(validRuleContent, null, 2));
 
       const rules = await scanner.scanDirectory();
-      
+
       expect(rules).toHaveLength(2);
-      
-      const ruleMap = new Map(rules.map(r => [r.id, r]));
+
+      const ruleMap = new Map(rules.map((r) => [r.id, r]));
       expect(ruleMap.has('main-rule')).toBe(true);
       expect(ruleMap.has('pricing/shipping-fees')).toBe(true);
     });
@@ -171,12 +171,12 @@ describe('FileSystemRuleScanner', () => {
       // Create deeply nested structure
       const deepDir = path.join(testDir, 'level1', 'level2', 'level3');
       await mkdir(deepDir, { recursive: true });
-      
+
       const ruleFile = path.join(deepDir, 'deep-rule.json');
       await writeFile(ruleFile, JSON.stringify(validRuleContent, null, 2));
 
       const rules = await scanner.scanDirectory();
-      
+
       expect(rules).toHaveLength(1);
       expect(rules[0].id).toBe('level1/level2/level3/deep-rule');
     });
@@ -189,7 +189,7 @@ describe('FileSystemRuleScanner', () => {
       await writeFile(path.join(testDir, 'script.js'), 'console.log("hello");');
 
       const rules = await scanner.scanDirectory();
-      
+
       expect(rules).toHaveLength(1);
       expect(rules[0].id).toBe('rule');
     });
@@ -200,7 +200,7 @@ describe('FileSystemRuleScanner', () => {
       await writeFile(path.join(testDir, 'rule.meta.json'), JSON.stringify({ version: '1.0.0' }));
 
       const rules = await scanner.scanDirectory();
-      
+
       expect(rules).toHaveLength(1);
       expect(rules[0].id).toBe('rule');
     });
@@ -211,7 +211,7 @@ describe('FileSystemRuleScanner', () => {
       await writeFile(path.join(testDir, 'invalid.json'), '{ invalid json }');
 
       const rules = await scanner.scanDirectory();
-      
+
       // Should load the valid rule and skip the invalid one
       expect(rules).toHaveLength(1);
       expect(rules[0].id).toBe('valid');
@@ -220,11 +220,17 @@ describe('FileSystemRuleScanner', () => {
     it('should handle files missing required GoRules properties', async () => {
       // Create valid and invalid GoRules files
       await writeFile(path.join(testDir, 'valid.json'), JSON.stringify(validRuleContent, null, 2));
-      await writeFile(path.join(testDir, 'missing-nodes.json'), JSON.stringify({ edges: [] }, null, 2));
-      await writeFile(path.join(testDir, 'missing-edges.json'), JSON.stringify({ nodes: [] }, null, 2));
+      await writeFile(
+        path.join(testDir, 'missing-nodes.json'),
+        JSON.stringify({ edges: [] }, null, 2),
+      );
+      await writeFile(
+        path.join(testDir, 'missing-edges.json'),
+        JSON.stringify({ nodes: [] }, null, 2),
+      );
 
       const rules = await scanner.scanDirectory();
-      
+
       // Should only load the valid rule
       expect(rules).toHaveLength(1);
       expect(rules[0].id).toBe('valid');
@@ -245,7 +251,7 @@ describe('FileSystemRuleScanner', () => {
       await writeFile(ruleFile, JSON.stringify(validRuleContent, null, 2));
 
       const rule = await scanner.loadRuleFile(ruleFile);
-      
+
       expect(rule.id).toBe('test-rule');
       expect(rule.filePath).toBe(ruleFile);
       expect(rule.data).toBeInstanceOf(Buffer);
@@ -256,19 +262,19 @@ describe('FileSystemRuleScanner', () => {
     it('should load rule with metadata file', async () => {
       const ruleFile = path.join(testDir, 'test-rule.json');
       const metadataFile = path.join(testDir, 'test-rule.meta.json');
-      
+
       const metadata = {
         version: '2.1.0',
         tags: ['pricing', 'shipping'],
         description: 'Test rule with metadata',
         author: 'test-author',
       };
-      
+
       await writeFile(ruleFile, JSON.stringify(validRuleContent, null, 2));
       await writeFile(metadataFile, JSON.stringify(metadata, null, 2));
 
       const rule = await scanner.loadRuleFile(ruleFile);
-      
+
       expect(rule.metadata.version).toBe('2.1.0');
       expect(rule.metadata.tags).toEqual(['pricing', 'shipping']);
     });
@@ -278,7 +284,7 @@ describe('FileSystemRuleScanner', () => {
       await writeFile(ruleFile, JSON.stringify(validRuleContent, null, 2));
 
       const rule = await scanner.loadRuleFile(ruleFile);
-      
+
       expect(typeof rule.metadata.version).toBe('string');
       expect(rule.metadata.tags).toEqual([]);
       expect(typeof rule.metadata.lastModified).toBe('number');
@@ -321,7 +327,7 @@ describe('FileSystemRuleScanner', () => {
     it('should generate correct rule ID for nested file', async () => {
       const subDir = path.join(testDir, 'pricing', 'shipping');
       await mkdir(subDir, { recursive: true });
-      
+
       const ruleFile = path.join(subDir, 'fees.json');
       await writeFile(ruleFile, JSON.stringify(validRuleContent, null, 2));
 
@@ -333,7 +339,7 @@ describe('FileSystemRuleScanner', () => {
       // This test ensures cross-platform compatibility
       const subDir = path.join(testDir, 'windows', 'path');
       await mkdir(subDir, { recursive: true });
-      
+
       const ruleFile = path.join(subDir, 'test.json');
       await writeFile(ruleFile, JSON.stringify(validRuleContent, null, 2));
 
@@ -348,7 +354,7 @@ describe('FileSystemRuleScanner', () => {
     it('should handle metadata file with all properties', async () => {
       const ruleFile = path.join(testDir, 'full-metadata.json');
       const metadataFile = path.join(testDir, 'full-metadata.meta.json');
-      
+
       const metadata = {
         version: '3.2.1',
         tags: ['validation', 'business-rules', 'critical'],
@@ -357,12 +363,12 @@ describe('FileSystemRuleScanner', () => {
         author: 'development-team',
         environment: 'production',
       };
-      
+
       await writeFile(ruleFile, JSON.stringify(validRuleContent, null, 2));
       await writeFile(metadataFile, JSON.stringify(metadata, null, 2));
 
       const rule = await scanner.loadRuleFile(ruleFile);
-      
+
       expect(rule.metadata.version).toBe('3.2.1');
       expect(rule.metadata.tags).toEqual(['validation', 'business-rules', 'critical']);
       expect(rule.metadata.lastModified).toBe(new Date('2024-01-15T10:30:00Z').getTime());
@@ -371,16 +377,16 @@ describe('FileSystemRuleScanner', () => {
     it('should handle metadata file with partial properties', async () => {
       const ruleFile = path.join(testDir, 'partial-metadata.json');
       const metadataFile = path.join(testDir, 'partial-metadata.meta.json');
-      
+
       const metadata = {
         tags: ['partial'],
       };
-      
+
       await writeFile(ruleFile, JSON.stringify(validRuleContent, null, 2));
       await writeFile(metadataFile, JSON.stringify(metadata, null, 2));
 
       const rule = await scanner.loadRuleFile(ruleFile);
-      
+
       expect(rule.metadata.tags).toEqual(['partial']);
       expect(typeof rule.metadata.version).toBe('string'); // Should fallback to file mtime
       expect(typeof rule.metadata.lastModified).toBe('number');
@@ -389,12 +395,12 @@ describe('FileSystemRuleScanner', () => {
     it('should handle invalid metadata file gracefully', async () => {
       const ruleFile = path.join(testDir, 'invalid-metadata.json');
       const metadataFile = path.join(testDir, 'invalid-metadata.meta.json');
-      
+
       await writeFile(ruleFile, JSON.stringify(validRuleContent, null, 2));
       await writeFile(metadataFile, '{ invalid json }');
 
       const rule = await scanner.loadRuleFile(ruleFile);
-      
+
       // Should fallback to default metadata
       expect(rule.metadata.tags).toEqual([]);
       expect(typeof rule.metadata.version).toBe('string');
@@ -405,7 +411,7 @@ describe('FileSystemRuleScanner', () => {
     it('should handle permission denied errors', async () => {
       // This test might not work on all systems, but we can test the error handling logic
       const scanner = new FileSystemRuleScanner('/root/restricted');
-      
+
       await expect(scanner.scanDirectory()).rejects.toThrow(MinimalGoRulesError);
     });
 
@@ -413,9 +419,9 @@ describe('FileSystemRuleScanner', () => {
       // Create a file where we expect a directory
       const filePath = path.join(testDir, 'not-a-directory');
       await writeFile(filePath, 'content');
-      
+
       const scanner = new FileSystemRuleScanner(filePath);
-      
+
       await expect(scanner.scanDirectory()).rejects.toThrow(MinimalGoRulesError);
       await expect(scanner.scanDirectory()).rejects.toThrow('not a directory');
     });
@@ -424,46 +430,46 @@ describe('FileSystemRuleScanner', () => {
   describe('custom options', () => {
     it('should respect custom file extension', async () => {
       const scanner = new FileSystemRuleScanner(testDir, { fileExtension: '.rule' });
-      
+
       // Create files with different extensions
       await writeFile(path.join(testDir, 'test.json'), JSON.stringify(validRuleContent, null, 2));
       await writeFile(path.join(testDir, 'test.rule'), JSON.stringify(validRuleContent, null, 2));
 
       const rules = await scanner.scanDirectory();
-      
+
       expect(rules).toHaveLength(1);
       expect(rules[0].id).toBe('test');
     });
 
     it('should respect custom metadata pattern', async () => {
       const scanner = new FileSystemRuleScanner(testDir, { metadataPattern: '.info.json' });
-      
+
       const ruleFile = path.join(testDir, 'test.json');
       const metadataFile = path.join(testDir, 'test.info.json');
-      
+
       const metadata = { version: '1.0.0', tags: ['custom'] };
-      
+
       await writeFile(ruleFile, JSON.stringify(validRuleContent, null, 2));
       await writeFile(metadataFile, JSON.stringify(metadata, null, 2));
 
       const rule = await scanner.loadRuleFile(ruleFile);
-      
+
       expect(rule.metadata.version).toBe('1.0.0');
       expect(rule.metadata.tags).toEqual(['custom']);
     });
 
     it('should respect recursive option', async () => {
       const scanner = new FileSystemRuleScanner(testDir, { recursive: false });
-      
+
       // Create nested structure
       const subDir = path.join(testDir, 'subdir');
       await mkdir(subDir);
-      
+
       await writeFile(path.join(testDir, 'root.json'), JSON.stringify(validRuleContent, null, 2));
       await writeFile(path.join(subDir, 'nested.json'), JSON.stringify(validRuleContent, null, 2));
 
       const rules = await scanner.scanDirectory();
-      
+
       // Should only find the root level file
       expect(rules).toHaveLength(1);
       expect(rules[0].id).toBe('root');

@@ -29,6 +29,7 @@ console.log(result); // { fee: 15.99, estimatedDays: 5 }
 
 The library consists of 5 main components that work together:
 ![High-Level Architecture](./attachments/High-Level%20Architecture.png)
+
 ```mermaid
 graph TB
     subgraph "Your Application"
@@ -141,7 +142,9 @@ Helps find rules by tags instead of remembering specific rule IDs.
 ## 🔄 How It All Works Together
 
 ### Complete Flow: From Your Code to Rule Result
+
 ![Complete Flow: From Your Code to Rule Result](./attachments//Complete%20Flow%20From%20Your%20Code%20to%20Rule%20Result.png)
+
 ```mermaid
 sequenceDiagram
     participant You as Your Application
@@ -189,7 +192,9 @@ sequenceDiagram
 ```
 
 ### Engine Initialization: What Happens When You Call `initialize()`
-![Initialization: What Happens When You Call `initialize()`](./attachments/Initialization%20What%20Happens%20When%20You%20Call%20`initialize()`.png)
+
+![Initialization: What Happens When You Call `initialize()`](<./attachments/Initialization%20What%20Happens%20When%20You%20Call%20`initialize()`.png>)
+
 ```mermaid
 flowchart TD
     START["engine.initialize()"] --> VALIDATE[Validate Configuration]
@@ -223,7 +228,9 @@ flowchart TD
 ```
 
 ### Rule Execution Modes: How Different Execution Types Work
+
 ![Rule Execution Modes: How Different Execution Types Work](./attachments/Rule%20Execution%20Modes%20How%20Different%20Execution%20Types%20Work.png)
+
 ```mermaid
 flowchart TD
     EXECUTE[Execute Request] --> MODE{Execution Mode?}
@@ -261,7 +268,9 @@ flowchart TD
 ## �️ Commponent Relationships
 
 ### How Components Connect and Communicate
+
 ![How Components Connect and Communicate](./attachments//How%20Components%20Connect%20and%20Communicate.png)
+
 ```mermaid
 graph TB
     subgraph "Your Application Layer"
@@ -608,7 +617,8 @@ stateDiagram-v2
     }
 ```
 
-### Memory Management (When Performance Optimizations Enabled) 
+### Memory Management (When Performance Optimizations Enabled)
+
 ![image](./attachments/Memory%20Management.png)
 
 ```mermaid
@@ -654,6 +664,7 @@ const result3 = await engine.executeRule('new-rule', data); // ~1ms
 
 The library includes several performance optimizations that work automatically:
 ![Built-in Optimizations](./attachments/Built-in%20Optimizations.png)
+
 ```mermaid
 graph TB
     subgraph "Always Active"
@@ -717,6 +728,7 @@ const config = {
 
 The library works across different platforms and frameworks:
 ![Available Integrations](./attachments/Available%20Integrations.png)
+
 ```mermaid
 graph TB
     subgraph "Core Library"
@@ -832,6 +844,7 @@ try {
 
 The library uses a structured approach to error handling:
 ![Error Handling](./attachments//Error%20Handling.png)
+
 ```mermaid
 flowchart TD
     START[Operation Starts] --> TRY{Try Operation}

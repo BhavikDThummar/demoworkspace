@@ -132,13 +132,16 @@ export class MinimalGoRulesModule {
         const config = configService.get(configKey);
 
         // Determine rule source from config or environment
-        const ruleSource = config?.ruleSource || configService.get('GORULES_RULE_SOURCE', 'cloud') as 'cloud' | 'local';
+        const ruleSource =
+          config?.ruleSource ||
+          (configService.get('GORULES_RULE_SOURCE', 'cloud') as 'cloud' | 'local');
 
         // Build configuration based on rule source
         if (ruleSource === 'local') {
           // Local rule configuration
-          const localRulesPath = config?.localRulesPath || configService.get('GORULES_LOCAL_RULES_PATH');
-          
+          const localRulesPath =
+            config?.localRulesPath || configService.get('GORULES_LOCAL_RULES_PATH');
+
           if (!localRulesPath) {
             throw new Error(
               `Missing required configuration for local rule loading. Either provide a '${configKey}.localRulesPath' config or set environment variable: GORULES_LOCAL_RULES_PATH`,
@@ -148,17 +151,29 @@ export class MinimalGoRulesModule {
           return {
             ruleSource: 'local',
             localRulesPath,
-            enableHotReload: config?.enableHotReload ?? configService.get('GORULES_ENABLE_HOT_RELOAD') === 'true',
-            metadataFilePattern: config?.metadataFilePattern || configService.get('GORULES_METADATA_FILE_PATTERN', '*.meta.json'),
+            enableHotReload:
+              config?.enableHotReload ?? configService.get('GORULES_ENABLE_HOT_RELOAD') === 'true',
+            metadataFilePattern:
+              config?.metadataFilePattern ||
+              configService.get('GORULES_METADATA_FILE_PATTERN', '.meta.json'),
             fileSystemOptions: {
-              recursive: config?.fileSystemOptions?.recursive ?? configService.get('GORULES_FS_RECURSIVE') !== 'false',
+              recursive:
+                config?.fileSystemOptions?.recursive ??
+                configService.get('GORULES_FS_RECURSIVE') !== 'false',
               watchOptions: {
-                ignored: config?.fileSystemOptions?.watchOptions?.ignored || configService.get('GORULES_WATCH_IGNORED'),
-                persistent: config?.fileSystemOptions?.watchOptions?.persistent ?? configService.get('GORULES_WATCH_PERSISTENT') !== 'false',
-                ignoreInitial: config?.fileSystemOptions?.watchOptions?.ignoreInitial ?? configService.get('GORULES_WATCH_IGNORE_INITIAL') === 'true',
+                ignored:
+                  config?.fileSystemOptions?.watchOptions?.ignored ||
+                  configService.get('GORULES_WATCH_IGNORED'),
+                persistent:
+                  config?.fileSystemOptions?.watchOptions?.persistent ??
+                  configService.get('GORULES_WATCH_PERSISTENT') !== 'false',
+                ignoreInitial:
+                  config?.fileSystemOptions?.watchOptions?.ignoreInitial ??
+                  configService.get('GORULES_WATCH_IGNORE_INITIAL') === 'true',
               },
             },
-            cacheMaxSize: config?.cacheMaxSize || +configService.get('GORULES_CACHE_MAX_SIZE', 1000),
+            cacheMaxSize:
+              config?.cacheMaxSize || +configService.get('GORULES_CACHE_MAX_SIZE', 1000),
             httpTimeout: config?.httpTimeout || +configService.get('GORULES_TIMEOUT', 5000),
             batchSize: config?.batchSize || +configService.get('GORULES_BATCH_SIZE', 50),
             platform: 'node',
@@ -181,7 +196,8 @@ export class MinimalGoRulesModule {
             apiUrl,
             apiKey,
             projectId,
-            cacheMaxSize: config?.cacheMaxSize || +configService.get('GORULES_CACHE_MAX_SIZE', 1000),
+            cacheMaxSize:
+              config?.cacheMaxSize || +configService.get('GORULES_CACHE_MAX_SIZE', 1000),
             httpTimeout: config?.httpTimeout || +configService.get('GORULES_TIMEOUT', 5000),
             batchSize: config?.batchSize || +configService.get('GORULES_BATCH_SIZE', 50),
             platform: 'node',

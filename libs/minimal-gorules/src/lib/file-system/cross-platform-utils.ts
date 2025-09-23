@@ -112,13 +112,13 @@ export class CrossPlatformPathUtils {
   static isPathWithinBase(basePath: string, targetPath: string): boolean {
     const resolvedBase = path.resolve(basePath);
     const resolvedTarget = path.resolve(targetPath);
-    
+
     // On case-insensitive systems, normalize case for comparison
     const platformInfo = this.getPlatformInfo();
     if (!platformInfo.caseSensitive) {
       return resolvedTarget.toLowerCase().startsWith(resolvedBase.toLowerCase());
     }
-    
+
     return resolvedTarget.startsWith(resolvedBase);
   }
 
@@ -215,13 +215,10 @@ export class CrossPlatformPermissionUtils {
         }
       } else {
         // On Windows, files don't have execute permission in the same way
-        result.executable = result.isFile && (
-          filePath.endsWith('.exe') || 
-          filePath.endsWith('.bat') || 
-          filePath.endsWith('.cmd')
-        );
+        result.executable =
+          result.isFile &&
+          (filePath.endsWith('.exe') || filePath.endsWith('.bat') || filePath.endsWith('.cmd'));
       }
-
     } catch (error) {
       // File doesn't exist or other error
       result.exists = false;
@@ -283,21 +280,21 @@ export class CrossPlatformPermissionUtils {
     if (!permissions.exists) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.CONFIG_ERROR,
-        `Rule directory does not exist: ${directoryPath}`
+        `Rule directory does not exist: ${directoryPath}`,
       );
     }
 
     if (!permissions.isDirectory) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.CONFIG_ERROR,
-        `Rule path is not a directory: ${directoryPath}`
+        `Rule path is not a directory: ${directoryPath}`,
       );
     }
 
     if (!permissions.readable) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.CONFIG_ERROR,
-        `Rule directory is not readable: ${directoryPath}. Check file permissions.`
+        `Rule directory is not readable: ${directoryPath}. Check file permissions.`,
       );
     }
   }
@@ -324,7 +321,7 @@ export class CrossPlatformWatchUtils {
     disableGlobbing?: boolean;
   } {
     const platformInfo = CrossPlatformPathUtils.getPlatformInfo();
-    
+
     const baseOptions = {
       persistent: true,
       ignoreInitial: true,
@@ -339,7 +336,7 @@ export class CrossPlatformWatchUtils {
         '**/*.tmp',
         '**/*.temp',
         '**/.#*', // Emacs temp files
-        '**/~*',  // Vim temp files
+        '**/~*', // Vim temp files
       ],
     };
 
@@ -384,11 +381,7 @@ export class CrossPlatformWatchUtils {
         usePolling: false, // inotify is efficient
         interval: 1000,
         binaryInterval: 3000,
-        ignored: [
-          ...baseOptions.ignored,
-          '**/.directory',
-          '**/lost+found/**',
-        ],
+        ignored: [...baseOptions.ignored, '**/.directory', '**/lost+found/**'],
       };
     }
 
@@ -407,19 +400,19 @@ export class CrossPlatformWatchUtils {
    */
   static getRecommendedDebounceDelay(): number {
     const platformInfo = CrossPlatformPathUtils.getPlatformInfo();
-    
+
     if (platformInfo.isWindows) {
       return 500; // Windows file operations can be slower
     }
-    
+
     if (platformInfo.isMacOS) {
       return 200; // macOS FSEvents are very fast
     }
-    
+
     if (platformInfo.isLinux) {
       return 300; // Linux inotify is fast but can have bursts
     }
-    
+
     return 400; // Conservative default for other platforms
   }
 }
@@ -435,10 +428,7 @@ export class CrossPlatformValidationUtils {
    */
   static validateFilePath(filePath: string): void {
     if (!filePath || filePath.trim().length === 0) {
-      throw new MinimalGoRulesError(
-        MinimalErrorCode.CONFIG_ERROR,
-        'File path cannot be empty'
-      );
+      throw new MinimalGoRulesError(MinimalErrorCode.CONFIG_ERROR, 'File path cannot be empty');
     }
 
     const platformInfo = CrossPlatformPathUtils.getPlatformInfo();
@@ -449,7 +439,7 @@ export class CrossPlatformValidationUtils {
       if (filePath.includes(char)) {
         throw new MinimalGoRulesError(
           MinimalErrorCode.CONFIG_ERROR,
-          `File path contains invalid character '${char}': ${filePath}`
+          `File path contains invalid character '${char}': ${filePath}`,
         );
       }
     }
@@ -459,26 +449,26 @@ export class CrossPlatformValidationUtils {
       // Allow colon only as part of drive letter (e.g., C:, D:)
       const driveLetterPattern = /^[A-Za-z]:[\\/]/;
       const hasValidDriveLetter = driveLetterPattern.test(filePath);
-      
+
       // Count colons in the path
       const colonCount = (filePath.match(/:/g) || []).length;
-      
+
       // If there's more than one colon, or one colon that's not a drive letter, it's invalid
       if (colonCount > 1 || (colonCount === 1 && !hasValidDriveLetter)) {
         throw new MinimalGoRulesError(
           MinimalErrorCode.CONFIG_ERROR,
-          `File path contains invalid colon usage: ${filePath}`
+          `File path contains invalid colon usage: ${filePath}`,
         );
       }
     }
 
     // Check path length limits
     const maxLength = platformInfo.isWindows ? 260 : 4096;
-    
+
     if (filePath.length > maxLength) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.CONFIG_ERROR,
-        `File path exceeds maximum length (${maxLength}): ${filePath}`
+        `File path exceeds maximum length (${maxLength}): ${filePath}`,
       );
     }
 
@@ -494,12 +484,12 @@ export class CrossPlatformValidationUtils {
    */
   private static getInvalidPathCharacters(): string[] {
     const platformInfo = CrossPlatformPathUtils.getPlatformInfo();
-    
+
     if (platformInfo.isWindows) {
       // On Windows, colon is only invalid if not part of drive letter (C:)
       return ['<', '>', '"', '|', '?', '*'];
     }
-    
+
     // Unix-like systems (Linux, macOS)
     return ['\0']; // Only null character is universally invalid
   }
@@ -510,9 +500,28 @@ export class CrossPlatformValidationUtils {
    */
   private static validateWindowsPath(filePath: string): void {
     const reservedNames = [
-      'CON', 'PRN', 'AUX', 'NUL',
-      'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
-      'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
+      'CON',
+      'PRN',
+      'AUX',
+      'NUL',
+      'COM1',
+      'COM2',
+      'COM3',
+      'COM4',
+      'COM5',
+      'COM6',
+      'COM7',
+      'COM8',
+      'COM9',
+      'LPT1',
+      'LPT2',
+      'LPT3',
+      'LPT4',
+      'LPT5',
+      'LPT6',
+      'LPT7',
+      'LPT8',
+      'LPT9',
     ];
 
     const pathParts = filePath.split(path.sep);
@@ -521,7 +530,7 @@ export class CrossPlatformValidationUtils {
       if (reservedNames.includes(baseName)) {
         throw new MinimalGoRulesError(
           MinimalErrorCode.CONFIG_ERROR,
-          `File path contains Windows reserved name '${part}': ${filePath}`
+          `File path contains Windows reserved name '${part}': ${filePath}`,
         );
       }
 
@@ -530,7 +539,7 @@ export class CrossPlatformValidationUtils {
       if (part && !part.match(/^[A-Za-z]:$/) && (part !== part.trim() || part.endsWith('.'))) {
         throw new MinimalGoRulesError(
           MinimalErrorCode.CONFIG_ERROR,
-          `File path contains invalid Windows filename '${part}': ${filePath}`
+          `File path contains invalid Windows filename '${part}': ${filePath}`,
         );
       }
     }

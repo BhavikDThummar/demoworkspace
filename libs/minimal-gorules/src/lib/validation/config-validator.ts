@@ -261,7 +261,7 @@ export class ConfigValidator {
       ruleSource: 'local',
       localRulesPath,
       enableHotReload: false,
-      metadataFilePattern: '*.meta.json',
+      metadataFilePattern: '.meta.json',
       fileSystemOptions: {
         recursive: true,
         watchOptions: {

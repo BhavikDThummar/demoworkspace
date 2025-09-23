@@ -26,7 +26,7 @@ describe('Essential Integration Tests', () => {
         ruleSource: 'cloud',
         apiUrl: 'https://api.gorules.io',
         apiKey: 'test-key',
-        projectId: 'test-project'
+        projectId: 'test-project',
       };
 
       const cloudLoader = factory.createLoader(cloudConfig);
@@ -37,7 +37,7 @@ describe('Essential Integration Tests', () => {
       const factory = new RuleLoaderFactory();
 
       const invalidConfig: MinimalGoRulesConfig = {
-        ruleSource: 'cloud'
+        ruleSource: 'cloud',
         // missing required fields
       };
 
@@ -52,7 +52,7 @@ describe('Essential Integration Tests', () => {
       const legacyConfig: MinimalGoRulesConfig = {
         apiUrl: 'https://api.gorules.io',
         apiKey: 'test-key',
-        projectId: 'test-project'
+        projectId: 'test-project',
         // no ruleSource specified
       };
 
@@ -71,9 +71,10 @@ describe('Essential Integration Tests', () => {
         { ruleSource: 'invalid' as any }, // invalid ruleSource
       ];
 
-      configs.forEach(config => {
-        expect(() => factory.createLoader(config as MinimalGoRulesConfig))
-          .toThrow(MinimalGoRulesError);
+      configs.forEach((config) => {
+        expect(() => factory.createLoader(config as MinimalGoRulesConfig)).toThrow(
+          MinimalGoRulesError,
+        );
       });
     });
   });

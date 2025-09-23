@@ -5,6 +5,7 @@ This guide helps new developers quickly understand and start working with the mi
 ## 🎯 What is Minimal GoRules Engine?
 
 A high-performance, lightweight rule execution engine that:
+
 - Executes business rules from GoRules Cloud
 - Provides caching for optimal performance
 - Supports both Node.js (NestJS) and browser (React) environments
@@ -21,7 +22,7 @@ import { MinimalGoRulesEngine } from '@org/minimal-gorules';
 const engine = new MinimalGoRulesEngine({
   apiUrl: 'https://api.gorules.io',
   apiKey: 'your-api-key',
-  projectId: 'your-project-id'
+  projectId: 'your-project-id',
 });
 
 await engine.initialize(); // Loads all rules into cache
@@ -34,7 +35,7 @@ await engine.initialize(); // Loads all rules into cache
 const result = await engine.executeRule('shipping-calculator', {
   weight: 2.5,
   destination: 'US',
-  priority: 'express'
+  priority: 'express',
 });
 
 console.log(result); // { fee: 25.99, days: 2 }
@@ -44,28 +45,33 @@ console.log(result); // { fee: 25.99, days: 2 }
 
 ```typescript
 // Execute multiple rules in parallel
-const results = await engine.execute({
-  ids: ['validation', 'pricing', 'shipping'],
-  mode: { type: 'parallel' }
-}, orderData);
+const results = await engine.execute(
+  {
+    ids: ['validation', 'pricing', 'shipping'],
+    mode: { type: 'parallel' },
+  },
+  orderData,
+);
 
 // Results is a Map: ruleId -> result
 results.get('validation'); // validation result
-results.get('pricing');    // pricing result
-results.get('shipping');   // shipping result
+results.get('pricing'); // pricing result
+results.get('shipping'); // shipping result
 ```
 
 ## 🏗️ Understanding the Flow
 
 ### The Big Picture
+
 ![The Big Picture](./attachments/The%20Big%20Picture.png)
+
 ```mermaid
 graph LR
     A[Your App] --> B[Engine] --> C[Cache] --> D[Rules] --> E[Results]
-    
+
     B --> F[Loader]
     F --> G[GoRules API]
-    
+
     style A fill:#e3f2fd
     style B fill:#e1f5fe
     style C fill:#f3e5f5
@@ -80,7 +86,9 @@ graph LR
 4. **Return Result**: You get the result back
 
 ### Detailed Execution Flow
+
 ![Detailed Execution Flow](./attachments//Detailed%20Execution%20Flow.png)
+
 ```mermaid
 sequenceDiagram
     participant App as Your Application
@@ -91,10 +99,10 @@ sequenceDiagram
     participant API as GoRules API
 
     App->>Engine: executeRule('my-rule', data)
-    
+
     Note over Engine: Step 1: Check Cache
     Engine->>Cache: get('my-rule')
-    
+
     alt Rule in cache
         Cache-->>Engine: ✅ Rule found
     else Rule not in cache
@@ -105,11 +113,11 @@ sequenceDiagram
         Loader-->>Engine: Rule data
         Engine->>Cache: store('my-rule', data)
     end
-    
+
     Note over Engine: Step 3: Execute Rule
     Engine->>Executor: execute('my-rule', data)
     Executor-->>Engine: Result
-    
+
     Note over Engine: Step 4: Return Result
     Engine-->>App: ✅ Execution result
 ```
@@ -123,11 +131,11 @@ sequenceDiagram
 ```typescript
 class MinimalGoRulesEngine {
   // Main methods you'll use
-  async initialize()                    // Set up everything
-  async executeRule(id, data)          // Run one rule
-  async execute(selector, data)        // Run multiple rules
-  async getStatus()                    // Check engine health
-  async refreshCache(ruleIds?)         // Update cached rules
+  async initialize(); // Set up everything
+  async executeRule(id, data); // Run one rule
+  async execute(selector, data); // Run multiple rules
+  async getStatus(); // Check engine health
+  async refreshCache(ruleIds?); // Update cached rules
 }
 ```
 
@@ -187,7 +195,7 @@ export class AppModule {}
 @Injectable()
 export class MyService {
   constructor(private goRules: MinimalGoRulesService) {}
-  
+
   async processData(input: any) {
     return await this.goRules.executeRule('my-rule', input);
   }
@@ -209,11 +217,11 @@ function App() {
 // 2. Use the hook
 function MyComponent() {
   const { executeRule, loading, results, error } = useRuleExecution();
-  
+
   const handleClick = () => {
     executeRule('my-rule', formData);
   };
-  
+
   return (
     <div>
       <button onClick={handleClick} disabled={loading}>
@@ -232,33 +240,39 @@ function MyComponent() {
 
 ```typescript
 // Process an order through multiple validation and calculation rules
-const orderResult = await engine.execute({
-  mode: {
-    type: 'mixed',
-    groups: [
-      // First: Run validations in parallel (fast)
-      { 
-        rules: ['inventory-check', 'payment-validation', 'address-validation'], 
-        mode: 'parallel' 
-      },
-      // Then: Run calculations in sequence (dependent on each other)
-      { 
-        rules: ['tax-calculation', 'shipping-calculation', 'total-calculation'], 
-        mode: 'sequential' 
-      }
-    ]
-  }
-}, orderData);
+const orderResult = await engine.execute(
+  {
+    mode: {
+      type: 'mixed',
+      groups: [
+        // First: Run validations in parallel (fast)
+        {
+          rules: ['inventory-check', 'payment-validation', 'address-validation'],
+          mode: 'parallel',
+        },
+        // Then: Run calculations in sequence (dependent on each other)
+        {
+          rules: ['tax-calculation', 'shipping-calculation', 'total-calculation'],
+          mode: 'sequential',
+        },
+      ],
+    },
+  },
+  orderData,
+);
 ```
 
 ### Scenario 2: Dynamic Rule Discovery
 
 ```typescript
 // Find and execute all pricing rules
-const pricingRules = await engine.execute({
-  tags: ['pricing', 'active'],
-  mode: { type: 'parallel' }
-}, productData);
+const pricingRules = await engine.execute(
+  {
+    tags: ['pricing', 'active'],
+    mode: { type: 'parallel' },
+  },
+  productData,
+);
 
 // Get metadata about available rules
 const allRules = await engine.getAllRuleMetadata();
@@ -276,7 +290,7 @@ console.log({
   rulesLoaded: status.rulesLoaded,
   cacheHitRate: status.performance?.cacheHitRate,
   memoryUsage: status.performance?.memoryUsage,
-  avgExecutionTime: status.performance?.averageExecutionTime
+  avgExecutionTime: status.performance?.averageExecutionTime,
 });
 
 // Monitor cache statistics
@@ -284,7 +298,7 @@ const cacheStats = await engine.getCacheStats();
 console.log({
   size: cacheStats.size,
   hitRate: cacheStats.hitRate,
-  memoryUsage: cacheStats.memoryUsage
+  memoryUsage: cacheStats.memoryUsage,
 });
 ```
 
@@ -329,10 +343,13 @@ try {
 
 ```typescript
 // ✅ Good: Use batch operations
-const results = await engine.execute({
-  ids: ['rule1', 'rule2', 'rule3'],
-  mode: { type: 'parallel' }
-}, data);
+const results = await engine.execute(
+  {
+    ids: ['rule1', 'rule2', 'rule3'],
+    mode: { type: 'parallel' },
+  },
+  data,
+);
 
 // ❌ Avoid: Individual calls in loops
 for (const ruleId of ruleIds) {
@@ -360,6 +377,7 @@ memoryManager.on('critical', (stats) => {
 ### Common Issues and Solutions
 
 #### Issue: Rules not loading
+
 ```typescript
 // Check engine status
 const status = await engine.getStatus();
@@ -370,6 +388,7 @@ if (!status.initialized) {
 ```
 
 #### Issue: Poor performance
+
 ```typescript
 // Check cache hit rate
 const stats = await engine.getCacheStats();
@@ -381,13 +400,14 @@ if (stats.hitRate < 0.8) {
 ```
 
 #### Issue: Memory problems
+
 ```typescript
 // Monitor memory usage
 const memoryStats = getGlobalMemoryManager().getCurrentStats();
 console.log('Memory usage:', {
   percentage: memoryStats.percentage,
   trend: memoryStats.trend,
-  recommendations: memoryStats.recommendations
+  recommendations: memoryStats.recommendations,
 });
 ```
 

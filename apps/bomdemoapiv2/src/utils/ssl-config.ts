@@ -9,27 +9,27 @@ export interface SSLOptions {
 
 export function loadSSLCertificates(): SSLOptions | null {
   const logger = new Logger('SSLConfig');
-  
+
   // Define possible certificate paths (in order of preference)
   const certPaths = [
     // Production build (certificates copied to dist/assets/certs)
     {
       key: join(__dirname, 'assets/certs/key.pem'),
       cert: join(__dirname, 'assets/certs/cert.pem'),
-      description: 'Production build path'
+      description: 'Production build path',
     },
     // Development mode (relative to src/assets/certs)
     {
       key: join(__dirname, 'assets/certs/key.pem'),
       cert: join(__dirname, 'assets/certs/cert.pem'),
-      description: 'Development path'
+      description: 'Development path',
     },
     // Workspace root fallback (original location)
     {
       key: join(process.cwd(), 'apps/bomdemoapiv2/certs/key.pem'),
       cert: join(process.cwd(), 'apps/bomdemoapiv2/certs/cert.pem'),
-      description: 'Workspace root path'
-    }
+      description: 'Workspace root path',
+    },
   ];
 
   for (const paths of certPaths) {
@@ -40,12 +40,16 @@ export function loadSSLCertificates(): SSLOptions | null {
           key: readFileSync(paths.key),
           cert: readFileSync(paths.cert),
         };
-        
-        logger.log(`🔒 SSL certificates loaded successfully from ${paths.description}: ${paths.key}`);
+
+        logger.log(
+          `🔒 SSL certificates loaded successfully from ${paths.description}: ${paths.key}`,
+        );
         return sslOptions;
       }
     } catch (error) {
-      logger.warn(`⚠️  Failed to load certificates from ${paths.description}: ${(error as Error).message}`);
+      logger.warn(
+        `⚠️  Failed to load certificates from ${paths.description}: ${(error as Error).message}`,
+      );
     }
   }
 

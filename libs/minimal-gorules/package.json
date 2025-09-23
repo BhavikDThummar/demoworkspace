@@ -2,7 +2,6 @@
   "name": "@org/minimal-gorules",
   "version": "0.0.1",
   "private": true,
-
   "sideEffects": false,
   "main": "./dist/node/index.node.js",
   "module": "./dist/browser/index.browser.js",

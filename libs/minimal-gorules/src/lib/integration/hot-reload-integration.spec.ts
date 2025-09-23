@@ -21,7 +21,7 @@ describe('Hot Reload Integration Tests', () => {
     if (service) {
       await service.stopHotReload();
     }
-    
+
     try {
       await fs.promises.rm(tempDir, { recursive: true, force: true });
     } catch (error) {
@@ -93,19 +93,20 @@ describe('Hot Reload Integration Tests', () => {
 
       // Create a new rule file
       const rulePath = path.join(tempDir, 'test-rule.json');
-      await fs.promises.writeFile(rulePath, JSON.stringify({
-        name: 'Test Rule',
-        nodes: [
-          { id: 'input', type: 'inputNode' },
-          { id: 'output', type: 'outputNode' }
-        ],
-        edges: [
-          { id: 'edge1', source: 'input', target: 'output' }
-        ]
-      }));
+      await fs.promises.writeFile(
+        rulePath,
+        JSON.stringify({
+          name: 'Test Rule',
+          nodes: [
+            { id: 'input', type: 'inputNode' },
+            { id: 'output', type: 'outputNode' },
+          ],
+          edges: [{ id: 'edge1', source: 'input', target: 'output' }],
+        }),
+      );
 
       // Wait for hot reload to detect the change
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Cache update callback should have been called
       expect(cacheUpdateCallback).toHaveBeenCalledWith('test-rule', 'added');
@@ -127,23 +128,29 @@ describe('Hot Reload Integration Tests', () => {
 
       // Create initial rule file
       const rulePath = path.join(tempDir, 'modify-test.json');
-      await fs.promises.writeFile(rulePath, JSON.stringify({
-        name: 'Original Rule',
-        nodes: [],
-        edges: []
-      }));
+      await fs.promises.writeFile(
+        rulePath,
+        JSON.stringify({
+          name: 'Original Rule',
+          nodes: [],
+          edges: [],
+        }),
+      );
 
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
       cacheUpdateCallback.mockClear();
 
       // Modify the file
-      await fs.promises.writeFile(rulePath, JSON.stringify({
-        name: 'Modified Rule',
-        nodes: [],
-        edges: []
-      }));
+      await fs.promises.writeFile(
+        rulePath,
+        JSON.stringify({
+          name: 'Modified Rule',
+          nodes: [],
+          edges: [],
+        }),
+      );
 
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       // Should detect modification
       expect(cacheUpdateCallback).toHaveBeenCalledWith('modify-test', 'modified');
@@ -153,10 +160,10 @@ describe('Hot Reload Integration Tests', () => {
       // Delete the file
       await fs.promises.unlink(rulePath);
 
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Should detect deletion (if file system events are working in test environment)
-      const deleteCalls = cacheUpdateCallback.mock.calls.filter(call => call[1] === 'deleted');
+      const deleteCalls = cacheUpdateCallback.mock.calls.filter((call) => call[1] === 'deleted');
       if (cacheUpdateCallback.mock.calls.length > 0) {
         expect(deleteCalls.length).toBeGreaterThan(0);
       }
@@ -182,13 +189,16 @@ describe('Hot Reload Integration Tests', () => {
 
       // Create rule in nested directory
       const nestedRulePath = path.join(nestedDir, 'shipping-fees.json');
-      await fs.promises.writeFile(nestedRulePath, JSON.stringify({
-        name: 'Shipping Fees',
-        nodes: [],
-        edges: []
-      }));
+      await fs.promises.writeFile(
+        nestedRulePath,
+        JSON.stringify({
+          name: 'Shipping Fees',
+          nodes: [],
+          edges: [],
+        }),
+      );
 
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Should detect nested rule with correct ID
       expect(cacheUpdateCallback).toHaveBeenCalledWith('pricing/shipping-fees', 'added');
@@ -212,7 +222,7 @@ describe('Hot Reload Integration Tests', () => {
       const textFilePath = path.join(tempDir, 'readme.txt');
       await fs.promises.writeFile(textFilePath, 'This is not a rule file');
 
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       // Should not trigger cache update for non-JSON files
       expect(cacheUpdateCallback).not.toHaveBeenCalled();
@@ -242,28 +252,34 @@ describe('Hot Reload Integration Tests', () => {
       // Create ignored directory and file
       const ignoredDir = path.join(tempDir, 'ignored');
       await fs.promises.mkdir(ignoredDir, { recursive: true });
-      
-      const ignoredFilePath = path.join(ignoredDir, 'ignored-rule.json');
-      await fs.promises.writeFile(ignoredFilePath, JSON.stringify({
-        name: 'Ignored Rule',
-        nodes: [],
-        edges: []
-      }));
 
-      await new Promise(resolve => setTimeout(resolve, 300));
+      const ignoredFilePath = path.join(ignoredDir, 'ignored-rule.json');
+      await fs.promises.writeFile(
+        ignoredFilePath,
+        JSON.stringify({
+          name: 'Ignored Rule',
+          nodes: [],
+          edges: [],
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       // Should not trigger callback for ignored files
       expect(cacheUpdateCallback).not.toHaveBeenCalled();
 
       // Create non-ignored file
       const normalFilePath = path.join(tempDir, 'normal-rule.json');
-      await fs.promises.writeFile(normalFilePath, JSON.stringify({
-        name: 'Normal Rule',
-        nodes: [],
-        edges: []
-      }));
+      await fs.promises.writeFile(
+        normalFilePath,
+        JSON.stringify({
+          name: 'Normal Rule',
+          nodes: [],
+          edges: [],
+        }),
+      );
 
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       // Should trigger callback for non-ignored files
       expect(cacheUpdateCallback).toHaveBeenCalledWith('normal-rule', 'added');
@@ -290,13 +306,16 @@ describe('Hot Reload Integration Tests', () => {
 
       // Create rule file
       const rulePath = path.join(tempDir, 'multi-callback-test.json');
-      await fs.promises.writeFile(rulePath, JSON.stringify({
-        name: 'Multi Callback Test',
-        nodes: [],
-        edges: []
-      }));
+      await fs.promises.writeFile(
+        rulePath,
+        JSON.stringify({
+          name: 'Multi Callback Test',
+          nodes: [],
+          edges: [],
+        }),
+      );
 
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // All callbacks should be called
       expect(callback1).toHaveBeenCalledWith('multi-callback-test', 'added');
@@ -326,13 +345,16 @@ describe('Hot Reload Integration Tests', () => {
 
       // Create rule file
       const rulePath = path.join(tempDir, 'callback-removal-test.json');
-      await fs.promises.writeFile(rulePath, JSON.stringify({
-        name: 'Callback Removal Test',
-        nodes: [],
-        edges: []
-      }));
+      await fs.promises.writeFile(
+        rulePath,
+        JSON.stringify({
+          name: 'Callback Removal Test',
+          nodes: [],
+          edges: [],
+        }),
+      );
 
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Only callback2 should be called
       expect(callback1).not.toHaveBeenCalled();
@@ -360,13 +382,16 @@ describe('Hot Reload Integration Tests', () => {
 
       // Create rule file
       const rulePath = path.join(tempDir, 'error-handling-test.json');
-      await fs.promises.writeFile(rulePath, JSON.stringify({
-        name: 'Error Handling Test',
-        nodes: [],
-        edges: []
-      }));
+      await fs.promises.writeFile(
+        rulePath,
+        JSON.stringify({
+          name: 'Error Handling Test',
+          nodes: [],
+          edges: [],
+        }),
+      );
 
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Both callbacks should be called despite error in first one
       if (errorCallback.mock.calls.length > 0 || goodCallback.mock.calls.length > 0) {

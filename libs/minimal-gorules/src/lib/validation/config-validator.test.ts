@@ -33,7 +33,7 @@ describe('ConfigValidator', () => {
           ruleSource: 'cloud',
           apiUrl: 'https://api.gorules.io',
           apiKey: 'test-api-key',
-          projectId: 'test-project-id'
+          projectId: 'test-project-id',
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -46,7 +46,7 @@ describe('ConfigValidator', () => {
         const config: MinimalGoRulesConfig = {
           apiUrl: 'https://api.gorules.io',
           apiKey: 'test-api-key',
-          projectId: 'test-project-id'
+          projectId: 'test-project-id',
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -59,7 +59,7 @@ describe('ConfigValidator', () => {
         const config: MinimalGoRulesConfig = {
           ruleSource: 'cloud',
           apiKey: 'test-api-key',
-          projectId: 'test-project-id'
+          projectId: 'test-project-id',
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -73,7 +73,7 @@ describe('ConfigValidator', () => {
           ruleSource: 'cloud',
           apiUrl: 'invalid-url',
           apiKey: 'test-api-key',
-          projectId: 'test-project-id'
+          projectId: 'test-project-id',
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -86,7 +86,7 @@ describe('ConfigValidator', () => {
         const config: MinimalGoRulesConfig = {
           ruleSource: 'cloud',
           apiUrl: 'https://api.gorules.io',
-          projectId: 'test-project-id'
+          projectId: 'test-project-id',
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -100,7 +100,7 @@ describe('ConfigValidator', () => {
           ruleSource: 'cloud',
           apiUrl: 'https://api.gorules.io',
           apiKey: '   ',
-          projectId: 'test-project-id'
+          projectId: 'test-project-id',
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -113,7 +113,7 @@ describe('ConfigValidator', () => {
         const config: MinimalGoRulesConfig = {
           ruleSource: 'cloud',
           apiUrl: 'https://api.gorules.io',
-          apiKey: 'test-api-key'
+          apiKey: 'test-api-key',
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -127,7 +127,7 @@ describe('ConfigValidator', () => {
       it('should validate valid local configuration', () => {
         const config: MinimalGoRulesConfig = {
           ruleSource: 'local',
-          localRulesPath: tempDir
+          localRulesPath: tempDir,
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -138,7 +138,7 @@ describe('ConfigValidator', () => {
 
       it('should require localRulesPath for local configuration', () => {
         const config: MinimalGoRulesConfig = {
-          ruleSource: 'local'
+          ruleSource: 'local',
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -150,7 +150,7 @@ describe('ConfigValidator', () => {
       it('should require non-empty localRulesPath', () => {
         const config: MinimalGoRulesConfig = {
           ruleSource: 'local',
-          localRulesPath: '   '
+          localRulesPath: '   ',
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -162,7 +162,7 @@ describe('ConfigValidator', () => {
       it('should validate that localRulesPath exists', () => {
         const config: MinimalGoRulesConfig = {
           ruleSource: 'local',
-          localRulesPath: '/non/existent/path'
+          localRulesPath: '/non/existent/path',
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -177,7 +177,7 @@ describe('ConfigValidator', () => {
 
         const config: MinimalGoRulesConfig = {
           ruleSource: 'local',
-          localRulesPath: filePath
+          localRulesPath: filePath,
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -190,7 +190,7 @@ describe('ConfigValidator', () => {
         const config: MinimalGoRulesConfig = {
           ruleSource: 'local',
           localRulesPath: tempDir,
-          enableHotReload: 'true' as any
+          enableHotReload: 'true' as any,
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -203,7 +203,7 @@ describe('ConfigValidator', () => {
         const config: MinimalGoRulesConfig = {
           ruleSource: 'local',
           localRulesPath: tempDir,
-          metadataFilePattern: ''
+          metadataFilePattern: '',
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -216,13 +216,13 @@ describe('ConfigValidator', () => {
     describe('invalid rule source', () => {
       it('should reject invalid ruleSource', () => {
         const config: MinimalGoRulesConfig = {
-          ruleSource: 'invalid' as any
+          ruleSource: 'invalid' as any,
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
 
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain('Invalid ruleSource: invalid. Must be \'cloud\' or \'local\'');
+        expect(result.errors).toContain("Invalid ruleSource: invalid. Must be 'cloud' or 'local'");
       });
     });
 
@@ -231,7 +231,7 @@ describe('ConfigValidator', () => {
         const config: MinimalGoRulesConfig = {
           ruleSource: 'local',
           localRulesPath: tempDir,
-          cacheMaxSize: -1
+          cacheMaxSize: -1,
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -244,7 +244,7 @@ describe('ConfigValidator', () => {
         const config: MinimalGoRulesConfig = {
           ruleSource: 'local',
           localRulesPath: tempDir,
-          httpTimeout: 0
+          httpTimeout: 0,
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -257,7 +257,7 @@ describe('ConfigValidator', () => {
         const config: MinimalGoRulesConfig = {
           ruleSource: 'local',
           localRulesPath: tempDir,
-          platform: 'invalid' as any
+          platform: 'invalid' as any,
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -271,7 +271,7 @@ describe('ConfigValidator', () => {
           ruleSource: 'local',
           localRulesPath: tempDir,
           memoryWarningThreshold: 1.5,
-          memoryCriticalThreshold: -0.1
+          memoryCriticalThreshold: -0.1,
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
@@ -286,13 +286,15 @@ describe('ConfigValidator', () => {
           ruleSource: 'local',
           localRulesPath: tempDir,
           memoryWarningThreshold: 0.9,
-          memoryCriticalThreshold: 0.8
+          memoryCriticalThreshold: 0.8,
         };
 
         const result = ConfigValidator.validateHybridConfig(config);
 
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain('memoryWarningThreshold must be less than memoryCriticalThreshold');
+        expect(result.errors).toContain(
+          'memoryWarningThreshold must be less than memoryCriticalThreshold',
+        );
       });
     });
   });
@@ -302,7 +304,7 @@ describe('ConfigValidator', () => {
       const config = ConfigValidator.createDefaultCloudConfig(
         'https://api.gorules.io',
         'test-api-key',
-        'test-project-id'
+        'test-project-id',
       );
 
       expect(config.ruleSource).toBe('cloud');
@@ -324,7 +326,7 @@ describe('ConfigValidator', () => {
       expect(config.ruleSource).toBe('local');
       expect(config.localRulesPath).toBe(tempDir);
       expect(config.enableHotReload).toBe(false);
-      expect(config.metadataFilePattern).toBe('*.meta.json');
+      expect(config.metadataFilePattern).toBe('.meta.json');
       expect(config.fileSystemOptions?.recursive).toBe(true);
 
       const result = ConfigValidator.validateHybridConfig(config);

@@ -20,7 +20,8 @@ describe('Cross-Platform Simple Tests', () => {
   });
 
   it('should validate Windows paths correctly', () => {
-    expect(() => CrossPlatformValidationUtils.validateFilePath('C:\\Users\\test\\file.json'))
-      .not.toThrow();
+    expect(() =>
+      CrossPlatformValidationUtils.validateFilePath('C:\\Users\\test\\file.json'),
+    ).not.toThrow();
   });
 });

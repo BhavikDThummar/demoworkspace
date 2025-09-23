@@ -5,10 +5,10 @@
 
 import * as chokidar from 'chokidar';
 import { MinimalGoRulesError, MinimalErrorCode } from '../errors/index.js';
-import { 
-  CrossPlatformPathUtils, 
-  CrossPlatformWatchUtils, 
-  CrossPlatformValidationUtils 
+import {
+  CrossPlatformPathUtils,
+  CrossPlatformWatchUtils,
+  CrossPlatformValidationUtils,
 } from './cross-platform-utils.js';
 
 /**
@@ -77,11 +77,12 @@ export class HotReloadManager implements IHotReloadManager {
         'Rules path is required for HotReloadManager',
       );
     }
-    
+
     CrossPlatformValidationUtils.validateFilePath(rulesPath);
-    
+
     // Use platform-specific debounce delay if not provided
-    this.debounceDelay = options.debounceDelay ?? CrossPlatformWatchUtils.getRecommendedDebounceDelay();
+    this.debounceDelay =
+      options.debounceDelay ?? CrossPlatformWatchUtils.getRecommendedDebounceDelay();
     this.fileExtension = options.fileExtension ?? '.json';
   }
 
@@ -97,7 +98,7 @@ export class HotReloadManager implements IHotReloadManager {
     try {
       // Get platform-specific watch options
       const platformWatchOptions = CrossPlatformWatchUtils.getPlatformWatchOptions(this.rulesPath);
-      
+
       // Merge with user-provided options
       const watchOptions = {
         ...platformWatchOptions,
@@ -108,7 +109,7 @@ export class HotReloadManager implements IHotReloadManager {
         // Only watch JSON files
         glob: `**/*${this.fileExtension}`,
       };
-      
+
       // Create watcher with platform-optimized options
       this.watcher = chokidar.watch(this.rulesPath, watchOptions);
 
@@ -268,7 +269,10 @@ export class HotReloadManager implements IHotReloadManager {
       const normalizedFilePath = CrossPlatformPathUtils.resolvePath('.', filePath);
 
       // Get relative path from rules directory using cross-platform utilities
-      const relativePath = CrossPlatformPathUtils.getRelativePath(normalizedRulesPath, normalizedFilePath);
+      const relativePath = CrossPlatformPathUtils.getRelativePath(
+        normalizedRulesPath,
+        normalizedFilePath,
+      );
 
       // Convert to rule ID (remove extension and normalize separators to forward slashes)
       const withoutExtension = relativePath.replace(this.fileExtension, '');

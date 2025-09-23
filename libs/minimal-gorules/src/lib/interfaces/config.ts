@@ -34,7 +34,7 @@ export interface MinimalGoRulesConfig {
   // Local rule configuration (required when ruleSource === 'local')
   localRulesPath?: string;
   enableHotReload?: boolean; // default: false, only for local rules
-  metadataFilePattern?: string; // default: '*.meta.json'
+  metadataFilePattern?: string; // default: '.meta.json'
   fileSystemOptions?: FileSystemOptions;
 
   // Optional performance settings

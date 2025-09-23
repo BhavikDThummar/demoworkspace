@@ -299,11 +299,12 @@ rules/
 ```
 
 **Configuration:**
+
 ```typescript
 const config: MinimalGoRulesConfig = {
   ruleSource: 'local',
   localRulesPath: `./rules/${process.env.NODE_ENV || 'development'}`,
-  enableHotReload: process.env.NODE_ENV === 'development'
+  enableHotReload: process.env.NODE_ENV === 'development',
 };
 ```
 
@@ -332,7 +333,7 @@ Use configuration to filter rules by environment tags:
 const config: MinimalGoRulesConfig = {
   ruleSource: 'local',
   localRulesPath: './rules',
-  environmentFilter: process.env.NODE_ENV || 'development'
+  environmentFilter: process.env.NODE_ENV || 'development',
 };
 ```
 
@@ -426,9 +427,9 @@ const config: MinimalGoRulesConfig = {
     watchOptions: {
       ignored: ['**/*.meta.json', '**/.*'],
       persistent: true,
-      ignoreInitial: true
-    }
-  }
+      ignoreInitial: true,
+    },
+  },
 };
 ```
 
@@ -472,6 +473,7 @@ The system responds to these file operations:
 #### 1. Rules Not Loading
 
 **Symptoms:**
+
 - Rules not found errors
 - Empty rule cache
 - Application starts but rules don't execute
@@ -495,6 +497,7 @@ echo $PWD/rules
 #### 2. Invalid JSON Format
 
 **Symptoms:**
+
 - JSON parsing errors
 - Rule validation failures
 - Startup crashes
@@ -511,6 +514,7 @@ grep -r '"' rules/ | grep "'"   # Mixed quotes
 ```
 
 **Prevention:**
+
 - Use JSON linting in your editor
 - Set up pre-commit hooks for JSON validation
 - Use schema validation tools
@@ -518,6 +522,7 @@ grep -r '"' rules/ | grep "'"   # Mixed quotes
 #### 3. Hot Reload Not Working
 
 **Symptoms:**
+
 - File changes not detected
 - Cache not updating
 - Manual restart required
@@ -530,11 +535,12 @@ const config: MinimalGoRulesConfig = {
   ruleSource: 'local',
   localRulesPath: './rules',
   enableHotReload: true,
-  debugMode: true  // Enable detailed logging
+  debugMode: true, // Enable detailed logging
 };
 ```
 
 **Common fixes:**
+
 - Check file system permissions
 - Verify `enableHotReload: true` in configuration
 - Restart application if file watcher crashes
@@ -543,6 +549,7 @@ const config: MinimalGoRulesConfig = {
 #### 4. Rule ID Conflicts
 
 **Symptoms:**
+
 - Rules overwriting each other
 - Unexpected rule execution results
 - Cache inconsistencies
@@ -561,6 +568,7 @@ mv rules/validation/fees.json rules/validation/processing-fees.json
 #### 5. Performance Issues
 
 **Symptoms:**
+
 - Slow rule loading
 - High memory usage
 - File system errors
@@ -576,9 +584,9 @@ const config: MinimalGoRulesConfig = {
     recursive: true,
     watchOptions: {
       ignored: ['**/node_modules/**', '**/.git/**'],
-      persistent: false  // Reduce memory usage
-    }
-  }
+      persistent: false, // Reduce memory usage
+    },
+  },
 };
 ```
 
@@ -619,13 +627,13 @@ fs_usage -w -f filesys | grep rules/
 
 ### Error Messages Reference
 
-| Error | Cause | Solution |
-|-------|-------|----------|
-| `ENOENT: no such file or directory` | File path incorrect | Check `localRulesPath` configuration |
-| `EACCES: permission denied` | Insufficient permissions | Run `chmod 644 rules/**/*.json` |
-| `SyntaxError: Unexpected token` | Invalid JSON | Validate JSON syntax with `jq` |
-| `Rule validation failed` | Missing required fields | Check GoRules format requirements |
-| `File watcher error` | File system limitations | Reduce watched files or restart application |
+| Error                               | Cause                    | Solution                                    |
+| ----------------------------------- | ------------------------ | ------------------------------------------- |
+| `ENOENT: no such file or directory` | File path incorrect      | Check `localRulesPath` configuration        |
+| `EACCES: permission denied`         | Insufficient permissions | Run `chmod 644 rules/**/*.json`             |
+| `SyntaxError: Unexpected token`     | Invalid JSON             | Validate JSON syntax with `jq`              |
+| `Rule validation failed`            | Missing required fields  | Check GoRules format requirements           |
+| `File watcher error`                | File system limitations  | Reduce watched files or restart application |
 
 ### Getting Help
 
@@ -637,6 +645,7 @@ fs_usage -w -f filesys | grep rules/
 6. **Check system resources** (disk space, memory, file handles)
 
 For additional support, include the following information:
+
 - Operating system and version
 - Node.js version
 - Rule directory structure (`tree rules/` or `find rules/`)

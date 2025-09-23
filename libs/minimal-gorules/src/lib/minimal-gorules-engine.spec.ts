@@ -717,8 +717,8 @@ describe('MinimalGoRulesEngine', () => {
 
         expect(() => new MinimalGoRulesEngine(cloudConfig)).toThrow(
           expect.objectContaining({
-            message: expect.stringContaining('Project ID is required')
-          })
+            message: expect.stringContaining('Project ID is required'),
+          }),
         );
       });
     });
@@ -732,8 +732,10 @@ describe('MinimalGoRulesEngine', () => {
 
         expect(() => new MinimalGoRulesEngine(invalidConfig)).toThrow(
           expect.objectContaining({
-            message: expect.stringContaining('Local rules path is required when rule source is "local"')
-          })
+            message: expect.stringContaining(
+              'Local rules path is required when rule source is "local"',
+            ),
+          }),
         );
       });
 
@@ -748,8 +750,8 @@ describe('MinimalGoRulesEngine', () => {
 
         expect(() => new MinimalGoRulesEngine(localConfig)).toThrow(
           expect.objectContaining({
-            message: expect.stringContaining('localRulesPath does not exist')
-          })
+            message: expect.stringContaining('localRulesPath does not exist'),
+          }),
         );
       });
 
@@ -763,8 +765,8 @@ describe('MinimalGoRulesEngine', () => {
         // Should fail with file system validation, not cloud configuration validation
         expect(() => new MinimalGoRulesEngine(localConfigWithoutCloudSettings)).toThrow(
           expect.objectContaining({
-            message: expect.stringContaining('localRulesPath does not exist')
-          })
+            message: expect.stringContaining('localRulesPath does not exist'),
+          }),
         );
       });
     });
@@ -800,8 +802,8 @@ describe('MinimalGoRulesEngine', () => {
           });
         }).toThrow(
           expect.objectContaining({
-            message: expect.stringContaining('localRulesPath does not exist')
-          })
+            message: expect.stringContaining('localRulesPath does not exist'),
+          }),
         );
       });
 
@@ -811,7 +813,7 @@ describe('MinimalGoRulesEngine', () => {
           ...testConfig,
           ruleSource: 'cloud', // Explicitly set rule source
         });
-        
+
         // Update some configuration
         engine.updateConfig({
           cacheMaxSize: 2000,
@@ -893,8 +895,8 @@ describe('MinimalGoRulesEngine', () => {
 
         expect(() => new MinimalGoRulesEngine(invalidConfig)).toThrow(
           expect.objectContaining({
-            message: expect.stringContaining('Rule source must be either "cloud" or "local"')
-          })
+            message: expect.stringContaining('Rule source must be either "cloud" or "local"'),
+          }),
         );
       });
 
@@ -907,8 +909,8 @@ describe('MinimalGoRulesEngine', () => {
 
         expect(() => new MinimalGoRulesEngine(incompleteCloudConfig)).toThrow(
           expect.objectContaining({
-            message: expect.stringContaining('API key is required')
-          })
+            message: expect.stringContaining('API key is required'),
+          }),
         );
       });
 
@@ -920,8 +922,10 @@ describe('MinimalGoRulesEngine', () => {
 
         expect(() => new MinimalGoRulesEngine(incompleteLocalConfig)).toThrow(
           expect.objectContaining({
-            message: expect.stringContaining('Local rules path is required when rule source is "local"')
-          })
+            message: expect.stringContaining(
+              'Local rules path is required when rule source is "local"',
+            ),
+          }),
         );
       });
     });

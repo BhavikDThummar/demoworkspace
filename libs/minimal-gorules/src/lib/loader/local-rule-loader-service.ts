@@ -12,12 +12,12 @@ import {
 } from '../interfaces/index.js';
 import { MinimalGoRulesError, MinimalErrorCode } from '../errors/index.js';
 import { FileSystemErrorHandler } from '../errors/file-system-error-handler.js';
-import { 
-  FileSystemRuleScanner, 
-  HotReloadManager, 
+import {
+  FileSystemRuleScanner,
+  HotReloadManager,
   IHotReloadManager,
   HotReloadChangeType,
-  CrossPlatformPathUtils 
+  CrossPlatformPathUtils,
 } from '../file-system/index.js';
 import { ConfigValidator } from '../validation/index.js';
 
@@ -58,21 +58,21 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
     if (!validation.isValid) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.CONFIG_ERROR,
-        `Invalid local rule loader configuration: ${validation.errors.join(', ')}`
+        `Invalid local rule loader configuration: ${validation.errors.join(', ')}`,
       );
     }
 
     if (config.ruleSource !== 'local') {
       throw new MinimalGoRulesError(
         MinimalErrorCode.CONFIG_ERROR,
-        `LocalRuleLoaderService requires ruleSource to be 'local', got '${config.ruleSource}'`
+        `LocalRuleLoaderService requires ruleSource to be 'local', got '${config.ruleSource}'`,
       );
     }
 
     if (!config.localRulesPath) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.CONFIG_ERROR,
-        'localRulesPath is required for LocalRuleLoaderService'
+        'localRulesPath is required for LocalRuleLoaderService',
       );
     }
 
@@ -95,7 +95,7 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
             '**/node_modules/**',
             '**/.git/**',
             '**/.DS_Store',
-            '**/Thumbs.db'
+            '**/Thumbs.db',
           ],
           persistent: config.fileSystemOptions?.watchOptions?.persistent ?? true,
           ignoreInitial: config.fileSystemOptions?.watchOptions?.ignoreInitial ?? true,
@@ -109,7 +109,11 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
 
         console.log(`Hot reload enabled for local rules at: ${this.rulesPath}`);
       } catch (error) {
-        console.warn(`Failed to initialize hot reload: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        console.warn(
+          `Failed to initialize hot reload: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
+        );
         // Continue without hot reload if initialization fails
       }
     }
@@ -124,24 +128,26 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
   ): Promise<Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>> {
     try {
       console.log(`Loading all rules from local path: ${this.rulesPath}`);
-      
+
       // Use batch loading for improved performance
       return await this.loadRulesBatch();
     } catch (error) {
       if (error instanceof MinimalGoRulesError) {
         throw error;
       }
-      
+
       // Handle file system errors specifically
       if (FileSystemErrorHandler.isFileSystemError(error as Error)) {
         throw FileSystemErrorHandler.handleDirectoryError(error as Error, this.rulesPath);
       }
-      
+
       throw new MinimalGoRulesError(
         MinimalErrorCode.CONFIG_ERROR,
-        `Failed to load all rules from ${this.rulesPath}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to load all rules from ${this.rulesPath}: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
         undefined,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -150,31 +156,33 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
    * Batch load multiple rules for improved I/O performance
    * Loads files in parallel with controlled concurrency
    */
-  async loadRulesBatch(ruleIds?: string[]): Promise<Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>> {
+  async loadRulesBatch(
+    ruleIds?: string[],
+  ): Promise<Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>> {
     const startTime = performance.now();
-    
+
     try {
       let filePaths: string[];
-      
+
       if (ruleIds) {
         // Load specific rules by ID
-        filePaths = ruleIds.map(id => this.resolveRuleFilePath(id));
+        filePaths = ruleIds.map((id) => this.resolveRuleFilePath(id));
       } else {
         // Scan directory for all rule files
         const fileSystemRules = await FileSystemErrorHandler.wrapDirectoryOperation(
           () => this.scanner.scanDirectory(),
-          this.rulesPath
+          this.rulesPath,
         );
-        
+
         if (fileSystemRules.length === 0) {
           console.warn(`No rule files found in ${this.rulesPath}`);
           return new Map();
         }
-        
+
         console.log(`Found ${fileSystemRules.length} rule files`);
-        
+
         // Extract file paths for batch loading
-        filePaths = fileSystemRules.map(rule => rule.filePath);
+        filePaths = fileSystemRules.map((rule) => rule.filePath);
       }
 
       // Batch load files with controlled concurrency (max 10 concurrent operations)
@@ -184,28 +192,30 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
 
       for (let i = 0; i < filePaths.length; i += batchSize) {
         const batch = filePaths.slice(i, i + batchSize);
-        
+
         // Load batch in parallel
         const batchPromises = batch.map(async (filePath) => {
           try {
             const ruleId = this.generateRuleIdFromPath(filePath);
-            
+
             // Load file content and metadata in parallel
             const [data, metadata] = await Promise.all([
               this.loadFileContent(filePath),
-              this.loadFileMetadata(filePath, ruleId)
+              this.loadFileMetadata(filePath, ruleId),
             ]);
-            
+
             return { ruleId, data, metadata };
           } catch (error) {
-            const errorMessage = `Failed to load rule from ${filePath}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+            const errorMessage = `Failed to load rule from ${filePath}: ${
+              error instanceof Error ? error.message : 'Unknown error'
+            }`;
             errors.push(errorMessage);
             return null;
           }
         });
 
         const batchResults = await Promise.all(batchPromises);
-        
+
         // Add successful results to the map
         for (const result of batchResults) {
           if (result) {
@@ -223,12 +233,12 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
       // Report errors but don't fail if we have some valid rules
       if (errors.length > 0) {
         console.warn(`Encountered ${errors.length} errors while batch loading rules:`, errors);
-        
+
         // If all rules failed to load, throw an error
         if (rules.size === 0 && filePaths.length > 0) {
           throw new MinimalGoRulesError(
             MinimalErrorCode.FILE_SYSTEM_ERROR,
-            `Failed to load any rules from ${this.rulesPath}. Errors: ${errors.join('; ')}`
+            `Failed to load any rules from ${this.rulesPath}. Errors: ${errors.join('; ')}`,
           );
         }
       }
@@ -238,12 +248,12 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
       if (error instanceof MinimalGoRulesError) {
         throw error;
       }
-      
+
       throw new MinimalGoRulesError(
         MinimalErrorCode.CONFIG_ERROR,
         `Failed to batch load rules: ${error instanceof Error ? error.message : 'Unknown error'}`,
         undefined,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -255,13 +265,13 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
     try {
       // Convert rule ID back to file path
       const filePath = this.resolveRuleFilePath(ruleId);
-      
+
       // Load the specific rule file with error handling
       const rule = await FileSystemErrorHandler.wrapFileOperation(
         () => this.scanner.loadRuleFile(filePath),
-        filePath
+        filePath,
       );
-      
+
       return {
         data: rule.data,
         metadata: rule.metadata,
@@ -270,18 +280,20 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
       if (error instanceof MinimalGoRulesError) {
         throw error;
       }
-      
+
       // Handle file system errors specifically
       if (FileSystemErrorHandler.isFileSystemError(error as Error)) {
         const filePath = this.resolveRuleFilePath(ruleId);
         throw FileSystemErrorHandler.handleFileError(error as Error, filePath);
       }
-      
+
       throw new MinimalGoRulesError(
         MinimalErrorCode.RULE_NOT_FOUND,
-        `Failed to load rule ${ruleId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to load rule ${ruleId}: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
         ruleId,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -297,22 +309,22 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
     for (const [ruleId, currentVersion] of rules) {
       try {
         const filePath = this.resolveRuleFilePath(ruleId);
-        
+
         // Get file stats with error handling
         const fileStats = await FileSystemErrorHandler.wrapFileOperation(
           () => this.getFileStats(filePath),
-          filePath
+          filePath,
         );
-        
+
         // Use file modification time as version
         const fileVersion = fileStats.mtime.getTime().toString();
-        
+
         // Rule needs update if versions don't match
         results.set(ruleId, fileVersion !== currentVersion);
       } catch (error) {
         // If file doesn't exist or can't be accessed, mark as needing update (will be removed from cache)
         results.set(ruleId, true);
-        
+
         // Provide more specific error messages based on error type
         let errorMessage: string;
         if (error instanceof MinimalGoRulesError) {
@@ -322,9 +334,11 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
           const fsError = FileSystemErrorHandler.handleFileError(error as Error, filePath);
           errorMessage = `Failed to check version for rule ${ruleId}: ${fsError.message}`;
         } else {
-          errorMessage = `Failed to check version for rule ${ruleId}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+          errorMessage = `Failed to check version for rule ${ruleId}: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`;
         }
-        
+
         errors.push(errorMessage);
       }
     }
@@ -352,23 +366,23 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
   private resolveRuleFilePath(ruleId: string): string {
     // Convert forward slashes to platform-specific path separators
     const relativePath = CrossPlatformPathUtils.fromForwardSlashes(ruleId);
-    
+
     // Add .json extension
     const fileName = `${relativePath}.json`;
-    
+
     // Resolve full path using cross-platform utilities
     const fullPath = CrossPlatformPathUtils.joinPath(this.rulesPath, fileName);
     const resolvedPath = CrossPlatformPathUtils.resolvePath('.', fullPath);
     const resolvedRulesPath = CrossPlatformPathUtils.resolvePath('.', this.rulesPath);
-    
+
     // Ensure the resolved path is within the rules directory (security check)
     if (!CrossPlatformPathUtils.isPathWithinBase(resolvedRulesPath, resolvedPath)) {
       throw new MinimalGoRulesError(
         MinimalErrorCode.CONFIG_ERROR,
-        `Rule ID ${ruleId} resolves to path outside rules directory: ${resolvedPath}`
+        `Rule ID ${ruleId} resolves to path outside rules directory: ${resolvedPath}`,
       );
     }
-    
+
     return resolvedPath;
   }
 
@@ -378,31 +392,31 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
   private async getFileStats(filePath: string): Promise<fs.Stats> {
     const now = Date.now();
     const cached = this.statCache.get(filePath);
-    
+
     // Return cached stats if still valid
-    if (cached && (now - cached.timestamp) < this.statCacheTimeout) {
+    if (cached && now - cached.timestamp < this.statCacheTimeout) {
       // Create a minimal stats-like object with the cached data
       return {
         mtime: new Date(cached.mtime),
         size: cached.size,
       } as fs.Stats;
     }
-    
+
     try {
       const stats = await stat(filePath);
-      
+
       // Cache the stats
       this.statCache.set(filePath, {
         mtime: stats.mtime.getTime(),
         size: stats.size,
         timestamp: now,
       });
-      
+
       return stats;
     } catch (error) {
       // Remove invalid cache entry
       this.statCache.delete(filePath);
-      
+
       // Let the error bubble up to be handled by FileSystemErrorHandler
       throw error;
     }
@@ -478,7 +492,10 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
         } catch (error) {
           // Log callback errors but don't let them stop other callbacks
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          console.error(`Error in cache update callback for rule ${ruleId}: ${errorMessage}`, error);
+          console.error(
+            `Error in cache update callback for rule ${ruleId}: ${errorMessage}`,
+            error,
+          );
         }
       }
 
@@ -494,7 +511,7 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
       } else {
         errorMessage = error instanceof Error ? error.message : 'Unknown error';
       }
-      
+
       console.error(`Error handling rule change for ${ruleId}: ${errorMessage}`, error);
     }
   }
@@ -512,29 +529,29 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
   private async loadFileContent(filePath: string): Promise<Buffer> {
     try {
       const data = await readFile(filePath);
-      
+
       // Validate JSON format
       try {
         JSON.parse(data.toString('utf-8'));
       } catch (jsonError) {
         throw FileSystemErrorHandler.handleJsonParseError(jsonError as Error, filePath);
       }
-      
+
       return data;
     } catch (error) {
       if (error instanceof MinimalGoRulesError) {
         throw error;
       }
-      
+
       if (FileSystemErrorHandler.isFileSystemError(error as Error)) {
         throw FileSystemErrorHandler.handleFileError(error as Error, filePath);
       }
-      
+
       throw new MinimalGoRulesError(
         MinimalErrorCode.FILE_SYSTEM_ERROR,
         `Failed to load file content: ${filePath}`,
         undefined,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -553,23 +570,23 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
       } catch (error) {
         // Ignore errors when extracting name from rule file
       }
-      
+
       // Check for metadata file first
       const metadataPath = this.getMetadataPath(filePath);
-      
+
       try {
         const metadataContent = await readFile(metadataPath, 'utf-8');
         const metadataFile = JSON.parse(metadataContent);
-        
+
         // Get file stats for lastModified fallback
         const stats = await this.getFileStats(filePath);
-        
+
         return {
           id: ruleId,
           name: ruleName, // Include name from rule file
           version: metadataFile.version || stats.mtime.getTime().toString(),
           tags: metadataFile.tags || [],
-          lastModified: metadataFile.lastModified 
+          lastModified: metadataFile.lastModified
             ? new Date(metadataFile.lastModified).getTime()
             : stats.mtime.getTime(),
         };
@@ -586,10 +603,14 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
   /**
    * Generate default metadata from file stats with caching
    */
-  private async generateDefaultMetadata(filePath: string, ruleId: string, name?: string): Promise<MinimalRuleMetadata> {
+  private async generateDefaultMetadata(
+    filePath: string,
+    ruleId: string,
+    name?: string,
+  ): Promise<MinimalRuleMetadata> {
     try {
       const stats = await this.getFileStats(filePath);
-      
+
       return {
         id: ruleId,
         name,
@@ -614,13 +635,16 @@ export class LocalRuleLoaderService implements IRuleLoaderService {
   private generateRuleIdFromPath(filePath: string): string {
     // Get relative path from base path using cross-platform utilities
     const relativePath = CrossPlatformPathUtils.getRelativePath(this.rulesPath, filePath);
-    
+
     // Remove file extension
-    const withoutExtension = relativePath.replace(CrossPlatformPathUtils.getExtension(relativePath), '');
-    
+    const withoutExtension = relativePath.replace(
+      CrossPlatformPathUtils.getExtension(relativePath),
+      '',
+    );
+
     // Convert path separators to forward slashes for consistent rule IDs across platforms
     const ruleId = CrossPlatformPathUtils.toForwardSlashes(withoutExtension);
-    
+
     return ruleId;
   }
 

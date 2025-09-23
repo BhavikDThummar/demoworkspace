@@ -78,6 +78,7 @@ export class GoRulesController {
 The Minimal GoRules Engine supports hybrid rule loading, allowing your NestJS backend to load rules from either GoRules Cloud API or local file system. This provides flexibility for different deployment scenarios:
 
 #### Cloud Rules (Production)
+
 ```typescript
 // Backend: app.module.ts - Production configuration
 @Module({
@@ -103,6 +104,7 @@ GORULES_PROJECT_ID=your-project-id
 ```
 
 #### Local Rules (Development/Testing)
+
 ```typescript
 // Backend: app.module.ts - Development configuration
 @Module({
@@ -128,6 +130,7 @@ GORULES_METADATA_FILE_PATTERN=*.meta.json
 ```
 
 #### Local Rule Directory Structure
+
 ```
 backend/
 ├── rules/
@@ -147,11 +150,12 @@ backend/
 ```
 
 #### Environment-Specific Configuration
+
 ```typescript
 // Backend: src/config/gorules.config.ts
 export const getGoRulesConfig = () => {
   const environment = process.env.NODE_ENV || 'development';
-  
+
   if (environment === 'production') {
     return {
       ruleSource: 'cloud' as const,
@@ -160,7 +164,7 @@ export const getGoRulesConfig = () => {
       projectId: process.env.GORULES_PROJECT_ID,
     };
   }
-  
+
   return {
     ruleSource: 'local' as const,
     localRulesPath: process.env.GORULES_LOCAL_RULES_PATH || './rules',
@@ -194,6 +198,7 @@ npm install @your-org/minimal-gorules
 For scenarios where you need to bundle rules directly in your React application (e.g., offline-first applications), you can include rule files in your build process:
 
 #### Webpack Configuration
+
 ```javascript
 // webpack.config.js or craco.config.js
 const path = require('path');
@@ -217,6 +222,7 @@ module.exports = {
 ```
 
 #### Rule Files in React Project
+
 ```
 src/
 ├── rules/
@@ -232,6 +238,7 @@ src/
 ```
 
 #### Local Rules Service for React
+
 ```typescript
 // src/services/localRulesService.ts
 import shippingFeesRule from '@rules/pricing/shipping-fees.rule.json';
@@ -324,6 +331,7 @@ export const localRulesService = new LocalRulesService();
 ```
 
 #### React Hook for Local Rules
+
 ```typescript
 // src/hooks/useLocalRules.ts
 import { useState, useCallback } from 'react';

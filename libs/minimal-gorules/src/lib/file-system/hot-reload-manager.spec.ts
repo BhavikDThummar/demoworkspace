@@ -51,7 +51,7 @@ describe('HotReloadManager', () => {
   describe('constructor', () => {
     it('should create HotReloadManager with default options', () => {
       hotReloadManager = new HotReloadManager(tempDir);
-      
+
       expect(hotReloadManager).toBeDefined();
       expect(hotReloadManager.getRulesPath()).toBe(tempDir);
       expect(hotReloadManager.isWatching()).toBe(false);
@@ -66,7 +66,7 @@ describe('HotReloadManager', () => {
       };
 
       hotReloadManager = new HotReloadManager(tempDir, options);
-      
+
       expect(hotReloadManager).toBeDefined();
       expect(hotReloadManager.getRulesPath()).toBe(tempDir);
     });
@@ -162,7 +162,7 @@ describe('HotReloadManager', () => {
 
     it('should handle invalid directory path', async () => {
       const invalidManager = new HotReloadManager('/nonexistent/path/that/does/not/exist');
-      
+
       // chokidar doesn't immediately fail for non-existent paths, it just watches
       // So we'll test that it starts successfully but won't find any files
       await invalidManager.start();
@@ -177,97 +177,97 @@ describe('HotReloadManager', () => {
         debounceDelay: 50, // Very short delay for testing
         ignoreInitial: true,
       });
-      
+
       hotReloadManager.onRuleChanged(mockCallback);
       await hotReloadManager.start();
     });
 
     it('should detect file addition', async () => {
       const filePath = path.join(tempDir, 'new-rule.json');
-      
+
       // Create file
       await writeFile(filePath, JSON.stringify({ test: 'rule' }));
-      
+
       // Wait for debounce and event processing
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       expect(mockCallback).toHaveBeenCalledWith('new-rule', 'added');
     });
 
     it('should detect file modification', async () => {
       const filePath = path.join(tempDir, 'existing-rule.json');
-      
+
       // Create file first
       await writeFile(filePath, JSON.stringify({ test: 'rule' }));
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       // Clear previous calls
       mockCallback.mockClear();
-      
+
       // Modify file
       await writeFile(filePath, JSON.stringify({ test: 'modified rule' }));
-      
+
       // Wait for debounce and event processing
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       expect(mockCallback).toHaveBeenCalledWith('existing-rule', 'modified');
     });
 
     it('should detect file deletion', async () => {
       const filePath = path.join(tempDir, 'to-delete.json');
-      
+
       // Create file first
       await writeFile(filePath, JSON.stringify({ test: 'rule' }));
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       // Clear previous calls
       mockCallback.mockClear();
-      
+
       // Delete file
       await unlink(filePath);
-      
+
       // Wait for debounce and event processing
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       expect(mockCallback).toHaveBeenCalledWith('to-delete', 'deleted');
     });
 
     it('should handle nested directory structure', async () => {
       const nestedDir = path.join(tempDir, 'pricing');
       await mkdir(nestedDir, { recursive: true });
-      
+
       const filePath = path.join(nestedDir, 'shipping-fees.json');
-      
+
       // Create file in nested directory
       await writeFile(filePath, JSON.stringify({ test: 'nested rule' }));
-      
+
       // Wait for debounce and event processing
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       expect(mockCallback).toHaveBeenCalledWith('pricing/shipping-fees', 'added');
     });
 
     it('should ignore non-JSON files', async () => {
       const filePath = path.join(tempDir, 'not-a-rule.txt');
-      
+
       // Create non-JSON file
       await writeFile(filePath, 'This is not a JSON file');
-      
+
       // Wait for potential event processing
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       expect(mockCallback).not.toHaveBeenCalled();
     });
 
     it('should ignore metadata files', async () => {
       const filePath = path.join(tempDir, 'rule.meta.json');
-      
+
       // Create metadata file
       await writeFile(filePath, JSON.stringify({ version: '1.0.0' }));
-      
+
       // Wait for potential event processing
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       expect(mockCallback).not.toHaveBeenCalled();
     });
   });
@@ -278,26 +278,26 @@ describe('HotReloadManager', () => {
         debounceDelay: 100, // 100ms debounce for testing
         ignoreInitial: true,
       });
-      
+
       hotReloadManager.onRuleChanged(mockCallback);
       await hotReloadManager.start();
     });
 
     it('should debounce rapid file changes', async () => {
       const filePath = path.join(tempDir, 'rapid-changes.json');
-      
+
       // Create file and modify it rapidly
       await writeFile(filePath, JSON.stringify({ version: 1 }));
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       await writeFile(filePath, JSON.stringify({ version: 2 }));
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       await writeFile(filePath, JSON.stringify({ version: 3 }));
-      
+
       // Wait for debounce period
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       // Should only receive one event (the last one)
       expect(mockCallback).toHaveBeenCalledTimes(1);
       expect(mockCallback).toHaveBeenCalledWith('rapid-changes', 'modified');
@@ -305,17 +305,17 @@ describe('HotReloadManager', () => {
 
     it('should handle different change types for same file', async () => {
       const filePath = path.join(tempDir, 'change-types.json');
-      
+
       // Create file
       await writeFile(filePath, JSON.stringify({ test: 'rule' }));
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       // Modify file quickly
       await writeFile(filePath, JSON.stringify({ test: 'modified' }));
-      
+
       // Wait for debounce
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       // Should only get the last event type
       expect(mockCallback).toHaveBeenCalledTimes(1);
       expect(mockCallback).toHaveBeenCalledWith('change-types', 'modified');
@@ -335,18 +335,18 @@ describe('HotReloadManager', () => {
         throw new Error('Callback error');
       });
       const goodCallback = jest.fn();
-      
+
       hotReloadManager.onRuleChanged(errorCallback);
       hotReloadManager.onRuleChanged(goodCallback);
-      
+
       await hotReloadManager.start();
-      
+
       const filePath = path.join(tempDir, 'error-test.json');
       await writeFile(filePath, JSON.stringify({ test: 'rule' }));
-      
+
       // Wait longer for event processing in CI environments
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       // If callbacks were called, both should have been called despite error in first one
       // In some test environments, file events might not trigger, so we'll check if any were called
       if (errorCallback.mock.calls.length > 0 || goodCallback.mock.calls.length > 0) {
@@ -361,7 +361,7 @@ describe('HotReloadManager', () => {
     it('should handle file path conversion errors', async () => {
       // This test verifies that invalid file paths don't crash the system
       await hotReloadManager.start();
-      
+
       // The internal error handling should prevent crashes
       // We can't easily trigger this from the outside, but the code is defensive
       expect(hotReloadManager.isWatching()).toBe(true);
@@ -375,32 +375,32 @@ describe('HotReloadManager', () => {
         debounceDelay: 50,
         ignoreInitial: true,
       });
-      
+
       hotReloadManager.onRuleChanged(mockCallback);
       await hotReloadManager.start();
     });
 
     it('should watch custom file extensions', async () => {
       const filePath = path.join(tempDir, 'custom-rule.rule');
-      
+
       // Create file with custom extension
       await writeFile(filePath, JSON.stringify({ test: 'custom rule' }));
-      
+
       // Wait for event processing
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       expect(mockCallback).toHaveBeenCalledWith('custom-rule', 'added');
     });
 
     it('should ignore default JSON files when using custom extension', async () => {
       const filePath = path.join(tempDir, 'ignored.json');
-      
+
       // Create JSON file (should be ignored)
       await writeFile(filePath, JSON.stringify({ test: 'ignored' }));
-      
+
       // Wait for potential event processing
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       expect(mockCallback).not.toHaveBeenCalled();
     });
   });

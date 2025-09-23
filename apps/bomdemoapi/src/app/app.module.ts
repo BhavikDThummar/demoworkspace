@@ -17,14 +17,9 @@ import { SimpleRulesService } from './examples/simple-rules.service';
       envFilePath: ['.env.local', '.env'],
       cache: true,
     }),
-    GoRulesModule.forEnvironment()
+    GoRulesModule.forEnvironment(),
   ],
-  controllers: [
-    AppController,
-    GoRulesController,
-    BusinessRulesController,
-    SimpleRulesController,
-  ],
+  controllers: [AppController, GoRulesController, BusinessRulesController, SimpleRulesController],
   providers: [AppService, BomDemoGoRulesService, BusinessRulesService, SimpleRulesService],
 })
 export class AppModule {}

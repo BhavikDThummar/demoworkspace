@@ -113,8 +113,14 @@ export class MinimalGoRulesError extends Error {
   /**
    * Create a file system error
    */
-  static fileSystemError(message: string, originalError?: Error, filePath?: string): MinimalGoRulesError {
-    const errorMessage = filePath ? `File system error for ${filePath}: ${message}` : `File system error: ${message}`;
+  static fileSystemError(
+    message: string,
+    originalError?: Error,
+    filePath?: string,
+  ): MinimalGoRulesError {
+    const errorMessage = filePath
+      ? `File system error for ${filePath}: ${message}`
+      : `File system error: ${message}`;
     return new MinimalGoRulesError(
       MinimalErrorCode.FILE_SYSTEM_ERROR,
       errorMessage,
@@ -127,10 +133,7 @@ export class MinimalGoRulesError extends Error {
    * Create a file not found error
    */
   static fileNotFound(filePath: string): MinimalGoRulesError {
-    return new MinimalGoRulesError(
-      MinimalErrorCode.FILE_NOT_FOUND,
-      `File not found: ${filePath}`,
-    );
+    return new MinimalGoRulesError(MinimalErrorCode.FILE_NOT_FOUND, `File not found: ${filePath}`);
   }
 
   /**

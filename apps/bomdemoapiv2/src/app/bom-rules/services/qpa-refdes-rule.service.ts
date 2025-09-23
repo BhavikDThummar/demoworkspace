@@ -19,9 +19,7 @@ export class QpaRefDesRuleService {
   /**
    * Execute the QPA vs RefDes rule with BOM item data
    */
-  async executeQpaRefDesRule(
-    request: IBOMValidationRequest,
-  ): Promise<IBOMValidationResponse> {
+  async executeQpaRefDesRule(request: IBOMValidationRequest): Promise<IBOMValidationResponse> {
     try {
       this.logger.log(`Executing QPA vs RefDes rule for BOM item: ${request.bomItem.lineID}`);
 
@@ -35,9 +33,7 @@ export class QpaRefDesRuleService {
 
       const executionTime = performance.now() - startTime;
 
-      this.logger.log(
-        `QPA vs RefDes rule executed successfully in ${executionTime.toFixed(2)}ms`,
-      );
+      this.logger.log(`QPA vs RefDes rule executed successfully in ${executionTime.toFixed(2)}ms`);
 
       return {
         success: true,

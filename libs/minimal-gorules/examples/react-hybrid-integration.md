@@ -13,6 +13,7 @@ This document provides complete examples for integrating React applications with
 ## Complete NestJS Backend Setup
 
 ### 1. Project Structure
+
 ```
 backend/
 ├── src/
@@ -43,6 +44,7 @@ backend/
 ```
 
 ### 2. App Module Configuration
+
 ```typescript
 // src/app.module.ts
 import { Module } from '@nestjs/common';
@@ -55,10 +57,7 @@ import { GoRulesService } from './gorules/gorules.service';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: [
-        `.env.${process.env.NODE_ENV || 'development'}`,
-        '.env',
-      ],
+      envFilePath: [`.env.${process.env.NODE_ENV || 'development'}`, '.env'],
     }),
     // Hybrid rule loading configuration
     MinimalGoRulesModule.forRootWithConfig({
@@ -72,6 +71,7 @@ export class AppModule {}
 ```
 
 ### 3. GoRules Controller
+
 ```typescript
 // src/gorules/gorules.controller.ts
 import { Controller, Post, Get, Param, Body, HttpException, HttpStatus } from '@nestjs/common';
@@ -222,6 +222,7 @@ export class GoRulesController {
 ```
 
 ### 4. GoRules Service
+
 ```typescript
 // src/gorules/gorules.service.ts
 import { Injectable } from '@nestjs/common';
@@ -270,6 +271,7 @@ export class GoRulesService {
 ```
 
 ### 5. DTOs
+
 ```typescript
 // src/gorules/dto/execute-rule.dto.ts
 import { IsObject, IsNotEmpty } from 'class-validator';
@@ -319,6 +321,7 @@ export * from './execute-by-tags.dto';
 ## React Frontend Integration
 
 ### 1. Project Structure
+
 ```
 frontend/
 ├── src/
@@ -342,6 +345,7 @@ frontend/
 ```
 
 ### 2. API Service
+
 ```typescript
 // src/services/goRulesApiService.ts
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
@@ -495,6 +499,7 @@ export const goRulesApiService = new GoRulesApiService();
 ```
 
 ### 3. React Hooks
+
 ```typescript
 // src/hooks/useRuleExecution.ts
 import { useState, useCallback } from 'react';
@@ -589,6 +594,7 @@ export function useRuleExecution() {
 ```
 
 ### 4. React Components
+
 ```typescript
 // src/components/HybridRuleExecutor.tsx
 import React, { useState, useEffect } from 'react';
@@ -795,7 +801,7 @@ NODE_ENV=development
 GORULES_RULE_SOURCE=local
 GORULES_LOCAL_RULES_PATH=./rules
 GORULES_ENABLE_HOT_RELOAD=true
-GORULES_METADATA_FILE_PATTERN=*.meta.json
+GORULES_METADATA_FILE_PATTERN=.meta.json
 
 # File system options
 GORULES_FS_RECURSIVE=true
@@ -841,6 +847,7 @@ REACT_APP_ENVIRONMENT=production
 ## Development Workflow
 
 ### 1. Local Development Setup
+
 ```bash
 # Backend setup
 cd backend
@@ -854,12 +861,14 @@ npm start
 ```
 
 ### 2. Rule Development Workflow
+
 1. Create/modify rule files in `backend/rules/`
 2. Hot reload automatically updates the engine (if enabled)
 3. Test rules using the React frontend
 4. Commit rule changes to version control
 
 ### 3. Testing Different Rule Sources
+
 ```bash
 # Test with local rules
 cd backend
@@ -873,6 +882,7 @@ GORULES_RULE_SOURCE=cloud npm run start:dev
 ## Production Deployment
 
 ### 1. Backend Deployment
+
 ```dockerfile
 # Dockerfile for backend
 FROM node:18-alpine
@@ -898,6 +908,7 @@ CMD ["npm", "run", "start:prod"]
 ```
 
 ### 2. Environment-Specific Deployment
+
 ```yaml
 # docker-compose.yml for production
 version: '3.8'
@@ -911,7 +922,7 @@ services:
       - GORULES_API_KEY=${GORULES_API_KEY}
       - GORULES_PROJECT_ID=${GORULES_PROJECT_ID}
     ports:
-      - "3000:3000"
+      - '3000:3000'
 
   frontend:
     build:
@@ -919,12 +930,13 @@ services:
       args:
         - REACT_APP_API_BASE_URL=http://backend:3000
     ports:
-      - "80:80"
+      - '80:80'
     depends_on:
       - backend
 ```
 
 ### 3. CI/CD Pipeline Example
+
 ```yaml
 # .github/workflows/deploy.yml
 name: Deploy Application
@@ -941,14 +953,14 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18'
-      
+
       # Test with local rules
       - name: Test Backend with Local Rules
         run: |
           cd backend
           npm ci
           GORULES_RULE_SOURCE=local npm test
-      
+
       # Test with cloud rules (if credentials available)
       - name: Test Backend with Cloud Rules
         if: ${{ secrets.GORULES_API_KEY }}

@@ -92,26 +92,22 @@ describe('LocalRuleLoaderService', () => {
 
     it('should throw error for invalid rule source', () => {
       const invalidConfig = { ...mockConfig, ruleSource: 'cloud' as const };
-      
-      expect(() => new LocalRuleLoaderService(invalidConfig)).toThrow(
-        MinimalGoRulesError
-      );
+
+      expect(() => new LocalRuleLoaderService(invalidConfig)).toThrow(MinimalGoRulesError);
     });
 
     it('should throw error when localRulesPath is missing', () => {
       const invalidConfig = { ...mockConfig };
       delete invalidConfig.localRulesPath;
-      
-      expect(() => new LocalRuleLoaderService(invalidConfig)).toThrow(
-        MinimalGoRulesError
-      );
+
+      expect(() => new LocalRuleLoaderService(invalidConfig)).toThrow(MinimalGoRulesError);
     });
 
     it('should resolve rules path correctly', () => {
       mockPath.resolve.mockReturnValue('/resolved/test/rules');
-      
+
       const service = new LocalRuleLoaderService(mockConfig);
-      
+
       expect(mockPath.resolve).toHaveBeenCalledWith('/test/rules');
       expect(service.getRulesPath()).toBe('/resolved/test/rules');
     });
@@ -224,9 +220,9 @@ describe('LocalRuleLoaderService', () => {
     it('should handle rule not found', async () => {
       const loadError = new MinimalGoRulesError(
         MinimalErrorCode.RULE_NOT_FOUND,
-        'Rule file not found'
+        'Rule file not found',
       );
-      
+
       mockPath.join.mockReturnValue('/test/rules/nonexistent.json');
       mockPath.resolve.mockImplementation((p: string) => p);
       jest.spyOn(service['scanner'], 'loadRuleFile').mockRejectedValue(loadError);
@@ -241,9 +237,7 @@ describe('LocalRuleLoaderService', () => {
         return p;
       });
 
-      await expect(service.loadRule('../../../etc/passwd')).rejects.toThrow(
-        MinimalGoRulesError
-      );
+      await expect(service.loadRule('../../../etc/passwd')).rejects.toThrow(MinimalGoRulesError);
     });
 
     it('should handle nested rule IDs correctly', async () => {
@@ -267,7 +261,7 @@ describe('LocalRuleLoaderService', () => {
 
       expect(result.metadata.id).toBe('pricing/complex/shipping-fees');
       expect(service['scanner'].loadRuleFile).toHaveBeenCalledWith(
-        '/test/rules/pricing/complex/shipping-fees.json'
+        '/test/rules/pricing/complex/shipping-fees.json',
       );
     });
   });
@@ -293,7 +287,8 @@ describe('LocalRuleLoaderService', () => {
       mockPath.resolve.mockImplementation((p: string) => p);
 
       // Mock getFileStats method
-      jest.spyOn(service as any, 'getFileStats')
+      jest
+        .spyOn(service as any, 'getFileStats')
         .mockResolvedValueOnce(mockStats1)
         .mockResolvedValueOnce(mockStats2);
 
@@ -305,17 +300,13 @@ describe('LocalRuleLoaderService', () => {
     });
 
     it('should handle missing files gracefully', async () => {
-      const rules = new Map([
-        ['nonexistent/rule', '1640995200000'],
-      ]);
+      const rules = new Map([['nonexistent/rule', '1640995200000']]);
 
       mockPath.join.mockReturnValue('/test/rules/nonexistent/rule.json');
       mockPath.resolve.mockImplementation((p: string) => p);
 
       // Mock getFileStats to throw error
-      jest.spyOn(service as unknown, 'getFileStats').mockRejectedValue(
-        new Error('File not found')
-      );
+      jest.spyOn(service as unknown, 'getFileStats').mockRejectedValue(new Error('File not found'));
 
       const result = await service.checkVersions(rules);
 
@@ -324,9 +315,7 @@ describe('LocalRuleLoaderService', () => {
     });
 
     it('should use stat cache for performance', async () => {
-      const rules = new Map([
-        ['pricing/shipping-fees', '1640995200000'],
-      ]);
+      const rules = new Map([['pricing/shipping-fees', '1640995200000']]);
 
       const mockStats = { mtime: new Date(1640995200000), size: 1024 } as fs.Stats;
 
@@ -417,9 +406,9 @@ describe('LocalRuleLoaderService', () => {
     it('should preserve MinimalGoRulesError in loadRule', async () => {
       const minimalError = new MinimalGoRulesError(
         MinimalErrorCode.RULE_NOT_FOUND,
-        'Rule not found'
+        'Rule not found',
       );
-      
+
       mockPath.join.mockReturnValue('/test/rules/missing.json');
       mockPath.resolve.mockImplementation((p: string) => p);
       jest.spyOn(service['scanner'], 'loadRuleFile').mockRejectedValue(minimalError);
@@ -439,9 +428,7 @@ describe('LocalRuleLoaderService', () => {
         errors: ['localRulesPath must be a non-empty string'],
       });
 
-      expect(() => new LocalRuleLoaderService(invalidConfig)).toThrow(
-        MinimalGoRulesError
-      );
+      expect(() => new LocalRuleLoaderService(invalidConfig)).toThrow(MinimalGoRulesError);
     });
   });
 });

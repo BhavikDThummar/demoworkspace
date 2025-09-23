@@ -50,7 +50,9 @@ describe('RuleLoaderFactory', () => {
         };
 
         expect(() => factory.createLoader(config)).toThrow(MinimalGoRulesError);
-        expect(() => factory.createLoader(config)).toThrow('Missing required cloud configuration: apiUrl');
+        expect(() => factory.createLoader(config)).toThrow(
+          'Missing required cloud configuration: apiUrl',
+        );
       });
 
       it('should throw error when cloud config is missing apiKey', () => {
@@ -61,7 +63,9 @@ describe('RuleLoaderFactory', () => {
         };
 
         expect(() => factory.createLoader(config)).toThrow(MinimalGoRulesError);
-        expect(() => factory.createLoader(config)).toThrow('Missing required cloud configuration: apiKey');
+        expect(() => factory.createLoader(config)).toThrow(
+          'Missing required cloud configuration: apiKey',
+        );
       });
 
       it('should throw error when cloud config is missing projectId', () => {
@@ -72,7 +76,9 @@ describe('RuleLoaderFactory', () => {
         };
 
         expect(() => factory.createLoader(config)).toThrow(MinimalGoRulesError);
-        expect(() => factory.createLoader(config)).toThrow('Missing required cloud configuration: projectId');
+        expect(() => factory.createLoader(config)).toThrow(
+          'Missing required cloud configuration: projectId',
+        );
       });
 
       it('should throw error when cloud config is missing multiple fields', () => {
@@ -81,7 +87,9 @@ describe('RuleLoaderFactory', () => {
         };
 
         expect(() => factory.createLoader(config)).toThrow(MinimalGoRulesError);
-        expect(() => factory.createLoader(config)).toThrow('Missing required cloud configuration: apiUrl, apiKey, projectId');
+        expect(() => factory.createLoader(config)).toThrow(
+          'Missing required cloud configuration: apiUrl, apiKey, projectId',
+        );
       });
     });
 
@@ -103,7 +111,9 @@ describe('RuleLoaderFactory', () => {
         };
 
         expect(() => factory.createLoader(config)).toThrow(MinimalGoRulesError);
-        expect(() => factory.createLoader(config)).toThrow('localRulesPath is required when ruleSource is "local"');
+        expect(() => factory.createLoader(config)).toThrow(
+          'localRulesPath is required when ruleSource is "local"',
+        );
       });
 
       it('should create LocalRuleLoaderService with optional hot reload enabled', () => {
@@ -145,7 +155,9 @@ describe('RuleLoaderFactory', () => {
         };
 
         expect(() => factory.createLoader(config)).toThrow(MinimalGoRulesError);
-        expect(() => factory.createLoader(config)).toThrow('Invalid rule source: invalid. Must be \'cloud\' or \'local\'');
+        expect(() => factory.createLoader(config)).toThrow(
+          "Invalid rule source: invalid. Must be 'cloud' or 'local'",
+        );
       });
     });
 

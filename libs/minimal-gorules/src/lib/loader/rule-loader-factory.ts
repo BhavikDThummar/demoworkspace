@@ -46,7 +46,7 @@ export class RuleLoaderFactory implements IRuleLoaderFactory {
 
       default:
         throw MinimalGoRulesError.configError(
-          `Invalid rule source: ${ruleSource}. Must be 'cloud' or 'local'`
+          `Invalid rule source: ${ruleSource}. Must be 'cloud' or 'local'`,
         );
     }
   }
@@ -71,7 +71,7 @@ export class RuleLoaderFactory implements IRuleLoaderFactory {
 
     if (missingFields.length > 0) {
       throw MinimalGoRulesError.configError(
-        `Missing required cloud configuration: ${missingFields.join(', ')}`
+        `Missing required cloud configuration: ${missingFields.join(', ')}`,
       );
     }
   }
@@ -84,7 +84,7 @@ export class RuleLoaderFactory implements IRuleLoaderFactory {
   private validateLocalConfig(config: MinimalGoRulesConfig): void {
     if (!config.localRulesPath) {
       throw MinimalGoRulesError.configError(
-        'localRulesPath is required when ruleSource is "local"'
+        'localRulesPath is required when ruleSource is "local"',
       );
     }
   }

@@ -11,10 +11,10 @@ import { loadSSLCertificates } from './utils/ssl-config';
 
 async function bootstrap() {
   const configService = new ConfigService();
-  
+
   // Check if HTTPS is enabled
   let enableHttps = configService.get('ENABLE_HTTPS', 'false') === 'true';
-  
+
   let httpsOptions = {};
   if (enableHttps) {
     const sslConfig = loadSSLCertificates();

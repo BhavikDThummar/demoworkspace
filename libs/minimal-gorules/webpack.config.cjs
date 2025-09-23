@@ -18,7 +18,7 @@ module.exports = composePlugins(withNx(), (config, { options, context }) => {
       '@nestjs/core': '@nestjs/core',
       '@nestjs/config': '@nestjs/config',
       'reflect-metadata': 'reflect-metadata',
-      'rxjs': 'rxjs',
+      rxjs: 'rxjs',
     };
   }
 
@@ -26,25 +26,25 @@ module.exports = composePlugins(withNx(), (config, { options, context }) => {
   if (options.target === 'web') {
     config.externals = {
       '@gorules/zen-engine': '@gorules/zen-engine',
-      'react': 'react',
+      react: 'react',
       'react-dom': 'react-dom',
     };
-    
+
     // Add fallbacks for Node.js modules
     config.resolve = {
       ...config.resolve,
       fallback: {
-        'zlib': false,
-        'util': false,
-        'fs': false,
-        'path': false,
-        'crypto': false,
-        'stream': false,
-        'buffer': false,
-        'http': false,
-        'https': false,
-        'url': false,
-        'querystring': false,
+        zlib: false,
+        util: false,
+        fs: false,
+        path: false,
+        crypto: false,
+        stream: false,
+        buffer: false,
+        http: false,
+        https: false,
+        url: false,
+        querystring: false,
       },
     };
   }

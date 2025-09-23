@@ -15,11 +15,7 @@ import {
 import { ConfigFactory } from './config/index';
 import { MinimalRuleCacheManager } from './cache/index';
 import { RuleLoaderFactory, IRuleLoaderFactory } from './loader/index';
-import {
-  EnhancedRuleLoaderService,
-  MemoryManager,
-  getGlobalMemoryManager,
-} from './performance/index';
+// Performance optimizations removed for minimal implementation
 import { MinimalExecutionEngine } from './execution/index';
 import { TagManager } from './tag-manager/index';
 import {
@@ -83,8 +79,7 @@ export class MinimalGoRulesEngine {
   private config: MinimalGoRulesConfig;
   private initialized = false;
   private lastInitialization = 0;
-  private memoryManager?: MemoryManager;
-  private useEnhancedLoader = false;
+  // Removed performance optimization properties for minimal implementation
   private ruleLoaderFactory: IRuleLoaderFactory;
 
   constructor(config: MinimalGoRulesConfig) {
@@ -122,32 +117,10 @@ export class MinimalGoRulesEngine {
    * Initialize the appropriate loader service based on configuration
    */
   private initializeLoaderService(): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const enhancedConfig = this.config as any;
-
-    // Use enhanced loader if performance optimizations are enabled
-    if (enhancedConfig.enablePerformanceOptimizations) {
-      this.useEnhancedLoader = true;
-      this.loaderService = new EnhancedRuleLoaderService(enhancedConfig);
-
-      // Initialize memory management
-      this.memoryManager = getGlobalMemoryManager({
-        warningThreshold: enhancedConfig.memoryWarningThreshold || 0.7,
-        criticalThreshold: enhancedConfig.memoryCriticalThreshold || 0.85,
-        cleanupInterval: enhancedConfig.memoryCleanupInterval || 30000,
-      });
-
-      // Register cache cleanup callback
-      this.memoryManager.registerCleanupCallback(async () => {
-        await this.performMemoryCleanup();
-      });
-
-      // Start memory monitoring
-      this.memoryManager.startMonitoring(5000);
-    } else {
-      // Use factory to create appropriate loader based on ruleSource
-      this.loaderService = this.ruleLoaderFactory.createLoader(this.config);
-    }
+    debugger;
+    // Always use factory to create appropriate loader based on ruleSource
+    // This handles both local and cloud rules properly
+    this.loaderService = this.ruleLoaderFactory.createLoader(this.config);
   }
 
   /**
@@ -158,6 +131,7 @@ export class MinimalGoRulesEngine {
     const ruleSource = this.config.ruleSource || 'cloud';
     let targetProjectId: string;
 
+    debugger;
     // Determine project ID based on rule source
     if (ruleSource === 'local') {
       // For local rules, project ID is optional and can be used for organization
@@ -655,8 +629,7 @@ export class MinimalGoRulesEngine {
       newConfig.apiUrl ||
       newConfig.apiKey ||
       newConfig.httpTimeout ||
-      newConfig.localRulesPath ||
-      newConfig.enablePerformanceOptimizations !== undefined
+      newConfig.localRulesPath
     ) {
       // Reinitialize loader service
       this.initializeLoaderService();
@@ -718,10 +691,9 @@ export class MinimalGoRulesEngine {
     cacheHitRate?: number;
     averageExecutionTime?: number;
   } {
-    const memoryUsage = this.memoryManager ? this.memoryManager.getCurrentStats().heapUsed : 0;
-
-    // Get execution metrics if available
-    const averageExecutionTime = undefined; // TODO: Implement execution metrics interface
+    // Simplified performance stats for minimal implementation
+    const memoryUsage = process.memoryUsage().heapUsed;
+    const averageExecutionTime = undefined; // Not implemented in minimal version
 
     return {
       memoryUsage,
@@ -729,56 +701,15 @@ export class MinimalGoRulesEngine {
     };
   }
 
-  /**
-   * Get detailed performance report
-   */
-  getPerformanceReport(): unknown {
-    if (this.useEnhancedLoader && this.loaderService instanceof EnhancedRuleLoaderService) {
-      return this.loaderService.getPerformanceStats();
-    }
-
-    return {
-      memoryUsage: this.memoryManager?.getMemoryReport(),
-      cacheStats: this.getCacheStats(),
-      executionMetrics: undefined, // TODO: Implement execution metrics interface
-    };
-  }
-
-  /**
-   * Perform memory cleanup
-   */
-  private async performMemoryCleanup(): Promise<void> {
-    try {
-      // Force garbage collection if available
-      if (typeof global !== 'undefined' && global.gc) {
-        global.gc();
-      }
-
-      // Could implement cache trimming here if needed
-      console.log('Memory cleanup performed for GoRules engine');
-    } catch (error) {
-      console.warn('Memory cleanup failed:', error);
-    }
-  }
+  // Removed performance optimization methods for minimal implementation
 
   /**
    * Cleanup engine resources
    */
   async cleanup(): Promise<void> {
     try {
-      // Stop memory monitoring
-      if (this.memoryManager) {
-        this.memoryManager.stopMonitoring();
-      }
-
-      // Cleanup enhanced loader if used
-      if (this.useEnhancedLoader && this.loaderService instanceof EnhancedRuleLoaderService) {
-        await this.loaderService.cleanup();
-      }
-
       // Clear cache
       await this.cacheManager.clear();
-
       this.initialized = false;
     } catch (error) {
       console.warn('Engine cleanup failed:', error);

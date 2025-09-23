@@ -30,7 +30,7 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit(): Promise<void> {
     if (this.autoInitialize) {
       this.logger.log('Auto-initializing Minimal GoRules Engine...');
-
+      debugger;
       try {
         const startTime = performance.now();
         const status = await this.engine.initialize();
@@ -89,7 +89,9 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
    * Manually initialize the engine (useful when autoInitialize is false)
    */
   async initialize(projectId?: string): Promise<EngineStatus> {
-    this.logger.log(`Manually initializing engine${projectId ? ` for project: ${projectId}` : ''}...`);
+    this.logger.log(
+      `Manually initializing engine${projectId ? ` for project: ${projectId}` : ''}...`,
+    );
     try {
       const startTime = performance.now();
       const status = await this.engine.initialize(projectId);

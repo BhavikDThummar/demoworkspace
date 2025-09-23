@@ -11,8 +11,7 @@ export * from './lib/config/index';
 // Export main engine service
 export * from './lib/minimal-gorules-engine';
 
-// Export performance optimizations
-export * from './lib/performance/index';
+// Performance optimizations removed for minimal implementation
 
 // React integration (namespaced to avoid conflicts)
 export * as React from './lib/react/index';

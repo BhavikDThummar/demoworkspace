@@ -32,6 +32,7 @@ export class RuleLoaderFactory implements IRuleLoaderFactory {
    * @throws MinimalGoRulesError if invalid ruleSource or missing required config
    */
   createLoader(config: MinimalGoRulesConfig): IRuleLoaderService {
+    debugger;
     // Default to 'cloud' for backward compatibility
     const ruleSource = config.ruleSource || 'cloud';
 
@@ -39,11 +40,11 @@ export class RuleLoaderFactory implements IRuleLoaderFactory {
       case 'cloud':
         this.validateCloudConfig(config);
         return new CloudRuleLoaderService(config);
-      
+
       case 'local':
         this.validateLocalConfig(config);
         return new LocalRuleLoaderService(config);
-      
+
       default:
         throw MinimalGoRulesError.configError(
           `Invalid rule source: ${ruleSource}. Must be 'cloud' or 'local'`

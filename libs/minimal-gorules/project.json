@@ -11,9 +11,10 @@
       "options": {
         "commands": [
           "nx build-node @org/minimal-gorules",
-          "nx build-browser @org/minimal-gorules"
+          "nx build-browser @org/minimal-gorules",
+          "node libs/minimal-gorules/scripts/fix-package-json.js"
         ],
-        "parallel": true
+        "parallel": false
       }
     },
     "build-node": {
@@ -25,6 +26,7 @@
         "tsConfig": "libs/minimal-gorules/tsconfig.lib.json",
         "assets": [
           "libs/minimal-gorules/*.md",
+          "libs/minimal-gorules/package.json",
           {
             "glob": "**/*",
             "input": "libs/gorules/src/lib/jdm_directory",
@@ -41,7 +43,8 @@
         "main": "libs/minimal-gorules/src/index.browser.ts",
         "tsConfig": "libs/minimal-gorules/tsconfig.browser.json",
         "assets": [
-          "libs/minimal-gorules/*.md"
+          "libs/minimal-gorules/*.md",
+          "libs/minimal-gorules/package.json"
         ]
       }
     },
@@ -65,6 +68,7 @@
         "tsConfig": "libs/minimal-gorules/tsconfig.lib.json",
         "assets": [
           "libs/minimal-gorules/*.md",
+          "libs/minimal-gorules/package.json",
           {
             "glob": "**/*",
             "input": "libs/gorules/src/lib/jdm_directory",
@@ -89,7 +93,8 @@
         "main": "libs/minimal-gorules/src/index.browser.ts",
         "tsConfig": "libs/minimal-gorules/tsconfig.browser.json",
         "assets": [
-          "libs/minimal-gorules/*.md"
+          "libs/minimal-gorules/*.md",
+          "libs/minimal-gorules/package.json"
         ]
       },
       "configurations": {
@@ -156,6 +161,7 @@
         "tsConfig": "libs/minimal-gorules/tsconfig.lib.json",
         "assets": [
           "libs/minimal-gorules/*.md",
+          "libs/minimal-gorules/package.json",
           {
             "glob": "**/*",
             "input": "libs/gorules/src/lib/jdm_directory",

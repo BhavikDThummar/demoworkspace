@@ -19,8 +19,7 @@ export * from './minimal-gorules-engine.js';
 // Export NestJS integration
 export * from './nestjs/index.js';
 
-// Export performance optimizations
-export * from './performance/index.js';
+// Performance optimizations removed for minimal implementation
 
 /**
  * Library version and metadata

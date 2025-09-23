@@ -76,10 +76,10 @@ export interface CacheRefreshResult {
  */
 export class MinimalGoRulesEngine {
   private cacheManager: IRuleCacheManager;
-  private loaderService: IRuleLoaderService;
+  private loaderService!: IRuleLoaderService;
   private executionEngine: IExecutionEngine;
   private tagManager: TagManager;
-  private versionManager: VersionManager;
+  private versionManager!: VersionManager;
   private config: MinimalGoRulesConfig;
   private initialized = false;
   private lastInitialization = 0;
@@ -98,12 +98,34 @@ export class MinimalGoRulesEngine {
     }
     this.config = { ...config };
 
-    // Initialize all components
+    // Initialize cache manager
     this.cacheManager = new MinimalRuleCacheManager(config.cacheMaxSize);
     this.ruleLoaderFactory = new RuleLoaderFactory();
 
-    // Use enhanced loader if performance optimizations are enabled
+    // Initialize loader service based on configuration
+    this.initializeLoaderService();
+
+    // Initialize other components
+    this.tagManager = new TagManager();
+    this.versionManager = new VersionManager(this.cacheManager, this.loaderService);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const enhancedConfig = config as any;
+    this.executionEngine = new MinimalExecutionEngine(this.cacheManager, this.tagManager, {
+      maxConcurrency: config.batchSize || 50,
+      executionTimeout: config.httpTimeout || 5000,
+      includePerformanceMetrics: enhancedConfig.enablePerformanceMetrics || false,
+    });
+  }
+
+  /**
+   * Initialize the appropriate loader service based on configuration
+   */
+  private initializeLoaderService(): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const enhancedConfig = this.config as any;
+
+    // Use enhanced loader if performance optimizations are enabled
     if (enhancedConfig.enablePerformanceOptimizations) {
       this.useEnhancedLoader = true;
       this.loaderService = new EnhancedRuleLoaderService(enhancedConfig);
@@ -124,16 +146,8 @@ export class MinimalGoRulesEngine {
       this.memoryManager.startMonitoring(5000);
     } else {
       // Use factory to create appropriate loader based on ruleSource
-      this.loaderService = this.ruleLoaderFactory.createLoader(config);
+      this.loaderService = this.ruleLoaderFactory.createLoader(this.config);
     }
-
-    this.tagManager = new TagManager();
-    this.versionManager = new VersionManager(this.cacheManager, this.loaderService);
-    this.executionEngine = new MinimalExecutionEngine(this.cacheManager, this.tagManager, {
-      maxConcurrency: config.batchSize || 50,
-      executionTimeout: config.httpTimeout || 5000,
-      includePerformanceMetrics: enhancedConfig.enablePerformanceMetrics || false,
-    });
   }
 
   /**
@@ -141,32 +155,43 @@ export class MinimalGoRulesEngine {
    * This is the primary initialization method that should be called once
    */
   async initialize(projectId?: string): Promise<EngineStatus> {
-    const targetProjectId = projectId || this.config.projectId;
     const ruleSource = this.config.ruleSource || 'cloud';
+    let targetProjectId: string;
+
+    // Determine project ID based on rule source
+    if (ruleSource === 'local') {
+      // For local rules, project ID is optional and can be used for organization
+      targetProjectId = projectId || this.config.projectId || 'local';
+    } else {
+      // For cloud rules, project ID is required
+      const cloudProjectId = projectId || this.config.projectId;
+      if (!cloudProjectId) {
+        throw new MinimalGoRulesError(
+          MinimalErrorCode.INVALID_INPUT,
+          'Project ID is required for cloud rule loading. Provide it in config or as parameter.',
+        );
+      }
+      targetProjectId = cloudProjectId;
+    }
 
     try {
       // Clear existing cache
       await this.cacheManager.clear();
 
-      // Load all rules based on rule source
-      let allRules: Map<string, { data: Buffer; metadata: MinimalRuleMetadata }>;
-      
-      if (ruleSource === 'local') {
-        // For local rules, we still need to pass a projectId (can be empty string)
-        allRules = await this.loaderService.loadAllRules(targetProjectId || 'local');
-      } else {
-        // For cloud rules, we need a projectId
-        if (!targetProjectId) {
-          throw new MinimalGoRulesError(
-            MinimalErrorCode.INVALID_INPUT,
-            'Project ID is required for cloud rule loading'
-          );
-        }
-        allRules = await this.loaderService.loadAllRules(targetProjectId);
+      // Load all rules using the appropriate loader
+      const allRules = await this.loaderService.loadAllRules(targetProjectId);
+
+      // Validate that we got some rules (unless it's expected to be empty)
+      if (allRules.size === 0 && ruleSource === 'cloud') {
+        console.warn(
+          `No rules loaded for project: ${targetProjectId}. This might be expected for new projects.`,
+        );
       }
 
       // Store all rules in cache
-      await this.cacheManager.setMultiple(allRules);
+      if (allRules.size > 0) {
+        await this.cacheManager.setMultiple(allRules);
+      }
 
       // Mark as initialized
       this.initialized = true;
@@ -176,9 +201,9 @@ export class MinimalGoRulesEngine {
         initialized: true,
         rulesLoaded: allRules.size,
         lastUpdate: this.lastInitialization,
-        projectId: targetProjectId || 'local',
+        projectId: targetProjectId,
         version: '1.0.0',
-        ruleSource: this.config.ruleSource || 'cloud',
+        ruleSource,
         enableHotReload: this.config.enableHotReload,
         performance: this.getPerformanceStats(),
       };
@@ -186,9 +211,19 @@ export class MinimalGoRulesEngine {
       return status;
     } catch (error) {
       this.initialized = false;
+
+      // Provide more specific error messages based on rule source
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const contextualMessage =
+        ruleSource === 'local'
+          ? `Failed to initialize engine with local rules from path: ${
+              this.config.localRulesPath || 'default path'
+            }`
+          : `Failed to initialize engine with cloud rules for project: ${targetProjectId}`;
+
       throw new MinimalGoRulesError(
         MinimalErrorCode.NETWORK_ERROR,
-        `Failed to initialize engine: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `${contextualMessage}. Error: ${errorMessage}`,
       );
     }
   }
@@ -604,31 +639,45 @@ export class MinimalGoRulesEngine {
   updateConfig(newConfig: Partial<MinimalGoRulesConfig>): void {
     const oldProjectId = this.config.projectId;
     const oldRuleSource = this.config.ruleSource;
+    const oldCacheMaxSize = this.config.cacheMaxSize;
+
     this.config = { ...this.config, ...newConfig };
 
-    // If project ID changed, mark as uninitialized
-    if (newConfig.projectId && newConfig.projectId !== oldProjectId) {
-      this.initialized = false;
-    }
+    // Check if we need to reinitialize due to significant config changes
+    const needsReinitialization =
+      (newConfig.projectId && newConfig.projectId !== oldProjectId) ||
+      (newConfig.ruleSource && newConfig.ruleSource !== oldRuleSource) ||
+      (newConfig.cacheMaxSize && newConfig.cacheMaxSize !== oldCacheMaxSize);
 
-    // Update loader service if rule source or API-related config changed
-    if (newConfig.ruleSource !== oldRuleSource || 
-        newConfig.apiUrl || 
-        newConfig.apiKey || 
-        newConfig.httpTimeout ||
-        newConfig.localRulesPath) {
-      // Don't update if using enhanced loader
-      if (!this.useEnhancedLoader) {
-        this.loaderService = this.ruleLoaderFactory.createLoader(this.config);
-        this.versionManager = new VersionManager(this.cacheManager, this.loaderService);
+    // Update loader service if rule source or loader-related config changed
+    if (
+      newConfig.ruleSource !== oldRuleSource ||
+      newConfig.apiUrl ||
+      newConfig.apiKey ||
+      newConfig.httpTimeout ||
+      newConfig.localRulesPath ||
+      newConfig.enablePerformanceOptimizations !== undefined
+    ) {
+      // Reinitialize loader service
+      this.initializeLoaderService();
+      this.versionManager = new VersionManager(this.cacheManager, this.loaderService);
+
+      // Mark for reinitialization if not already marked
+      if (!needsReinitialization) {
+        this.initialized = false;
       }
     }
 
     // Update cache manager if cache size changed
-    if (newConfig.cacheMaxSize) {
+    if (newConfig.cacheMaxSize && newConfig.cacheMaxSize !== oldCacheMaxSize) {
       // Note: This would require cache migration in production
       this.cacheManager = new MinimalRuleCacheManager(newConfig.cacheMaxSize);
-      this.initialized = false; // Force reinitialization
+      this.versionManager = new VersionManager(this.cacheManager, this.loaderService);
+    }
+
+    // Mark as uninitialized if significant changes occurred
+    if (needsReinitialization) {
+      this.initialized = false;
     }
   }
 

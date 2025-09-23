@@ -21,7 +21,7 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     private readonly engine: MinimalGoRulesEngine,
-    private readonly autoInitialize: boolean = true,
+    private readonly autoInitialize = true,
   ) {}
 
   /**
@@ -29,7 +29,7 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
    */
   async onModuleInit(): Promise<void> {
     if (this.autoInitialize) {
-      this.logger.log('Initializing Minimal GoRules Engine...');
+      this.logger.log('Auto-initializing Minimal GoRules Engine...');
 
       try {
         const startTime = performance.now();
@@ -44,7 +44,7 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
 
         this.logger.log(
           `Engine initialized successfully in ${initTime.toFixed(2)}ms. ` +
-            `Loaded ${status.rulesLoaded} rules from project ${status.projectId}`,
+            `Loaded ${status.rulesLoaded} rules from ${status.ruleSource} (project: ${status.projectId})`,
         );
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -89,8 +89,7 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
    * Manually initialize the engine (useful when autoInitialize is false)
    */
   async initialize(projectId?: string): Promise<EngineStatus> {
-    this.logger.log('Manually initializing engine...');
-
+    this.logger.log(`Manually initializing engine${projectId ? ` for project: ${projectId}` : ''}...`);
     try {
       const startTime = performance.now();
       const status = await this.engine.initialize(projectId);
@@ -104,7 +103,7 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
 
       this.logger.log(
         `Engine initialized manually in ${initTime.toFixed(2)}ms. ` +
-          `Loaded ${status.rulesLoaded} rules`,
+          `Loaded ${status.rulesLoaded} rules from ${status.ruleSource} (project: ${status.projectId})`,
       );
 
       return status;

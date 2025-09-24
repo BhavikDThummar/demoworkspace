@@ -1,0 +1,36 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": "src",
+    "outDir": "dist/browser",
+    "tsBuildInfoFile": "dist/browser/tsconfig.browser.tsbuildinfo",
+    "emitDeclarationOnly": false,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["ES2022", "DOM", "WebWorker"],
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "target": "ES2022",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "jest.config.ts",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "src/**/examples/**/*",
+    "src/test-setup.ts",
+    "src/**/testing/**/*",
+    "src/**/version/demo-*.ts",
+    "src/**/nestjs/**/*",
+    "src/index.node.ts",
+    "src/index.ts",
+    "src/lib/minimal-gorules.ts"
+  ]
+}

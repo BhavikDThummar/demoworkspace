@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MinimalGoRulesModule } from '@org/minimal-gorules';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { MinimalGoRulesController } from './examples/minimal-gorules.controller';
+import { MinimalGoRulesController } from './test-minimal-gorules/minimal-gorules.controller';
 import { BomRulesModule } from './bom-rules';
 
 @Module({

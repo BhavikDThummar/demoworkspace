@@ -71,7 +71,6 @@ src/
 ## 🧪 Test Categories
 
 ### 1. Unit Tests
-
 Test individual components in isolation:
 
 ```typescript
@@ -90,7 +89,6 @@ describe('MinimalRuleCacheManager', () => {
 ```
 
 ### 2. Integration Tests
-
 Test component interactions:
 
 ```typescript
@@ -109,7 +107,6 @@ describe('Engine Integration', () => {
 ```
 
 ### 3. Performance Tests
-
 Test performance characteristics:
 
 ```typescript
@@ -121,14 +118,12 @@ describe('Performance Tests', () => {
         await engine.executeRule('fast-rule', testData);
       }
     }, 100); // Expected max time: 100ms
-
     expect(duration).toBeLessThan(100);
   });
 });
 ```
 
 ### 4. Load Tests
-
 Test system under heavy load:
 
 ```typescript
@@ -147,7 +142,6 @@ describe('Load Tests', () => {
 ```
 
 ### 5. Memory Tests
-
 Test memory usage and leaks:
 
 ```typescript
@@ -159,7 +153,6 @@ describe('Memory Tests', () => {
         await engine.executeRule('memory-test-rule', testData);
       }
     });
-
     // Memory delta should be minimal (< 1MB)
     expect(memoryDelta).toBeLessThan(1024 * 1024);
   });
@@ -193,7 +186,6 @@ The library uses Jest with advanced configuration:
 ### Custom Test Utilities
 
 #### Performance Testing
-
 ```typescript
 import { measurePerformance } from '../test-setup';
 
@@ -204,7 +196,6 @@ const { result, duration } = await measurePerformance(
 ```
 
 #### Memory Testing
-
 ```typescript
 import { measureMemoryUsage } from '../test-setup';
 
@@ -214,14 +205,12 @@ const { result, memoryDelta } = await measureMemoryUsage(
 ```
 
 #### Custom Matchers
-
 ```typescript
 // Custom Jest matcher for ranges
 expect(executionTime).toBeWithinRange(50, 150); // 50-150ms
 ```
 
 #### Mock Data Generators
-
 ```typescript
 import { generateMockRule, generateMockInput } from '../test-setup';
 
@@ -255,7 +244,6 @@ console.error = originalConsoleError;
 ```
 
 #### Cleanup Utilities
-
 ```typescript
 import { cleanupAfterTest } from '../test-setup';
 
@@ -267,7 +255,6 @@ afterEach(async () => {
 ## 📊 Coverage Reports
 
 ### Running Coverage
-
 ```bash
 # Generate coverage report
 nx test @org/minimal-gorules --coverage
@@ -277,7 +264,6 @@ nx test @org/minimal-gorules --coverage
 ```
 
 ### Coverage Formats
-
 - **Text**: Console output
 - **LCOV**: For CI/CD integration
 - **HTML**: Interactive browser report
@@ -293,7 +279,6 @@ nx test @org/minimal-gorules --coverage
 ## 🎯 Test Commands Reference
 
 ### Basic Commands
-
 ```bash
 # Run all tests
 nx test @org/minimal-gorules
@@ -312,7 +297,6 @@ nx test @org/minimal-gorules --verbose
 ```
 
 ### Filtering Tests
-
 ```bash
 # Run specific test file
 nx test @org/minimal-gorules --testPathPattern="cache"
@@ -328,7 +312,6 @@ nx test @org/minimal-gorules --onlyChanged
 ```
 
 ### Performance Testing
-
 ```bash
 # Run load tests specifically
 nx test @org/minimal-gorules --testPathPattern="load-tests"
@@ -341,7 +324,6 @@ nx test @org/minimal-gorules --expose-gc --testPathPattern="memory"
 ```
 
 ### Debugging Tests
-
 ```bash
 # Run tests with Node.js inspector
 nx test @org/minimal-gorules --inspect-brk
@@ -356,7 +338,6 @@ nx test @org/minimal-gorules --verbose --no-coverage
 ## 🔧 Writing Tests
 
 ### Test File Structure
-
 ```typescript
 /**
  * @fileoverview Tests for [Component Name]
@@ -397,7 +378,6 @@ describe('[ComponentName]', () => {
         () => component.heavyOperation(),
         100 // max 100ms
       );
-
       expect(duration).toBeLessThan(100);
     });
   });
@@ -440,7 +420,6 @@ describe('[ComponentName]', () => {
    ```
 
 3. **Test edge cases**
-
    ```typescript
    describe('Edge Cases', () => {
      it('should handle empty input');
@@ -463,35 +442,30 @@ describe('[ComponentName]', () => {
 ### Common Issues
 
 #### Tests Timeout
-
 ```bash
 # Increase timeout for slow tests
 nx test @org/minimal-gorules --testTimeout=60000
 ```
 
 #### Memory Issues
-
 ```bash
 # Run with garbage collection exposed
 nx test @org/minimal-gorules --expose-gc --maxWorkers=1
 ```
 
 #### Coverage Issues
-
 ```bash
 # Check what's not covered
 nx test @org/minimal-gorules --coverage --coverageReporters=text-summary
 ```
 
 #### Watch Mode Issues
-
 ```bash
 # Clear Jest cache
 nx test @org/minimal-gorules --clearCache
 ```
 
 ### Debug Mode
-
 ```typescript
 // Add to test file for debugging
 console.log('Debug info:', JSON.stringify(data, null, 2));
@@ -505,7 +479,6 @@ fit('debug this test', () => {
 ## 📈 CI/CD Integration
 
 ### GitHub Actions Example
-
 ```yaml
 - name: Run Tests
   run: nx test @org/minimal-gorules --coverage --ci
@@ -517,7 +490,6 @@ fit('debug this test', () => {
 ```
 
 ### Coverage Badges
-
 ```markdown
 ![Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)
 ```

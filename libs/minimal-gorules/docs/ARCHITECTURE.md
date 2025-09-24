@@ -29,7 +29,6 @@ console.log(result); // { fee: 15.99, estimatedDays: 5 }
 
 The library consists of 5 main components that work together:
 ![High-Level Architecture](./attachments/High-Level%20Architecture.png)
-
 ```mermaid
 graph TB
     subgraph "Your Application"
@@ -664,7 +663,6 @@ const result3 = await engine.executeRule('new-rule', data); // ~1ms
 
 The library includes several performance optimizations that work automatically:
 ![Built-in Optimizations](./attachments/Built-in%20Optimizations.png)
-
 ```mermaid
 graph TB
     subgraph "Always Active"
@@ -728,7 +726,6 @@ const config = {
 
 The library works across different platforms and frameworks:
 ![Available Integrations](./attachments/Available%20Integrations.png)
-
 ```mermaid
 graph TB
     subgraph "Core Library"
@@ -844,7 +841,6 @@ try {
 
 The library uses a structured approach to error handling:
 ![Error Handling](./attachments//Error%20Handling.png)
-
 ```mermaid
 flowchart TD
     START[Operation Starts] --> TRY{Try Operation}

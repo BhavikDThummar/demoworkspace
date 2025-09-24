@@ -9,7 +9,6 @@ export interface SSLOptions {
 
 export function loadSSLCertificates(): SSLOptions | null {
   const logger = new Logger('SSLConfig');
-
   // Define possible certificate paths (in order of preference)
   const certPaths = [
     // Production build (certificates copied to dist/assets/certs)

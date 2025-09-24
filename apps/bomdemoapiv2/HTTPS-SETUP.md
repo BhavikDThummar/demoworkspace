@@ -13,7 +13,6 @@ Your NestJS application now supports both HTTP and HTTPS modes based on environm
 ## 🔧 Usage
 
 ### Enable HTTPS
-
 ```bash
 # In your .env file
 ENABLE_HTTPS=true
@@ -35,13 +34,11 @@ ENABLE_HTTPS=false
 ## 🚀 Running the Application
 
 ### Development Mode
-
 ```bash
 npx nx serve bomdemoapiv2
 ```
 
 ### Production Build
-
 ```bash
 npx nx build bomdemoapiv2
 node apps/bomdemoapiv2/dist/main.js

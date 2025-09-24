@@ -7,19 +7,16 @@ This document describes the cross-platform build configuration for the minimal-g
 The library supports multiple build targets for different deployment scenarios:
 
 ### Development Builds
-
 - `nx build @org/minimal-gorules` - Builds both Node.js and browser versions
 - `nx build-node @org/minimal-gorules` - Node.js only build
 - `nx build-browser @org/minimal-gorules` - Browser only build
 
 ### Production Builds
-
 - `nx build-prod @org/minimal-gorules` - Optimized production builds for both targets
 - `nx build-node-prod @org/minimal-gorules` - Optimized Node.js production build
 - `nx build-browser-prod @org/minimal-gorules` - Optimized browser production build
 
 ### Bundle Builds (Experimental)
-
 - `nx bundle @org/minimal-gorules` - Webpack bundled builds (Node.js working, browser needs polyfills)
 - `nx bundle-node @org/minimal-gorules` - Webpack bundled Node.js build
 - `nx bundle-browser @org/minimal-gorules` - Webpack bundled browser build (requires polyfill configuration)
@@ -73,13 +70,11 @@ The library is configured with conditional exports for proper module resolution:
 ## TypeScript Configurations
 
 ### Node.js Build (tsconfig.lib.json)
-
 - Target: CommonJS modules for Node.js compatibility
 - Excludes: React components, browser-specific code
 - Includes: NestJS integration, Node.js-specific performance optimizations
 
 ### Browser Build (tsconfig.browser.json)
-
 - Target: ES2022 modules for modern browsers
 - Includes: React components, JSX support
 - Excludes: NestJS integration, Node.js-specific code
@@ -87,19 +82,16 @@ The library is configured with conditional exports for proper module resolution:
 ## Usage Examples
 
 ### Node.js (NestJS)
-
 ```typescript
 import { MinimalGoRulesEngine, MinimalGoRulesModule } from '@org/minimal-gorules/node';
 ```
 
 ### Browser (React)
-
 ```typescript
 import { MinimalGoRulesEngine, React } from '@org/minimal-gorules/browser';
 ```
 
 ### Default Import (Node.js)
-
 ```typescript
 import { MinimalGoRulesEngine } from '@org/minimal-gorules';
 ```

@@ -5,7 +5,6 @@ This guide helps new developers quickly understand and start working with the mi
 ## 🎯 What is Minimal GoRules Engine?
 
 A high-performance, lightweight rule execution engine that:
-
 - Executes business rules from GoRules Cloud
 - Provides caching for optimal performance
 - Supports both Node.js (NestJS) and browser (React) environments
@@ -195,7 +194,6 @@ export class AppModule {}
 @Injectable()
 export class MyService {
   constructor(private goRules: MinimalGoRulesService) {}
-
   async processData(input: any) {
     return await this.goRules.executeRule('my-rule', input);
   }
@@ -377,7 +375,6 @@ memoryManager.on('critical', (stats) => {
 ### Common Issues and Solutions
 
 #### Issue: Rules not loading
-
 ```typescript
 // Check engine status
 const status = await engine.getStatus();
@@ -388,7 +385,6 @@ if (!status.initialized) {
 ```
 
 #### Issue: Poor performance
-
 ```typescript
 // Check cache hit rate
 const stats = await engine.getCacheStats();
@@ -400,7 +396,6 @@ if (stats.hitRate < 0.8) {
 ```
 
 #### Issue: Memory problems
-
 ```typescript
 // Monitor memory usage
 const memoryStats = getGlobalMemoryManager().getCurrentStats();

@@ -2,7 +2,7 @@
  * Execution Engine specific interfaces
  */
 
-import { MinimalExecutionResult, RuleSelector, ExecutionGroup } from '../interfaces/core.js';
+import { MinimalExecutionResult, RuleSelector } from '../interfaces/core.js';
 import { ZenDecisionContent } from '@gorules/zen-engine';
 import { ExecutionMetrics } from './performance-utils.js';
 
@@ -290,33 +290,6 @@ export interface IMinimalExecutionEngine {
   ): Promise<MinimalExecutionResult<T>>;
 
   /**
-   * Enhanced parallel execution with detailed metrics and options
-   */
-  executeParallelWithMetrics<T>(
-    ruleIds: string[],
-    input: Record<string, unknown>,
-    options?: ParallelExecutionOptions,
-  ): Promise<EnhancedExecutionResult<T>>;
-
-  /**
-   * Enhanced sequential execution with state tracking and pipeline mode
-   */
-  executeSequentialWithMetrics<T>(
-    ruleIds: string[],
-    input: Record<string, unknown>,
-    options?: SequentialExecutionOptions,
-  ): Promise<SequentialExecutionResult<T>>;
-
-  /**
-   * Enhanced mixed execution with complex rule orchestration
-   */
-  executeMixedWithMetrics<T>(
-    groups: ExecutionGroup[],
-    input: Record<string, unknown>,
-    options?: MixedExecutionOptions,
-  ): Promise<MixedExecutionResult<T>>;
-
-  /**
    * Single rule execution
    */
   executeRule<T>(ruleId: string, input: Record<string, unknown>): Promise<T>;
@@ -327,11 +300,6 @@ export interface IMinimalExecutionEngine {
   validateRule(ruleId: string): Promise<boolean>;
 
   /**
-   * Validate and optimize execution groups for mixed mode
-   */
-  validateExecutionGroups(groups: ExecutionGroup[]): Promise<ExecutionPlan>;
-
-  /**
    * Get execution engine configuration
    */
   getConfig(): ExecutionEngineConfig;
@@ -340,9 +308,4 @@ export interface IMinimalExecutionEngine {
    * Update execution engine configuration
    */
   updateConfig(config: Partial<ExecutionEngineConfig>): void;
-
-  /**
-   * Get performance metrics for the last execution (if enabled)
-   */
-  getLastExecutionMetrics(): ExecutionMetrics | undefined;
 }

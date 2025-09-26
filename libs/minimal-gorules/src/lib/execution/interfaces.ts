@@ -278,7 +278,57 @@ export interface ValidatedExecutionGroup {
 }
 
 /**
- * Extended execution engine interface with additional methods
+ * Lightweight batch execution options
+ */
+export interface BatchExecutionOptions {
+  /**
+   * Maximum number of concurrent input processing
+   */
+  maxConcurrency?: number;
+
+  /**
+   * Whether to continue processing on individual failures
+   */
+  continueOnError?: boolean;
+}
+
+/**
+ * Simple batch execution result for single input
+ */
+export interface BatchInputResult<T = unknown> {
+  /**
+   * Input index for correlation
+   */
+  inputIndex: number;
+
+  /**
+   * Execution results per rule
+   */
+  results: Map<string, T>;
+
+  /**
+   * Execution errors per rule
+   */
+  errors?: Map<string, Error>;
+
+  /**
+   * Success status
+   */
+  success: boolean;
+}
+
+/**
+ * Lightweight batch execution result
+ */
+export interface BatchExecutionResult<T = unknown> {
+  /**
+   * Results for each input (indexed array)
+   */
+  results: BatchInputResult<T>[];
+}
+
+/**
+ * Extended execution engine interface with batch processing
  */
 export interface IMinimalExecutionEngine {
   /**
@@ -293,6 +343,24 @@ export interface IMinimalExecutionEngine {
    * Single rule execution
    */
   executeRule<T>(ruleId: string, input: Record<string, unknown>): Promise<T>;
+
+  /**
+   * Batch execution for large datasets (70K+ records)
+   */
+  executeBatch<T>(
+    inputs: Record<string, unknown>[],
+    selector: RuleSelector,
+    options?: BatchExecutionOptions,
+  ): Promise<BatchExecutionResult<T>>;
+
+  /**
+   * Batch execution with rule IDs for optimal performance
+   */
+  executeBatchByRules<T>(
+    inputs: Record<string, unknown>[],
+    ruleIds: string[],
+    options?: BatchExecutionOptions,
+  ): Promise<BatchExecutionResult<T>>;
 
   /**
    * Validate rule existence and structure

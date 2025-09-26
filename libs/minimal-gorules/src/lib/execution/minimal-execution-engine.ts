@@ -11,6 +11,9 @@ import {
   IMinimalExecutionEngine,
   ExecutionEngineConfig,
   ZenEngineLoader,
+  BatchExecutionOptions,
+  BatchExecutionResult,
+  BatchInputResult,
 } from './interfaces.js';
 
 /**
@@ -114,6 +117,80 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
    */
   updateConfig(config: Partial<ExecutionEngineConfig>): void {
     Object.assign(this.config, config);
+  }
+
+  /**
+   * Lightweight batch execution for large datasets
+   */
+  async executeBatch<T>(
+    inputs: Record<string, unknown>[],
+    selector: RuleSelector,
+    options: BatchExecutionOptions = {},
+  ): Promise<BatchExecutionResult<T>> {
+    const availableRules = await this.cacheManager.getAllMetadata();
+    const rulePlan = await this.tagManager.resolveRules(selector, availableRules);
+
+    if (rulePlan.ruleIds.length === 0) {
+      return { results: inputs.map((_, i) => ({ inputIndex: i, results: new Map(), success: true })) };
+    }
+
+    return this.executeBatchByRules(inputs, rulePlan.ruleIds, options);
+  }
+
+  /**
+   * Ultra-fast batch execution with pre-resolved rule IDs
+   */
+  async executeBatchByRules<T>(
+    inputs: Record<string, unknown>[],
+    ruleIds: string[],
+    options: BatchExecutionOptions = {},
+  ): Promise<BatchExecutionResult<T>> {
+    const { maxConcurrency = this.config.maxConcurrency || 50, continueOnError = true } = options;
+
+    const results: BatchInputResult<T>[] = new Array(inputs.length);
+
+    // Process all inputs with controlled concurrency
+    const batches = this.createBatches(inputs, maxConcurrency);
+
+    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+      const batch = batches[batchIndex];
+      const startIndex = batchIndex * maxConcurrency;
+
+      const promises = batch.map(async (input, localIndex) => {
+        const inputIndex = startIndex + localIndex;
+        const inputResults = new Map<string, T>();
+        const inputErrors = new Map<string, Error>();
+        let success = true;
+
+        for (const ruleId of ruleIds) {
+          try {
+            const result = await this.zenEngine.evaluate(ruleId, input);
+            inputResults.set(ruleId, result.result);
+          } catch (error) {
+            inputErrors.set(ruleId, error as Error);
+            if (!continueOnError) {
+              success = false;
+              break;
+            }
+          }
+        }
+
+        return {
+          inputIndex,
+          results: inputResults,
+          errors: inputErrors.size > 0 ? inputErrors : undefined,
+          success: success && inputErrors.size === 0,
+        };
+      });
+
+      const batchResults = await Promise.all(promises);
+
+      for (let i = 0; i < batchResults.length; i++) {
+        results[startIndex + i] = batchResults[i];
+      }
+    }
+
+    return { results };
   }
 
 

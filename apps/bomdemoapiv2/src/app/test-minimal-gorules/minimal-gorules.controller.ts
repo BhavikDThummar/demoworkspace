@@ -326,4 +326,205 @@ export class MinimalGoRulesController {
       );
     }
   }
+
+  /**
+   * Lightweight batch execute executeByTags API (sequential)
+   */
+  @Post('batch-execute-by-tags')
+  async batchExecuteByTags(
+    @Body()
+    body: {
+      tags: string[];
+      input?: any;
+      mode?: 'parallel' | 'sequential';
+      executions: number;
+      onlySuccessStatus?: boolean; // If true, only return success count
+    },
+  ) {
+    try {
+      if (
+        !body.tags?.length ||
+        !body.executions ||
+        body.executions <= 0 ||
+        body.executions > 100000
+      ) {
+        throw new HttpException(
+          'Invalid request: tags array and executions (1-1000) are required',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const startTime = performance.now();
+      let successCount = 0;
+      let failureCount = 0;
+      const responses = body.onlySuccessStatus ? null : [];
+
+      const executeRequest: ExecuteRuleRequest = {
+        tags: body.tags,
+        input: body.input,
+        mode: body.mode || 'parallel',
+      };
+
+      for (let i = 1; i <= body.executions; i++) {
+        const execStart = performance.now();
+
+        try {
+          const result = await this.executeByTags(executeRequest);
+          successCount++;
+
+          if (!body.onlySuccessStatus) {
+            responses.push({
+              execution: i,
+              success: true,
+              result,
+              executionTime: performance.now() - execStart,
+            });
+          }
+        } catch (error) {
+          failureCount++;
+
+          if (!body.onlySuccessStatus) {
+            responses.push({
+              execution: i,
+              success: false,
+              error: error instanceof Error ? error.message : 'Unknown error',
+              executionTime: performance.now() - execStart,
+            });
+          }
+        }
+      }
+
+      const response: any = {
+        success: true,
+        totalExecutions: body.executions,
+        successCount,
+        failureCount,
+        successRate: `${((successCount / body.executions) * 100).toFixed(1)}%`,
+        totalTime: performance.now() - startTime,
+      };
+
+      if (!body.onlySuccessStatus) {
+        response.responses = responses;
+      }
+
+      return response;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(
+        `Batch execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Lightweight batch execute executeByTags API (parallel)
+   */
+  @Post('batch-execute-by-tags-parallel')
+  async batchExecuteByTagsParallel(
+    @Body()
+    body: {
+      tags: string[];
+      input?: any;
+      mode?: 'parallel' | 'sequential';
+      executions: number;
+      concurrency?: number;
+      onlySuccessStatus?: boolean; // If true, only return success count
+    },
+  ) {
+    try {
+      if (
+        !body.tags?.length ||
+        !body.executions ||
+        body.executions <= 0 ||
+        body.executions > 100000
+      ) {
+        throw new HttpException(
+          'Invalid request: tags array and executions (1-1000) are required',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const concurrency = Math.min(body.concurrency || 10, body.executions);
+      const startTime = performance.now();
+
+      const executeRequest: ExecuteRuleRequest = {
+        tags: body.tags,
+        input: body.input,
+        mode: body.mode || 'parallel',
+      };
+
+      // Create execution function
+      const executeTask = async (executionNumber: number) => {
+        const execStart = performance.now();
+        try {
+          const result = await this.executeByTags(executeRequest);
+          return {
+            execution: executionNumber,
+            success: true,
+            result: body.onlySuccessStatus ? null : result,
+            executionTime: body.onlySuccessStatus ? null : performance.now() - execStart,
+          };
+        } catch (error) {
+          return {
+            execution: executionNumber,
+            success: false,
+            error: body.onlySuccessStatus
+              ? null
+              : error instanceof Error
+              ? error.message
+              : 'Unknown error',
+            executionTime: body.onlySuccessStatus ? null : performance.now() - execStart,
+          };
+        }
+      };
+
+      // Execute in batches with controlled concurrency
+      const allResults = [];
+      for (let i = 0; i < body.executions; i += concurrency) {
+        const batchPromises = [];
+        for (let j = i; j < Math.min(i + concurrency, body.executions); j++) {
+          batchPromises.push(executeTask(j + 1));
+        }
+        const batchResults = await Promise.all(batchPromises);
+        allResults.push(...batchResults);
+      }
+
+      const successCount = allResults.filter((r) => r.success).length;
+      const failureCount = allResults.length - successCount;
+
+      const response: any = {
+        success: true,
+        totalExecutions: body.executions,
+        successCount,
+        failureCount,
+        successRate: `${((successCount / body.executions) * 100).toFixed(1)}%`,
+        totalTime: performance.now() - startTime,
+        concurrency,
+      };
+
+      if (!body.onlySuccessStatus) {
+        // Sort by execution number and clean up null values
+        response.responses = allResults
+          .sort((a, b) => a.execution - b.execution)
+          .map((r) => ({
+            execution: r.execution,
+            success: r.success,
+            ...(r.result && { result: r.result }),
+            ...(r.error && { error: r.error }),
+            ...(r.executionTime && { executionTime: r.executionTime }),
+          }));
+      }
+
+      return response;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(
+        `Parallel batch execution failed: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

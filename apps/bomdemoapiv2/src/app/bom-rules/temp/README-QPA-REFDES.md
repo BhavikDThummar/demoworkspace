@@ -26,7 +26,7 @@ apps/bomdemoapiv2/
 ├── .env.production                         # Production environment
 └── README-QPA-REFDES.md                   # This file
 
-libs/minimal-gorules/src/lib/jdm_directory/
+libs/minimal-gorules/src/lib/jdm-directory/
 └── QPA vs RefDes.json                      # The actual rule file
 ```
 
@@ -39,7 +39,7 @@ The application is configured to use local rule loading with the following envir
 ```bash
 # Rule Source Configuration
 GORULES_RULE_SOURCE=local
-GORULES_LOCAL_RULES_PATH=libs/minimal-gorules/src/lib/jdm_directory
+GORULES_LOCAL_RULES_PATH=libs/minimal-gorules/src/lib/jdm-directory
 GORULES_ENABLE_HOT_RELOAD=true
 GORULES_PROJECT_ID=bomdemoapiv2
 
@@ -58,7 +58,7 @@ GORULES_API_KEY=your-api-key
 The QPA vs RefDes rule is located at:
 
 ```
-libs/minimal-gorules/src/lib/jdm_directory/QPA vs RefDes.json
+libs/minimal-gorules/src/lib/jdm-directory/QPA vs RefDes.json
 ```
 
 ## API Endpoints

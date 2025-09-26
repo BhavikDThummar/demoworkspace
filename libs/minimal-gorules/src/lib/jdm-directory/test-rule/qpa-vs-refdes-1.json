@@ -1,0 +1,303 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "c0617652-1f0c-4d32-a314-e00deb31be6f",
+      "name": "request",
+      "type": "inputNode",
+      "content": {
+        "schema": "{\r\n  \"bomItem\": {\r\n    \"lineID\": 1,\r\n    \"custPN\": \"CPN-1001\",\r\n    \"qpa\": 4,\r\n    \"refDesig\": \"R1, R2, R3, R4\",\r\n    \"refDesigCount\": 4,\r\n    \"dnpQty\": \"0\",\r\n    \"dnpDesig\": \"\",\r\n    \"dnpDesigCount\": 0,\r\n    \"uomID\": \"EACH\",\r\n    \"mfgPNDescription\": \"Resistor 10k Ohm\",\r\n    \"mfgCode\": \"MFR-A\",\r\n    \"mfgPN\": \"MPN-1001\",\r\n    \"description\": \"Check resistor tolerance\",\r\n    \"mountingtypes\": \"SMD\",\r\n    \"functionaltypes\": \"Resistor\",\r\n    \"field1\": \"data1-1\",\r\n    \"field2\": \"data1-2\",\r\n    \"field3\": \"data1-3\",\r\n    \"field4\": \"data1-4\",\r\n    \"field5\": \"data1-5\",\r\n    \"field6\": \"data1-6\",\r\n    \"field7\": \"data1-7\"\r\n  },\r\n  \"configData\": {\r\n    \"_OddelyRefDesList\": [\r\n      \"p?\",\r\n      \"P*\"\r\n    ],\r\n    \"maxREFDESAllow\": 50,\r\n    \"_UOM\": {\r\n      \"EACH\": \"EACH\"\r\n    }\r\n  },\r\n  \"validationFlags\": {},\r\n  \"otherValidation\": {}\r\n}"
+      },
+      "position": {
+        "x": 115,
+        "y": 225
+      }
+    },
+    {
+      "id": "45ca523c-96c5-4393-993e-5e5ab4a31159",
+      "name": "decisionTable1",
+      "type": "decisionTableNode",
+      "content": {
+        "rules": [
+          {
+            "_id": "5a98f6f1-1236-4374-86a1-3d04bfd6d123",
+            "_description": "",
+            "083b56ec-4d44-412f-9233-424d698de8d6": "",
+            "0a9d4aff-cf9c-43c7-bf4e-f1f73f5956cc": "",
+            "2f3e4d5c-6b7a-4899-9a8b-0c1d2e3f4g5h": "",
+            "3a4b5c6d-7e8f-4g9h-0i1j-2k3l4m5n6o7p": "",
+            "4b5c6d7e-8f9g-0h1i-2j3k-4l5m6n7o8p9q": "",
+            "5b12e57c-6c9a-4678-bada-8e8758c9965d": "1",
+            "5c6d7e8f-9g0h-1i2j-3k4l-5m6n7o8p9q0r": "",
+            "61961224-6cf7-4a10-9132-3052b6818a5f": "",
+            "6d7e8f9g-0h1i-2j3k-4l5m-6n7o8p9q0r1s": "",
+            "8f9g0h1i-2j3k-4l5m-6n7o-8p9q0r1s2t3u": "validationFlags.dnpQPARefDesStep",
+            "b1bb9e6f-3a12-4444-8eb0-06e2acdc731e": "validationFlags.qpaDesignatorStep",
+            "c88a5568-d25f-43f6-bdc6-07808f1435ea": "bomItem.lineID ?? 0 <= 0"
+          },
+          {
+            "_id": "a4c0f4b0-eefe-48ba-b9ce-844c3581d38e",
+            "_description": "Ref Desig Count exceeds max",
+            "083b56ec-4d44-412f-9233-424d698de8d6": "> configData.maxREFDESAllow",
+            "0a9d4aff-cf9c-43c7-bf4e-f1f73f5956cc": "",
+            "2f3e4d5c-6b7a-4899-9a8b-0c1d2e3f4g5h": "",
+            "3a4b5c6d-7e8f-4g9h-0i1j-2k3l4m5n6o7p": "",
+            "4b5c6d7e-8f9g-0h1i-2j3k-4l5m6n7o8p9q": "",
+            "5b12e57c-6c9a-4678-bada-8e8758c9965d": "2",
+            "5c6d7e8f-9g0h-1i2j-3k4l-5m6n7o8p9q0r": "",
+            "61961224-6cf7-4a10-9132-3052b6818a5f": "\"qpa\"",
+            "6d7e8f9g-0h1i-2j3k-4l5m-6n7o8p9q0r1s": "",
+            "8f9g0h1i-2j3k-4l5m-6n7o-8p9q0r1s2t3u": "validationFlags.dnpQPARefDesStep",
+            "b1bb9e6f-3a12-4444-8eb0-06e2acdc731e": "validationFlags.qpaDesignatorStep",
+            "c88a5568-d25f-43f6-bdc6-07808f1435ea": ""
+          },
+          {
+            "_id": "b5d1g2h3-i4j5-4k6l-7m8n-9o0p1q2r3s4",
+            "_description": "DNP Desig Count exceeds max",
+            "083b56ec-4d44-412f-9233-424d698de8d6": "",
+            "0a9d4aff-cf9c-43c7-bf4e-f1f73f5956cc": "",
+            "2f3e4d5c-6b7a-4899-9a8b-0c1d2e3f4g5h": "> configData.maxREFDESAllow",
+            "3a4b5c6d-7e8f-4g9h-0i1j-2k3l4m5n6o7p": "",
+            "4b5c6d7e-8f9g-0h1i-2j3k-4l5m6n7o8p9q": "",
+            "5b12e57c-6c9a-4678-bada-8e8758c9965d": "3",
+            "5c6d7e8f-9g0h-1i2j-3k4l-5m6n7o8p9q0r": "",
+            "61961224-6cf7-4a10-9132-3052b6818a5f": "\"DNP QPA\"",
+            "6d7e8f9g-0h1i-2j3k-4l5m-6n7o8p9q0r1s": "",
+            "8f9g0h1i-2j3k-4l5m-6n7o-8p9q0r1s2t3u": "validationFlags.dnpQPARefDesStep",
+            "b1bb9e6f-3a12-4444-8eb0-06e2acdc731e": "validationFlags.qpaDesignatorStep",
+            "c88a5568-d25f-43f6-bdc6-07808f1435ea": ""
+          },
+          {
+            "_id": "5dd87ad7-1775-4409-939b-2bbd8cc2f2ce",
+            "_description": "UOM not EACH",
+            "083b56ec-4d44-412f-9233-424d698de8d6": "",
+            "0a9d4aff-cf9c-43c7-bf4e-f1f73f5956cc": "!= configData._UOM.EACH",
+            "2f3e4d5c-6b7a-4899-9a8b-0c1d2e3f4g5h": "",
+            "3a4b5c6d-7e8f-4g9h-0i1j-2k3l4m5n6o7p": "",
+            "4b5c6d7e-8f9g-0h1i-2j3k-4l5m6n7o8p9q": "",
+            "5b12e57c-6c9a-4678-bada-8e8758c9965d": "4",
+            "5c6d7e8f-9g0h-1i2j-3k4l-5m6n7o8p9q0r": "",
+            "61961224-6cf7-4a10-9132-3052b6818a5f": "",
+            "6d7e8f9g-0h1i-2j3k-4l5m-6n7o8p9q0r1s": "",
+            "8f9g0h1i-2j3k-4l5m-6n7o-8p9q0r1s2t3u": "\"Verifyed\"",
+            "b1bb9e6f-3a12-4444-8eb0-06e2acdc731e": "\"Verifyed\"",
+            "c88a5568-d25f-43f6-bdc6-07808f1435ea": ""
+          },
+          {
+            "_id": "e9d7682a-2a1f-4c7e-83db-a70b8f431b65",
+            "_description": "Require when no values provided and UOM is EACH",
+            "083b56ec-4d44-412f-9233-424d698de8d6": "",
+            "0a9d4aff-cf9c-43c7-bf4e-f1f73f5956cc": "== configData._UOM.EACH",
+            "2f3e4d5c-6b7a-4899-9a8b-0c1d2e3f4g5h": "",
+            "3a4b5c6d-7e8f-4g9h-0i1j-2k3l4m5n6o7p": "(($ ?? 0) <= 0) or ((bomItem.dnpQty ?? 0) <= 0)",
+            "4b5c6d7e-8f9g-0h1i-2j3k-4l5m6n7o8p9q": "",
+            "5b12e57c-6c9a-4678-bada-8e8758c9965d": "5",
+            "5c6d7e8f-9g0h-1i2j-3k4l-5m6n7o8p9q0r": "",
+            "61961224-6cf7-4a10-9132-3052b6818a5f": "",
+            "6d7e8f9g-0h1i-2j3k-4l5m-6n7o8p9q0r1s": "",
+            "8f9g0h1i-2j3k-4l5m-6n7o-8p9q0r1s2t3u": "\"Require\"",
+            "b1bb9e6f-3a12-4444-8eb0-06e2acdc731e": "\"Require\"",
+            "c88a5568-d25f-43f6-bdc6-07808f1435ea": ""
+          },
+          {
+            "_id": "f0g1h2i3-j4k5-4l6m-7n8o-9p0q1r2s3t4",
+            "_description": "Mismatch for both QPA and DNP",
+            "083b56ec-4d44-412f-9233-424d698de8d6": "!= number(bomItem.qpa ?? 0)",
+            "0a9d4aff-cf9c-43c7-bf4e-f1f73f5956cc": "== configData._UOM.EACH",
+            "2f3e4d5c-6b7a-4899-9a8b-0c1d2e3f4g5h": "",
+            "3a4b5c6d-7e8f-4g9h-0i1j-2k3l4m5n6o7p": "",
+            "4b5c6d7e-8f9g-0h1i-2j3k-4l5m6n7o8p9q": "",
+            "5b12e57c-6c9a-4678-bada-8e8758c9965d": "6",
+            "5c6d7e8f-9g0h-1i2j-3k4l-5m6n7o8p9q0r": "",
+            "61961224-6cf7-4a10-9132-3052b6818a5f": "",
+            "6d7e8f9g-0h1i-2j3k-4l5m-6n7o8p9q0r1s": "",
+            "8f9g0h1i-2j3k-4l5m-6n7o-8p9q0r1s2t3u": "validationFlags.dnpQPARefDesStep",
+            "b1bb9e6f-3a12-4444-8eb0-06e2acdc731e": "\"MisMatch\"",
+            "c88a5568-d25f-43f6-bdc6-07808f1435ea": ""
+          },
+          {
+            "_id": "f3898323-50d3-443d-a3dc-c6a2f170ec08",
+            "_description": "",
+            "083b56ec-4d44-412f-9233-424d698de8d6": "",
+            "0a9d4aff-cf9c-43c7-bf4e-f1f73f5956cc": "== configData._UOM.EACH",
+            "2f3e4d5c-6b7a-4899-9a8b-0c1d2e3f4g5h": "!= number(bomItem.dnpQty ?? 0)",
+            "3a4b5c6d-7e8f-4g9h-0i1j-2k3l4m5n6o7p": "",
+            "4b5c6d7e-8f9g-0h1i-2j3k-4l5m6n7o8p9q": "",
+            "5b12e57c-6c9a-4678-bada-8e8758c9965d": "6.1",
+            "5c6d7e8f-9g0h-1i2j-3k4l-5m6n7o8p9q0r": "",
+            "61961224-6cf7-4a10-9132-3052b6818a5f": "",
+            "6d7e8f9g-0h1i-2j3k-4l5m-6n7o8p9q0r1s": "",
+            "8f9g0h1i-2j3k-4l5m-6n7o-8p9q0r1s2t3u": "\"MisMatch\"",
+            "b1bb9e6f-3a12-4444-8eb0-06e2acdc731e": "validationFlags.qpaDesignatorStep",
+            "c88a5568-d25f-43f6-bdc6-07808f1435ea": ""
+          },
+          {
+            "_id": "i3j4k5l6-m7n8-4o9p-0q1r-2s3t4u5v6w7",
+            "_description": "No mismatch, verified",
+            "083b56ec-4d44-412f-9233-424d698de8d6": "== number(bomItem.qpa ?? 0)",
+            "0a9d4aff-cf9c-43c7-bf4e-f1f73f5956cc": "== configData._UOM.EACH",
+            "2f3e4d5c-6b7a-4899-9a8b-0c1d2e3f4g5h": "== number(bomItem.dnpQty ?? 0)",
+            "3a4b5c6d-7e8f-4g9h-0i1j-2k3l4m5n6o7p": "",
+            "4b5c6d7e-8f9g-0h1i-2j3k-4l5m6n7o8p9q": "",
+            "5b12e57c-6c9a-4678-bada-8e8758c9965d": "9",
+            "5c6d7e8f-9g0h-1i2j-3k4l-5m6n7o8p9q0r": "",
+            "61961224-6cf7-4a10-9132-3052b6818a5f": "",
+            "6d7e8f9g-0h1i-2j3k-4l5m-6n7o8p9q0r1s": "",
+            "8f9g0h1i-2j3k-4l5m-6n7o-8p9q0r1s2t3u": "\"Verifyed\"",
+            "b1bb9e6f-3a12-4444-8eb0-06e2acdc731e": "\"Verifyed\"",
+            "c88a5568-d25f-43f6-bdc6-07808f1435ea": ""
+          },
+          {
+            "_id": "399fe08d-aed7-4188-9c01-024a0e6aafe6",
+            "_description": "",
+            "083b56ec-4d44-412f-9233-424d698de8d6": "",
+            "0a9d4aff-cf9c-43c7-bf4e-f1f73f5956cc": "",
+            "2f3e4d5c-6b7a-4899-9a8b-0c1d2e3f4g5h": "",
+            "3a4b5c6d-7e8f-4g9h-0i1j-2k3l4m5n6o7p": "",
+            "4b5c6d7e-8f9g-0h1i-2j3k-4l5m6n7o8p9q": "",
+            "5b12e57c-6c9a-4678-bada-8e8758c9965d": "10",
+            "5c6d7e8f-9g0h-1i2j-3k4l-5m6n7o8p9q0r": "",
+            "61961224-6cf7-4a10-9132-3052b6818a5f": "",
+            "6d7e8f9g-0h1i-2j3k-4l5m-6n7o8p9q0r1s": "",
+            "8f9g0h1i-2j3k-4l5m-6n7o-8p9q0r1s2t3u": "validationFlags.dnpQPARefDesStep",
+            "b1bb9e6f-3a12-4444-8eb0-06e2acdc731e": "validationFlags.qpaDesignatorStep",
+            "c88a5568-d25f-43f6-bdc6-07808f1435ea": ""
+          }
+        ],
+        "inputs": [
+          {
+            "id": "c88a5568-d25f-43f6-bdc6-07808f1435ea",
+            "name": "Require Fields"
+          },
+          {
+            "id": "083b56ec-4d44-412f-9233-424d698de8d6",
+            "name": "Ref Desig Count",
+            "field": "bomItem.refDesigCount",
+            "defaultValue": ""
+          },
+          {
+            "id": "2f3e4d5c-6b7a-4899-9a8b-0c1d2e3f4g5h",
+            "name": "DNP Desig Count",
+            "field": "bomItem.dnpDesigCount",
+            "defaultValue": ""
+          },
+          {
+            "id": "0a9d4aff-cf9c-43c7-bf4e-f1f73f5956cc",
+            "name": "UOM ID",
+            "field": "bomItem.uomID",
+            "defaultValue": ""
+          },
+          {
+            "id": "3a4b5c6d-7e8f-4g9h-0i1j-2k3l4m5n6o7p",
+            "name": "QPA",
+            "field": "bomItem.qpa",
+            "defaultValue": ""
+          },
+          {
+            "id": "4b5c6d7e-8f9g-0h1i-2j3k-4l5m6n7o8p9q",
+            "name": "DNP Qty",
+            "field": "bomItem.dnpQty",
+            "defaultValue": ""
+          },
+          {
+            "id": "5c6d7e8f-9g0h-1i2j-3k4l-5m6n7o8p9q0r",
+            "name": "Ref Desig",
+            "field": "bomItem.refDesig",
+            "defaultValue": ""
+          },
+          {
+            "id": "6d7e8f9g-0h1i-2j3k-4l5m-6n7o8p9q0r1s",
+            "name": "DNP Desig",
+            "field": "bomItem.dnpDesig",
+            "defaultValue": ""
+          }
+        ],
+        "outputs": [
+          {
+            "id": "b1bb9e6f-3a12-4444-8eb0-06e2acdc731e",
+            "name": "QPA Designator Step",
+            "field": "validationFlags.qpaDesignatorStep",
+            "defaultValue": ""
+          },
+          {
+            "id": "8f9g0h1i-2j3k-4l5m-6n7o-8p9q0r1s2t3u",
+            "name": "DNP QPA Ref Des Step",
+            "field": "validationFlags.dnpQPARefDesStep",
+            "defaultValue": ""
+          },
+          {
+            "id": "61961224-6cf7-4a10-9132-3052b6818a5f",
+            "name": "Failed Max REF DES Allow",
+            "field": "otherValidation.isFailedMaxREFDESAllow",
+            "defaultValue": ""
+          },
+          {
+            "id": "5b12e57c-6c9a-4678-bada-8e8758c9965d",
+            "name": "Test",
+            "field": "validationFlags.test"
+          }
+        ],
+        "hitPolicy": "first",
+        "inputField": null,
+        "outputPath": null,
+        "passThrough": false,
+        "executionMode": "single"
+      },
+      "position": {
+        "x": 655,
+        "y": 225
+      }
+    },
+    {
+      "id": "67c10296-5564-4e94-917b-f645054e18f8",
+      "name": "expression1",
+      "type": "expressionNode",
+      "content": {
+        "inputField": null,
+        "outputPath": null,
+        "expressions": [
+          {
+            "id": "2c047bc7-ce83-478e-a5c5-1b38b82b4447",
+            "key": "validationFlags.qpaDesignatorStep",
+            "value": "\"Verifyed\""
+          },
+          {
+            "id": "7dc4d960-e177-448c-964d-41fa67f19530",
+            "key": "validationFlags.dnpQPARefDesStep",
+            "value": "\"Verifyed\""
+          },
+          {
+            "id": "47ec9e95-4453-4cfd-9e74-2b7d4189742e",
+            "key": "validationFlags.qpaDesignatorStepError",
+            "value": "null"
+          },
+          {
+            "id": "ab6fda26-e0cf-429e-99db-bf73c51a8034",
+            "key": "validationFlags.dnpQPARefDesError",
+            "value": "null"
+          }
+        ],
+        "passThrough": true,
+        "executionMode": "single"
+      },
+      "position": {
+        "x": 385,
+        "y": 225
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "17ae894d-7648-499c-b5bf-b8aca6572c03",
+      "type": "edge",
+      "sourceId": "c0617652-1f0c-4d32-a314-e00deb31be6f",
+      "targetId": "67c10296-5564-4e94-917b-f645054e18f8"
+    },
+    {
+      "id": "31be56ba-bec8-4302-b242-22c2ab1f5923",
+      "type": "edge",
+      "sourceId": "67c10296-5564-4e94-917b-f645054e18f8",
+      "targetId": "45ca523c-96c5-4393-993e-5e5ab4a31159"
+    }
+  ]
+}

@@ -476,7 +476,7 @@ export class GoRulesService implements IGoRulesService, OnModuleInit, OnModuleDe
           try {
             // This will be implemented to load rules from GoRules API
             // For testing purpose it's loaded from file
-            const filePath = path.resolve(__dirname, '../jdm_directory', `${key}.json`);
+            const filePath = path.resolve(__dirname, '../jdm-directory', `${key}.json`);
             return await readFile(filePath);
           } catch (error) {
             throw new GoRulesException(

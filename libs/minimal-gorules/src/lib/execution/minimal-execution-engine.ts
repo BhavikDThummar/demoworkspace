@@ -30,7 +30,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
     config: ExecutionEngineConfig = {},
   ) {
     this.config = {
-      maxConcurrency: config.maxConcurrency || 50, // Increased default for better performance
+      maxConcurrency: config.maxConcurrency || 100, // Increased to 100 for 70K target
       executionTimeout: config.executionTimeout || 1000, // Reduced timeout for fast validation
     };
 
@@ -145,7 +145,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
     ruleIds: string[],
     options: BatchExecutionOptions = {},
   ): Promise<BatchExecutionResult<T>> {
-    const { maxConcurrency = this.config.maxConcurrency || 50, continueOnError = true } = options;
+    const { maxConcurrency = this.config.maxConcurrency || 100, continueOnError = true } = options;
 
     const results: BatchInputResult<T>[] = new Array(inputs.length);
 
@@ -160,18 +160,31 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
         const inputIndex = startIndex + localIndex;
         const inputResults = new Map<string, T>();
         const inputErrors = new Map<string, Error>();
-        let success = true;
 
-        for (const ruleId of ruleIds) {
+        // Execute all rules in parallel for this input
+        const rulePromises = ruleIds.map(async (ruleId) => {
           try {
             const result = await this.zenEngine.evaluate(ruleId, input);
-            inputResults.set(ruleId, result.result);
+            return { ruleId, result: result.result, error: null };
           } catch (error) {
-            inputErrors.set(ruleId, error as Error);
+            return { ruleId, result: null, error: error as Error };
+          }
+        });
+
+        // Wait for all rules to complete for this input
+        const ruleResults = await Promise.all(rulePromises);
+
+        // Process results and errors
+        let hasErrors = false;
+        for (const { ruleId, result, error } of ruleResults) {
+          if (error) {
+            inputErrors.set(ruleId, error);
+            hasErrors = true;
             if (!continueOnError) {
-              success = false;
               break;
             }
+          } else {
+            inputResults.set(ruleId, result);
           }
         }
 
@@ -179,7 +192,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
           inputIndex,
           results: inputResults,
           errors: inputErrors.size > 0 ? inputErrors : undefined,
-          success: success && inputErrors.size === 0,
+          success: !hasErrors,
         };
       });
 
@@ -195,7 +208,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
 
 
   /**
-   * Fast parallel execution - optimized for speed
+   * Ultra-fast parallel execution - all rules executed concurrently
    */
   private async executeParallel<T>(
     ruleIds: string[],
@@ -204,26 +217,23 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
     const results = new Map<string, T>();
     const errors = new Map<string, Error>();
 
-    const batches = this.createBatches(ruleIds, this.config.maxConcurrency!);
+    // Execute all rules in parallel without batching for maximum speed
+    const promises = ruleIds.map(async (ruleId) => {
+      try {
+        const result = await this.zenEngine.evaluate(ruleId, input);
+        return { ruleId, result: result.result, error: null };
+      } catch (error) {
+        return { ruleId, result: null, error: error as Error };
+      }
+    });
 
-    for (const batch of batches) {
-      const promises = batch.map(async (ruleId) => {
-        try {
-          const result = await this.zenEngine.evaluate(ruleId, input);
-          return { ruleId, result: result.result, error: null };
-        } catch (error) {
-          return { ruleId, result: null, error: error as Error };
-        }
-      });
+    const allResults = await Promise.all(promises);
 
-      const batchResults = await Promise.all(promises);
-
-      for (const { ruleId, result, error } of batchResults) {
-        if (error) {
-          errors.set(ruleId, error);
-        } else {
-          results.set(ruleId, result);
-        }
+    for (const { ruleId, result, error } of allResults) {
+      if (error) {
+        errors.set(ruleId, error);
+      } else {
+        results.set(ruleId, result);
       }
     }
 

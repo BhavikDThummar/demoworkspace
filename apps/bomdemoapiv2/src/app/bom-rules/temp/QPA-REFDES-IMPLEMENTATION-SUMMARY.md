@@ -24,7 +24,7 @@
 - ✅ Configured local rule loading with the following settings:
   ```bash
   GORULES_RULE_SOURCE=local
-  GORULES_LOCAL_RULES_PATH=libs/minimal-gorules/src/lib/jdm_directory
+  GORULES_LOCAL_RULES_PATH=libs/minimal-gorules/src/lib/jdm-directory
   GORULES_ENABLE_HOT_RELOAD=true
   GORULES_PROJECT_ID=bomdemoapiv2
   ```
@@ -115,7 +115,7 @@ apps/bomdemoapiv2/
 ### Local Rule Loading
 
 - **Rule Source**: Local file system
-- **Rule Path**: `libs/minimal-gorules/src/lib/jdm_directory/QPA vs RefDes.json`
+- **Rule Path**: `libs/minimal-gorules/src/lib/jdm-directory/QPA vs RefDes.json`
 - **Hot Reload**: Enabled for development
 - **Project ID**: `bomdemoapiv2`
 

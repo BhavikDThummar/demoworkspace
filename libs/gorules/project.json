@@ -16,8 +16,8 @@
           "libs/gorules/*.md",
           {
             "glob": "**/*",
-            "input": "libs/gorules/src/lib/jdm_directory",
-            "output": "src/lib/jdm_directory"
+            "input": "libs/gorules/src/lib/jdm-directory",
+            "output": "src/lib/jdm-directory"
           }
         ]
       }

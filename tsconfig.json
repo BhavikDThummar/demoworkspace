@@ -11,6 +11,9 @@
     },
     {
       "path": "./libs/minimal-gorules"
+    },
+    {
+      "path": "./libs/cm-rule-engine"
     }
   ]
 }

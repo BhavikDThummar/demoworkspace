@@ -16,9 +16,9 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
-
     "baseUrl": ".",
     "paths": {
+      "@org/cm-rule-engine": ["libs/cm-rule-engine/src/index.ts"],
       "@org/minimal-gorules": ["libs/minimal-gorules/src/index.ts"]
     }
   }

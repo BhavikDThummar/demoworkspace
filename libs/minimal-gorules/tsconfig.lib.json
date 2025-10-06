@@ -8,7 +8,6 @@
     "emitDeclarationOnly": false,
     "forceConsistentCasingInFileNames": true,
     "types": ["node"],
-    "skipLibCheck": true,
     "lib": ["ES2022"],
     "module": "CommonJS",
     "moduleResolution": "node",

@@ -1,0 +1,6 @@
+{
+  "version": "1.0.0",
+  "tags": ["bom2", "validation2", "qpa2", "refdes2"],
+  "description": "Validates QPA (Quantity Per Assembly) against Reference Designator count for BOM items",
+  "author": "bomdemoapiv2-team"
+}

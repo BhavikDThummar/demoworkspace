@@ -2,7 +2,7 @@
  * Execution Engine specific interfaces
  */
 
-import { MinimalExecutionResult, RuleSelector, ExecutionGroup } from '../interfaces/core.js';
+import { MinimalExecutionResult, RuleSelector } from '../interfaces/core.js';
 import { ZenDecisionContent } from '@gorules/zen-engine';
 import { ExecutionMetrics } from './performance-utils.js';
 
@@ -278,7 +278,57 @@ export interface ValidatedExecutionGroup {
 }
 
 /**
- * Extended execution engine interface with additional methods
+ * Lightweight batch execution options
+ */
+export interface BatchExecutionOptions {
+  /**
+   * Maximum number of concurrent input processing
+   */
+  maxConcurrency?: number;
+
+  /**
+   * Whether to continue processing on individual failures
+   */
+  continueOnError?: boolean;
+}
+
+/**
+ * Simple batch execution result for single input
+ */
+export interface BatchInputResult<T = unknown> {
+  /**
+   * Input index for correlation
+   */
+  inputIndex: number;
+
+  /**
+   * Execution results per rule
+   */
+  results: Map<string, T>;
+
+  /**
+   * Execution errors per rule
+   */
+  errors?: Map<string, Error>;
+
+  /**
+   * Success status
+   */
+  success: boolean;
+}
+
+/**
+ * Lightweight batch execution result
+ */
+export interface BatchExecutionResult<T = unknown> {
+  /**
+   * Results for each input (indexed array)
+   */
+  results: BatchInputResult<T>[];
+}
+
+/**
+ * Extended execution engine interface with batch processing
  */
 export interface IMinimalExecutionEngine {
   /**
@@ -290,46 +340,32 @@ export interface IMinimalExecutionEngine {
   ): Promise<MinimalExecutionResult<T>>;
 
   /**
-   * Enhanced parallel execution with detailed metrics and options
-   */
-  executeParallelWithMetrics<T>(
-    ruleIds: string[],
-    input: Record<string, unknown>,
-    options?: ParallelExecutionOptions,
-  ): Promise<EnhancedExecutionResult<T>>;
-
-  /**
-   * Enhanced sequential execution with state tracking and pipeline mode
-   */
-  executeSequentialWithMetrics<T>(
-    ruleIds: string[],
-    input: Record<string, unknown>,
-    options?: SequentialExecutionOptions,
-  ): Promise<SequentialExecutionResult<T>>;
-
-  /**
-   * Enhanced mixed execution with complex rule orchestration
-   */
-  executeMixedWithMetrics<T>(
-    groups: ExecutionGroup[],
-    input: Record<string, unknown>,
-    options?: MixedExecutionOptions,
-  ): Promise<MixedExecutionResult<T>>;
-
-  /**
    * Single rule execution
    */
   executeRule<T>(ruleId: string, input: Record<string, unknown>): Promise<T>;
 
   /**
+   * Batch execution for large datasets (70K+ records)
+   */
+  executeBatch<T>(
+    inputs: Record<string, unknown>[],
+    selector: RuleSelector,
+    options?: BatchExecutionOptions,
+  ): Promise<BatchExecutionResult<T>>;
+
+  /**
+   * Batch execution with rule IDs for optimal performance
+   */
+  executeBatchByRules<T>(
+    inputs: Record<string, unknown>[],
+    ruleIds: string[],
+    options?: BatchExecutionOptions,
+  ): Promise<BatchExecutionResult<T>>;
+
+  /**
    * Validate rule existence and structure
    */
   validateRule(ruleId: string): Promise<boolean>;
-
-  /**
-   * Validate and optimize execution groups for mixed mode
-   */
-  validateExecutionGroups(groups: ExecutionGroup[]): Promise<ExecutionPlan>;
 
   /**
    * Get execution engine configuration
@@ -340,9 +376,4 @@ export interface IMinimalExecutionEngine {
    * Update execution engine configuration
    */
   updateConfig(config: Partial<ExecutionEngineConfig>): void;
-
-  /**
-   * Get performance metrics for the last execution (if enabled)
-   */
-  getLastExecutionMetrics(): ExecutionMetrics | undefined;
 }

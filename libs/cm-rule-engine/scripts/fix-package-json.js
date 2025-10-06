@@ -20,21 +20,21 @@ pkg.exports['.'].types = './node/src/index.node.d.ts';
 pkg.exports['.'].require = './node/src/index.node.js';
 pkg.exports['.'].default = './node/src/index.node.js';
 
-pkg.exports['./node'].types = './node/src/index.node.d.ts';
-pkg.exports['./node'].require = './node/src/index.node.js';
-pkg.exports['./node'].default = './node/src/index.node.js';
-
-pkg.exports['./browser'].types = './browser/src/index.browser.d.ts';
-pkg.exports['./browser'].import = './browser/src/index.browser.js';
-pkg.exports['./browser'].default = './browser/src/index.browser.js';
-
-// Remove bundle exports if they exist (since we're not using them)
-if (pkg.exports['./bundle/node']) {
-  delete pkg.exports['./bundle/node'];
+// Fix React export paths
+if (pkg.exports['./react']) {
+  pkg.exports['./react'].types = './browser/src/lib/react/index.d.ts';
+  pkg.exports['./react'].import = './browser/src/lib/react/index.js';
+  pkg.exports['./react'].default = './browser/src/lib/react/index.js';
 }
-if (pkg.exports['./bundle/browser']) {
-  delete pkg.exports['./bundle/browser'];
+
+// Fix NestJS export paths
+if (pkg.exports['./nestjs']) {
+  pkg.exports['./nestjs'].types = './node/src/lib/nestjs/index.d.ts';
+  pkg.exports['./nestjs'].require = './node/src/lib/nestjs/index.js';
+  pkg.exports['./nestjs'].default = './node/src/lib/nestjs/index.js';
 }
+
+
 
 // Ensure dist directory exists
 fs.mkdirSync('libs/cm-rule-engine/dist', { recursive: true });

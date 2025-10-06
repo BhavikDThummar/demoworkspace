@@ -7,17 +7,23 @@
     "tsBuildInfoFile": "dist/node/tsconfig.lib.tsbuildinfo",
     "emitDeclarationOnly": false,
     "forceConsistentCasingInFileNames": true,
+    // Node.js environment
     "types": ["node"],
     "lib": ["ES2022"],
     "module": "CommonJS",
     "moduleResolution": "node",
     "target": "ES2022",
+    // Module interop
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
+    // Output options
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    // NestJS decorator support
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": ["src/**/*.ts"],
   "references": [],
@@ -31,7 +37,6 @@
     "src/**/version/demo-*.ts",
     "src/**/react/**/*",
     "src/**/*.tsx",
-    "src/index.browser.ts",
-    "src/index.ts"
+    "src/index.browser.ts"
   ]
 }

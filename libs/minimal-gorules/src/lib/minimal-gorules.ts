@@ -13,6 +13,13 @@ export * from './execution/index.js';
 export * from './version/index.js';
 export * from './config/index.js';
 
+// Export batch execution interfaces specifically
+export type {
+  BatchExecutionOptions,
+  BatchExecutionResult,
+  BatchInputResult,
+} from './execution/interfaces.js';
+
 // Export main engine service
 export * from './minimal-gorules-engine.js';
 

@@ -2,8 +2,8 @@
  * Service interfaces for the minimal GoRules engine
  */
 
-import { MinimalRuleMetadata, RuleSelector, MinimalExecutionResult } from './core.js';
 import { ITagManager } from '../tag-manager/interfaces.js';
+import { MinimalRuleMetadata } from './core.js';
 
 /**
  * Rule cache manager interface
@@ -45,23 +45,6 @@ export interface IRuleLoaderService {
   // Version management
   checkVersions(rules: Map<string, string>): Promise<Map<string, boolean>>; // ruleId -> needsUpdate
   refreshRule(ruleId: string): Promise<{ data: Buffer; metadata: MinimalRuleMetadata }>;
-}
-
-/**
- * Execution engine interface
- */
-export interface IExecutionEngine {
-  // Core execution
-  execute<T>(
-    selector: RuleSelector,
-    input: Record<string, unknown>,
-  ): Promise<MinimalExecutionResult<T>>;
-
-  // Single rule execution
-  executeRule<T>(ruleId: string, input: Record<string, unknown>): Promise<T>;
-
-  // Validation
-  validateRule(ruleId: string): Promise<boolean>;
 }
 
 // Re-export TagManager interface

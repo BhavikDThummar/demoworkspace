@@ -2,9 +2,8 @@
  * Example controller demonstrating Minimal GoRules Engine integration
  */
 
-import { Controller, Post, Body, Get, Param, HttpException, HttpStatus } from '@nestjs/common';
-import { MinimalGoRulesService } from '@org/minimal-gorules';
-import { RuleSelector } from '@org/minimal-gorules';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
+import { BatchExecutionOptions, MinimalGoRulesService, RuleSelector } from '@org/minimal-gorules';
 
 /**
  * DTO for rule execution requests
@@ -25,6 +24,32 @@ export interface ExecuteRuleResponse<T = unknown> {
   results?: Map<string, T> | T;
   executionTime?: number;
   errors?: Map<string, string>;
+  message?: string;
+}
+
+/**
+ * DTO for batch execution request
+ */
+export interface BatchExecuteRequest {
+  inputs: Record<string, unknown>[];
+  ruleIds?: string[];
+  tags?: string[];
+  selector?: RuleSelector;
+  options?: BatchExecutionOptions;
+  multiplyInputBy?: number;
+}
+
+/**
+ * DTO for lightweight batch execution response
+ */
+export interface BatchExecuteResponse<T = unknown> {
+  success: boolean;
+  results: Array<{
+    inputIndex: number;
+    results: Record<string, T>;
+    errors?: Record<string, string>;
+    success: boolean;
+  }>;
   message?: string;
 }
 
@@ -320,6 +345,237 @@ export class MinimalGoRulesController {
     } catch (error) {
       throw new HttpException(
         `Failed to force refresh cache: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * High-performance batch execution for large datasets
+   * Memory-optimized with controlled concurrency
+   */
+  @Post('batch-execute')
+  async batchExecute(@Body() request: BatchExecuteRequest): Promise<BatchExecuteResponse> {
+    try {
+      if (!request.inputs || request.inputs.length === 0) {
+        throw new HttpException(
+          'inputs array is required and cannot be empty',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      let effectiveInputs = request.inputs;
+      if (request.multiplyInputBy && request.multiplyInputBy > 1) {
+        const multiplier = Math.floor(request.multiplyInputBy);
+        const newLength = request.inputs.length * multiplier;
+        if (newLength > 100000) {
+          throw new HttpException(
+            'Maximum 100,000 inputs allowed per batch after multiplication',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        effectiveInputs = Array.from({ length: multiplier }, () =>
+          request.inputs.map((input) => ({ ...input })),
+        ).flat();
+      }
+
+      if (effectiveInputs.length > 100000) {
+        throw new HttpException('Maximum 100,000 inputs allowed per batch', HttpStatus.BAD_REQUEST);
+      }
+      let result;
+      if (request.ruleIds && request.ruleIds.length > 0) {
+        // Use rule IDs for optimal performance
+        result = await this.minimalGoRulesService.executeBatchByRules(
+          effectiveInputs,
+          request.ruleIds,
+          request.options,
+        );
+      } else if (request.tags && request.tags.length > 0) {
+        // Use tags
+        result = await this.minimalGoRulesService.executeBatchByTags(
+          effectiveInputs,
+          request.tags,
+          request.options,
+        );
+      } else if (request.selector) {
+        // Use selector
+        result = await this.minimalGoRulesService.executeBatch(
+          effectiveInputs,
+          request.selector,
+          request.options,
+        );
+      } else {
+        throw new HttpException(
+          'Either ruleIds, tags, or selector must be provided',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      // Convert Map objects to plain objects for JSON serialization
+      const serializedResults = result.results.map((inputResult) => ({
+        inputIndex: inputResult.inputIndex,
+        results: Object.fromEntries(inputResult.results),
+        errors: inputResult.errors ? Object.fromEntries(inputResult.errors) : undefined,
+        success: inputResult.success,
+      }));
+      const response: BatchExecuteResponse = {
+        success: true,
+        results: serializedResults,
+        message: `Successfully processed ${result.results.length} inputs`,
+      };
+      return response;
+    } catch (error) {
+      throw new HttpException(
+        `Batch execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Ultra-fast batch execution with pre-resolved rule IDs
+   * Optimized for maximum performance with 70K+ BOM line items
+   */
+  @Post('batch-execute-by-rules')
+  async batchExecuteByRules(
+    @Body()
+    request: {
+      inputs: Record<string, unknown>[];
+      ruleIds: string[];
+      options?: BatchExecutionOptions;
+      multiplyInputBy?: number;
+    },
+  ): Promise<BatchExecuteResponse> {
+    try {
+      if (!request.inputs || request.inputs.length === 0) {
+        throw new HttpException(
+          'inputs array is required and cannot be empty',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      if (!request.ruleIds || request.ruleIds.length === 0) {
+        throw new HttpException(
+          'ruleIds array is required and cannot be empty',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      let effectiveInputs = request.inputs;
+      if (request.multiplyInputBy && request.multiplyInputBy > 1) {
+        const multiplier = Math.floor(request.multiplyInputBy);
+        const newLength = request.inputs.length * multiplier;
+        if (newLength > 100000) {
+          throw new HttpException(
+            'Maximum 100,000 inputs allowed per batch after multiplication',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        effectiveInputs = Array.from({ length: multiplier }, () =>
+          request.inputs.map((input) => ({ ...input })),
+        ).flat();
+      }
+
+      if (effectiveInputs.length > 100000) {
+        throw new HttpException('Maximum 100,000 inputs allowed per batch', HttpStatus.BAD_REQUEST);
+      }
+      const result = await this.minimalGoRulesService.executeBatchByRules(
+        effectiveInputs,
+        request.ruleIds,
+        request.options,
+      );
+      // Convert Map objects to plain objects for JSON serialization
+      const serializedResults = result.results.map((inputResult) => ({
+        inputIndex: inputResult.inputIndex,
+        results: Object.fromEntries(inputResult.results),
+        errors: inputResult.errors ? Object.fromEntries(inputResult.errors) : undefined,
+        success: inputResult.success,
+      }));
+      const response: BatchExecuteResponse = {
+        success: true,
+        results: serializedResults,
+        message: `Successfully processed ${result.results.length} inputs against ${request.ruleIds.length} rules`,
+      };
+      return response;
+    } catch (error) {
+      throw new HttpException(
+        `Batch execution by rules failed: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * High-performance batch execution by tags
+   * Memory-efficient processing for large datasets
+   */
+  @Post('batch-execute-by-tags')
+  async batchExecuteByTags(
+    @Body()
+    request: {
+      inputs: Record<string, unknown>[];
+      tags: string[];
+      options?: BatchExecutionOptions;
+      multiplyInputBy?: number;
+    },
+  ): Promise<BatchExecuteResponse> {
+    try {
+      if (!request.inputs || request.inputs.length === 0) {
+        throw new HttpException(
+          'inputs array is required and cannot be empty',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      if (!request.tags || request.tags.length === 0) {
+        throw new HttpException(
+          'tags array is required and cannot be empty',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      let effectiveInputs = request.inputs;
+      if (request.multiplyInputBy && request.multiplyInputBy > 1) {
+        const multiplier = Math.floor(request.multiplyInputBy);
+        const newLength = request.inputs.length * multiplier;
+        if (newLength > 100000) {
+          throw new HttpException(
+            'Maximum 100,000 inputs allowed per batch after multiplication',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        effectiveInputs = Array.from({ length: multiplier }, () =>
+          request.inputs.map((input) => ({ ...input })),
+        ).flat();
+      }
+
+      if (effectiveInputs.length > 100000) {
+        throw new HttpException('Maximum 100,000 inputs allowed per batch', HttpStatus.BAD_REQUEST);
+      }
+      const result = await this.minimalGoRulesService.executeBatchByTags(
+        effectiveInputs,
+        request.tags,
+        request.options,
+      );
+      // Convert Map objects to plain objects for JSON serialization
+      const serializedResults = result.results.map((inputResult) => ({
+        inputIndex: inputResult.inputIndex,
+        results: Object.fromEntries(inputResult.results),
+        errors: inputResult.errors ? Object.fromEntries(inputResult.errors) : undefined,
+        success: inputResult.success,
+      }));
+      const response: BatchExecuteResponse = {
+        success: true,
+        results: serializedResults,
+        message: `Successfully processed ${
+          result.results.length
+        } inputs with tags [${request.tags.join(', ')}]`,
+      };
+      return response;
+    } catch (error) {
+      throw new HttpException(
+        `Batch execution by tags failed: ${
           error instanceof Error ? error.message : 'Unknown error'
         }`,
         HttpStatus.INTERNAL_SERVER_ERROR,

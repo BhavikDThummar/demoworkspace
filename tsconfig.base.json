@@ -19,7 +19,6 @@
 
     "baseUrl": ".",
     "paths": {
-      "@org/gorules": ["libs/gorules/src/index.ts"],
       "@org/minimal-gorules": ["libs/minimal-gorules/src/index.ts"]
     }
   }

@@ -3,9 +3,10 @@
  * Provides NestJS-compatible service interface with lifecycle management
  */
 
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
-import { MinimalGoRulesEngine, EngineStatus } from '../minimal-gorules-engine.js';
-import { RuleSelector, MinimalExecutionResult, MinimalRuleMetadata } from '../interfaces/index.js';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { BatchExecutionOptions, BatchExecutionResult } from '../execution/interfaces.js';
+import { MinimalExecutionResult, MinimalRuleMetadata, RuleSelector } from '../interfaces/index.js';
+import { EngineStatus, MinimalGoRulesEngine } from '../minimal-gorules-engine.js';
 import { ServiceInitializationStatus } from './interfaces.js';
 
 /**
@@ -160,6 +161,42 @@ export class MinimalGoRulesService implements OnModuleInit, OnModuleDestroy {
   ): Promise<MinimalExecutionResult<T>> {
     this.ensureInitialized();
     return this.engine.executeByTags<T>(tags, input, mode);
+  }
+
+  /**
+   * Lightweight batch execution for large datasets
+   */
+  async executeBatch<T = unknown>(
+    inputs: Record<string, unknown>[],
+    selector: RuleSelector,
+    options?: BatchExecutionOptions,
+  ): Promise<BatchExecutionResult<T>> {
+    this.ensureInitialized();
+    return this.engine.executeBatch<T>(inputs, selector, options);
+  }
+
+  /**
+   * Ultra-fast batch execution with pre-resolved rule IDs
+   */
+  async executeBatchByRules<T = unknown>(
+    inputs: Record<string, unknown>[],
+    ruleIds: string[],
+    options?: BatchExecutionOptions,
+  ): Promise<BatchExecutionResult<T>> {
+    this.ensureInitialized();
+    return this.engine.executeBatchByRules<T>(inputs, ruleIds, options);
+  }
+
+  /**
+   * Batch execution by tags - convenience method
+   */
+  async executeBatchByTags<T = unknown>(
+    inputs: Record<string, unknown>[],
+    tags: string[],
+    options?: BatchExecutionOptions,
+  ): Promise<BatchExecutionResult<T>> {
+    this.ensureInitialized();
+    return this.engine.executeBatchByTags<T>(inputs, tags, options);
   }
 
   /**

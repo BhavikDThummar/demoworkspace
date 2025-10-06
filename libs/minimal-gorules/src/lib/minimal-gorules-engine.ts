@@ -3,30 +3,34 @@
  * Orchestrates all components for high-performance rule execution
  */
 
+import { MinimalRuleCacheManager } from './cache/index';
+import { ConfigFactory } from './config/index';
 import {
-  MinimalGoRulesConfig,
-  RuleSelector,
-  MinimalExecutionResult,
-  MinimalRuleMetadata,
   IRuleCacheManager,
   IRuleLoaderService,
-  IExecutionEngine,
+  MinimalExecutionResult,
+  MinimalGoRulesConfig,
+  MinimalRuleMetadata,
+  RuleSelector,
 } from './interfaces/index';
-import { ConfigFactory } from './config/index';
-import { MinimalRuleCacheManager } from './cache/index';
-import { RuleLoaderFactory, IRuleLoaderFactory } from './loader/index';
+import { IRuleLoaderFactory, RuleLoaderFactory } from './loader/index';
 // Performance optimizations removed for minimal implementation
-import { MinimalExecutionEngine } from './execution/index';
+import { MinimalErrorCode, MinimalGoRulesError } from './errors/index';
+import {
+  BatchExecutionOptions,
+  BatchExecutionResult,
+  IMinimalExecutionEngine,
+  MinimalExecutionEngine,
+} from './execution/index';
 import { TagManager } from './tag-manager/index';
 import {
-  VersionManager,
+  CacheInvalidationOptions,
+  RollbackSnapshot,
   VersionComparisonResult,
   VersionConflict,
   VersionManagementResult,
-  CacheInvalidationOptions,
-  RollbackSnapshot,
+  VersionManager,
 } from './version/index';
-import { MinimalGoRulesError, MinimalErrorCode } from './errors/index';
 
 /**
  * Engine initialization status
@@ -73,7 +77,7 @@ export interface CacheRefreshResult {
 export class MinimalGoRulesEngine {
   private cacheManager: IRuleCacheManager;
   private loaderService!: IRuleLoaderService;
-  private executionEngine: IExecutionEngine;
+  private executionEngine: IMinimalExecutionEngine;
   private tagManager: TagManager;
   private versionManager!: VersionManager;
   private config: MinimalGoRulesConfig;
@@ -279,6 +283,48 @@ export class MinimalGoRulesEngine {
     };
 
     return this.execute<T>(selector, input);
+  }
+
+  /**
+   * Lightweight batch execution for large datasets
+   */
+  async executeBatch<T = unknown>(
+    inputs: Record<string, unknown>[],
+    selector: RuleSelector,
+    options?: BatchExecutionOptions,
+  ): Promise<BatchExecutionResult<T>> {
+    this.ensureInitialized();
+    return this.executionEngine.executeBatch<T>(inputs, selector, options);
+  }
+
+  /**
+   * Ultra-fast batch execution with pre-resolved rule IDs
+   */
+  async executeBatchByRules<T = unknown>(
+    inputs: Record<string, unknown>[],
+    ruleIds: string[],
+    options?: BatchExecutionOptions,
+  ): Promise<BatchExecutionResult<T>> {
+    this.ensureInitialized();
+    return this.executionEngine.executeBatchByRules<T>(inputs, ruleIds, options);
+  }
+
+  /**
+   * Batch execution by tags - convenience method
+   */
+  async executeBatchByTags<T = unknown>(
+    inputs: Record<string, unknown>[],
+    tags: string[],
+    options?: BatchExecutionOptions,
+  ): Promise<BatchExecutionResult<T>> {
+    this.ensureInitialized();
+
+    const selector: RuleSelector = {
+      tags,
+      mode: { type: 'parallel' },
+    };
+
+    return this.executeBatch<T>(inputs, selector, options);
   }
 
   /**

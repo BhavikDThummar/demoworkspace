@@ -4,15 +4,6 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/bomdemoapi-e2e"
-    },
-    {
-      "path": "./apps/bomdemoapi"
-    },
-    {
-      "path": "./libs/gorules"
-    },
-    {
       "path": "./apps/bomdemoapiv2-e2e"
     },
     {

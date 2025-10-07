@@ -4,7 +4,7 @@
 
 # --- CONFIGURATION ---
 $WorkspaceRoot   = "D:\Development\Q2C\Other\BOMDemoAPIApp\demoworkspace"
-$SourcePath      = "$WorkspaceRoot\libs\cm-rule-engine\dist\browser"
+$SourcePath      = "$WorkspaceRoot\libs\cm-rule-engine\dist"
 $DestinationPath = "D:\Development\Q2C\Q2C-DEV-SECOND-BRANCH\Q2C.React.Main\my-react-app-packages\cm-rule-engine"
 $ReactAppPath    = "D:\Development\Q2C\Q2C-DEV-SECOND-BRANCH\Q2C.React.Main"
 

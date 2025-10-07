@@ -47,6 +47,7 @@
       "@org/source": "./src/lib/react/index.ts",
       "types": "./dist/browser/src/lib/react/index.d.ts",
       "import": "./dist/browser/src/lib/react/index.js",
+      "require": "./dist/browser/src/lib/react/index.js",
       "default": "./dist/browser/src/lib/react/index.js"
     },
     "./nestjs": {

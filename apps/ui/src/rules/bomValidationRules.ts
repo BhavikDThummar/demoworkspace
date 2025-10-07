@@ -18,7 +18,7 @@ export const bomValidationRules: Rule<IBOMItem>[] = [
           refDesigParsed: BOMUtils.parseRefDesig(item.refDesig),
         },
       };
-    }
+    },
   },
   {
     name: 'validate_max_refdesig',
@@ -31,17 +31,18 @@ export const bomValidationRules: Rule<IBOMItem>[] = [
       const refDesigArray = BOMUtils.parseRefDesig(item.refDesig);
       const errors: ValidationError[] = [];
 
-      if (refDesigArray.length > 2) { // default maxRefDesigCount
+      if (refDesigArray.length > 2) {
+        // default maxRefDesigCount
         errors.push({
           field: 'refDesig',
           message: `RefDesig count (${refDesigArray.length}) exceeds maximum allowed (2)`,
           severity: 'error',
-          itemId: item.lineID
+          itemId: item.lineID,
         });
       }
 
       return errors;
-    }
+    },
   },
   {
     name: 'validate_qpa_required',
@@ -59,12 +60,12 @@ export const bomValidationRules: Rule<IBOMItem>[] = [
           field: 'qpa',
           message: 'QPA is required and must be greater than 0',
           severity: 'error',
-          itemId: item.lineID
+          itemId: item.lineID,
         });
       }
 
       return errors;
-    }
+    },
   },
   {
     name: 'validate_each_uom',
@@ -85,7 +86,7 @@ export const bomValidationRules: Rule<IBOMItem>[] = [
             field: 'qpa',
             message: 'QPA is required when UOM is EACH',
             severity: 'error',
-            itemId: item.lineID
+            itemId: item.lineID,
           });
         }
 
@@ -94,7 +95,7 @@ export const bomValidationRules: Rule<IBOMItem>[] = [
             field: 'refDesig',
             message: 'RefDesig is required when UOM is EACH',
             severity: 'error',
-            itemId: item.lineID
+            itemId: item.lineID,
           });
         }
 
@@ -105,14 +106,14 @@ export const bomValidationRules: Rule<IBOMItem>[] = [
               field: 'qpa',
               message: `QPA (${qpaValue}) must match with RefDesig count (${actualRefDesigCount})`,
               severity: 'error',
-              itemId: item.lineID
+              itemId: item.lineID,
             });
           }
         }
       }
 
       return errors;
-    }
+    },
   },
   {
     name: 'validate_unique_refdesig',
@@ -125,7 +126,7 @@ export const bomValidationRules: Rule<IBOMItem>[] = [
       const errors: ValidationError[] = [];
       const currentRefDesigs = BOMUtils.parseRefDesig(item.refDesig);
       const otherRefDesigs = new Set<string>();
-      const duplicateMap = new Map<string, string[]>(); // refDesig -> lineIDs
+      const duplicateMap = new Map<string, number[]>(); // refDesig -> lineIDs
 
       allItems.forEach((otherItem) => {
         if (otherItem.lineID === item.lineID) return;
@@ -147,15 +148,17 @@ export const bomValidationRules: Rule<IBOMItem>[] = [
           const conflictingLines = duplicateMap.get(refDes) || [];
           errors.push({
             field: 'refDesig',
-            message: `RefDesig "${refDes}" is already used in line(s): ${conflictingLines.join(', ')}`,
+            message: `RefDesig "${refDes}" is already used in line(s): ${conflictingLines.join(
+              ', ',
+            )}`,
             severity: 'error',
-            itemId: item.lineID
+            itemId: item.lineID,
           });
         }
       });
 
       return errors;
-    }
+    },
   },
   {
     name: 'validate_special_characters',
@@ -168,25 +171,23 @@ export const bomValidationRules: Rule<IBOMItem>[] = [
       const errors: ValidationError[] = [];
       const refDesigArray = BOMUtils.parseRefDesig(item.refDesig);
       const allowedSpecialChars = ['-', '_', '.'];
-      const oddlyNamedRefDesPatterns = [
-        /^TP\d+$/i,
-        /^J\d+[-_]\d+$/i,
-        /^U\d+[A-Z]$/i
-      ];
+      const oddlyNamedRefDesPatterns = [/^TP\d+$/i, /^J\d+[-_]\d+$/i, /^U\d+[A-Z]$/i];
 
       refDesigArray.forEach((refDes) => {
         const isOddlyNamed = BOMUtils.isOddlyNamedRefDes(refDes, oddlyNamedRefDesPatterns);
         if (!isOddlyNamed && BOMUtils.hasSpecialCharacters(refDes, allowedSpecialChars)) {
           errors.push({
             field: 'refDesig',
-            message: `RefDesig "${refDes}" contains disallowed special characters. Allowed: ${allowedSpecialChars.join(', ')}`,
+            message: `RefDesig "${refDes}" contains disallowed special characters. Allowed: ${allowedSpecialChars.join(
+              ', ',
+            )}`,
             severity: 'error',
-            itemId: item.lineID
+            itemId: item.lineID,
           });
         }
       });
 
       return errors;
-    }
-  }
+    },
+  },
 ];

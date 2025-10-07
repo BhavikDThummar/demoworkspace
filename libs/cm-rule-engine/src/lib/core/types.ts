@@ -34,7 +34,7 @@ export interface ValidationError {
   severity: 'error' | 'warning';
 
   /** Optional item identifier */
-  itemId?: string;
+  itemId?: string | number | null;
 }
 
 /**

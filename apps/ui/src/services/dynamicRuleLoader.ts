@@ -16,7 +16,7 @@ export interface DynamicRuleDefinition {
   enabled: boolean;
   tags: string[];
   transformCode?: string; // JavaScript function as string
-  validateCode?: string;  // JavaScript function as string
+  validateCode?: string; // JavaScript function as string
   dependencies?: string[]; // List of utility functions this rule needs
 }
 
@@ -29,7 +29,10 @@ const ruleUtilities = {
     if (!refDesig || typeof refDesig !== 'string') {
       return [];
     }
-    return refDesig.replace(/\s+/g, '').split(',').filter(item => item.length > 0);
+    return refDesig
+      .replace(/\s+/g, '')
+      .split(',')
+      .filter((item) => item.length > 0);
   },
 
   normalizeQPA: (qpa: number | string): number => {
@@ -39,7 +42,12 @@ const ruleUtilities = {
   },
 
   // Validation helpers
-  createError: (field: string, message: string, itemId: number, severity: 'error' | 'warning' = 'error'): ValidationError => ({
+  createError: (
+    field: string,
+    message: string,
+    itemId: number,
+    severity: 'error' | 'warning' = 'error',
+  ): ValidationError => ({
     field,
     message,
     severity,
@@ -48,7 +56,7 @@ const ruleUtilities = {
 
   // Math utilities
   Math,
-  
+
   // String utilities
   String,
   Number,
@@ -83,7 +91,7 @@ class SafeFunctionEvaluator {
 
   static evaluateFunction<T extends Function>(
     functionCode: string,
-    functionName: string
+    functionName: string,
   ): T | null {
     try {
       // Create a safe execution context
@@ -118,18 +126,18 @@ export class DynamicRuleLoader {
   static async loadDynamicRules(): Promise<Rule<IBOMItem>[]> {
     try {
       const response = await fetch(`${this.API_BASE_URL}/custom-rules/qpa-refdes/dynamic-rules`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      
-      if (!data.success) {
+
+      if (!data?.data?.success) {
         throw new Error(data.error || 'Failed to load dynamic rules');
       }
 
-      return this.convertToRules(data.rules);
+      return this.convertToRules(data?.data?.rules);
     } catch (error) {
       console.error('Failed to load dynamic rules:', error);
       throw error;
@@ -140,7 +148,7 @@ export class DynamicRuleLoader {
    * Convert API rule definitions to executable rules
    */
   private static convertToRules(dynamicRules: DynamicRuleDefinition[]): Rule<IBOMItem>[] {
-    return dynamicRules.map(ruleDefinition => {
+    return dynamicRules.map((ruleDefinition) => {
       const rule: Rule<IBOMItem> = {
         name: ruleDefinition.name,
         description: ruleDefinition.description,
@@ -152,10 +160,10 @@ export class DynamicRuleLoader {
       // Evaluate transform function if provided
       if (ruleDefinition.transformCode) {
         const transformFn = SafeFunctionEvaluator.evaluateFunction(
-          ruleDefinition.transformCode, 
-          `${ruleDefinition.name}.transform`
+          ruleDefinition.transformCode,
+          `${ruleDefinition.name}.transform`,
         ) as ((context: RuleContext<IBOMItem>) => IBOMItem) | null;
-        
+
         if (transformFn) {
           rule.transform = transformFn;
         } else {
@@ -166,10 +174,10 @@ export class DynamicRuleLoader {
       // Evaluate validate function if provided
       if (ruleDefinition.validateCode) {
         const validateFn = SafeFunctionEvaluator.evaluateFunction(
-          ruleDefinition.validateCode, 
-          `${ruleDefinition.name}.validate`
+          ruleDefinition.validateCode,
+          `${ruleDefinition.name}.validate`,
         ) as ((context: RuleContext<IBOMItem>) => ValidationError[]) | null;
-        
+
         if (validateFn) {
           rule.validate = validateFn;
         } else {
@@ -184,16 +192,18 @@ export class DynamicRuleLoader {
   /**
    * Test a rule function before deployment
    */
-  static testRuleFunction(functionCode: string, testData: IBOMItem[]): {
+  static testRuleFunction(
+    functionCode: string,
+    testData: IBOMItem[],
+  ): {
     success: boolean;
     error?: string;
     results?: unknown[];
   } {
     try {
-      const testFn = SafeFunctionEvaluator.evaluateFunction(
-        functionCode, 
-        'test-function'
-      ) as ((context: RuleContext<IBOMItem>) => unknown) | null;
+      const testFn = SafeFunctionEvaluator.evaluateFunction(functionCode, 'test-function') as
+        | ((context: RuleContext<IBOMItem>) => unknown)
+        | null;
 
       if (!testFn) {
         return { success: false, error: 'Failed to evaluate function' };
@@ -214,9 +224,9 @@ export class DynamicRuleLoader {
 
       return { success: true, results };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }

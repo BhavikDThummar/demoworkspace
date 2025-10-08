@@ -8,6 +8,7 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app/app.module';
 import { loadSSLCertificates } from './utils/ssl-config';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const configService = new ConfigService();
@@ -28,7 +29,13 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, {
     httpsOptions: enableHttps ? httpsOptions : undefined,
+    bodyParser: false, // Disable default body parser to configure custom limits
   });
+
+  // Configure body parser with increased limits
+  const payloadLimit = configService.get('PAYLOAD_LIMIT', '50mb');
+  app.use(bodyParser.json({ limit: payloadLimit }));
+  app.use(bodyParser.urlencoded({ limit: payloadLimit, extended: true }));
 
   // Global prefix from environment or default
   const globalPrefix = configService.get('API_PREFIX', 'api');
@@ -60,8 +67,9 @@ async function bootstrap() {
   const protocol = enableHttps ? 'https' : 'http';
   Logger.log(`🚀 Application is running on: ${protocol}://localhost:${port}/${globalPrefix}`);
   Logger.log(`🌍 Environment: ${nodeEnv}`);
-  Logger.log(`🔒 HTTPS: ${enableHttps ? 'Enabled' : 'Disabled'}`);
+  Logger.log(`� HTTPS: ${enableHttps ? 'Enabled' : 'Disabled'}`);
   Logger.log(`🔗 CORS enabled for: ${corsOrigin}`);
+  Logger.log(`📦 Payload limit: ${payloadLimit}`);
 }
 
 bootstrap();

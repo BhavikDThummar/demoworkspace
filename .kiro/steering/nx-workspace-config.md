@@ -39,3 +39,7 @@ This is an NX workspace. Always use NX commands for testing, building, and runni
 # Build the cm-rule-engine library
 npx nx build cm-rule-engine
 ```
+
+# Notes:
+
+- Do not create a summary document for each task unless explicitly requested.

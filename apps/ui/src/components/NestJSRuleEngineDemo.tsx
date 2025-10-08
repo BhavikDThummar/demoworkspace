@@ -3,21 +3,25 @@ import { sampleBOMData } from '../data/sampleBOMData';
 
 interface BOMItem {
   lineID: number;
-  mfgPN: string;
+  custPN: string;
   description: string;
   [key: string]: unknown;
 }
 
-interface ValidationResult {
-  success: boolean;
-  data: BOMItem[];
-  errors: Array<{ field: string; message: string; itemId: number }>;
-  summary: {
-    totalItems: number;
-    validItems: number;
-    invalidItems: number;
-    totalErrors: number;
+interface ApiResponse {
+  statusCode: number;
+  status: string;
+  data: {
+    items: BOMItem[];
+    errors: Array<{ field: string; message: string; itemId: number }>;
+    summary: {
+      totalItems: number;
+      validItems: number;
+      invalidItems: number;
+      totalErrors: number;
+    };
   };
+  message: string | null;
 }
 
 export function NestJSRuleEngineDemo() {
@@ -37,36 +41,42 @@ export function NestJSRuleEngineDemo() {
         throw new Error(`API error: ${response.status}`);
       }
 
-      const validationResult: ValidationResult = await response.json();
-      console.log("validationResult", validationResult);
+      const apiResponse: ApiResponse = await response.json();
+      console.log('API Response:', apiResponse);
 
+      const { data: validationData, message } = apiResponse;
 
       let resultText = `
 🚀 NestJS Rule Engine Validation Results
 
+📊 API Response:
+- Status: ${apiResponse.status}
+- Status Code: ${apiResponse.statusCode}
+- Message: ${message || 'N/A'}
+
 📊 Summary:
-- Total BOM items: ${validationResult.summary.totalItems}
-- Valid items: ${validationResult.summary.validItems}
-- Invalid items: ${validationResult.summary.invalidItems}
-- Total errors: ${validationResult.summary.totalErrors}
+- Total BOM items: ${validationData.summary.totalItems}
+- Valid items: ${validationData.summary.validItems}
+- Invalid items: ${validationData.summary.invalidItems}
+- Total errors: ${validationData.summary.totalErrors}
 
 `;
 
-      if (validationResult.errors.length > 0) {
+      if (validationData.errors.length > 0) {
         resultText += `\n❌ Validation Errors:\n`;
-        validationResult.errors.forEach((error, index) => {
+        validationData.errors.forEach((error, index) => {
           resultText += `${index + 1}. Line ${error.itemId} - ${error.field}: ${error.message}\n`;
         });
       }
 
-      const validItems = validationResult.data.filter(
-        (item) => !validationResult.errors.some((e) => e.itemId === item.lineID)
+      const validItems = validationData.items.filter(
+        (item) => !validationData.errors.some((e) => e.itemId === item.lineID)
       );
 
       if (validItems.length > 0) {
         resultText += `\n✅ Valid Items:\n`;
         validItems.forEach((item, index) => {
-          resultText += `${index + 1}. Line ${item.lineID}: ${item.mfgPN} - ${item.description}\n`;
+          resultText += `${index + 1}. Line ${item.lineID}: ${item.custPN} - ${item.description}\n`;
         });
       }
 

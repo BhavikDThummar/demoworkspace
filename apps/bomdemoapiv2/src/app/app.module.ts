@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 import { MinimalGoRulesModule } from '@org/minimal-gorules';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -7,6 +8,8 @@ import { MinimalGoRulesController } from './test-minimal-gorules/minimal-gorules
 import { BomRulesModule } from './bom-rules';
 import { CustomRuleEngineModule } from './custom-rule-engine';
 import { NestjsRuleEngineModule } from './nestjs-rule-engine';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 @Module({
   imports: [
@@ -28,6 +31,18 @@ import { NestjsRuleEngineModule } from './nestjs-rule-engine';
     NestjsRuleEngineModule,
   ],
   controllers: [AppController, MinimalGoRulesController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // Global response interceptor
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
+    },
+    // Global exception filter
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}

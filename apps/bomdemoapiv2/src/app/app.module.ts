@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MinimalGoRulesController } from './test-minimal-gorules/minimal-gorules.controller';
 import { BomRulesModule } from './bom-rules';
+import { CustomRuleEngineModule } from './custom-rule-engine';
 
 @Module({
   imports: [
@@ -18,8 +19,10 @@ import { BomRulesModule } from './bom-rules';
       autoInitialize: true, // Auto-initialize on app startup
       configKey: 'minimalGoRules', // Look for config under this key, fallback to env vars
     }),
-    // BOM Rules Module
+    // BOM Rules Module (GoRules)
     BomRulesModule,
+    // Custom Rule Engine Module (separate from GoRules)
+    CustomRuleEngineModule,
   ],
   controllers: [AppController, MinimalGoRulesController],
   providers: [AppService],

@@ -25,6 +25,12 @@ export const availableComponents: ComponentInfo[] = [
     description: 'Dynamic QPA RefDes rules loaded from API',
     icon: '🌐',
   },
+  {
+    id: 'nestjs-rule-engine',
+    name: 'NestJS Rule Engine',
+    description: 'API-side validation using NestJS binding',
+    icon: '🚀',
+  },
 ];
 
 export function Navigation({ activeComponent, onComponentChange }: NavigationProps) {

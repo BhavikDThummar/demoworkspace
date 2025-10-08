@@ -77,7 +77,7 @@ export function QpaRefDesApiDemo() {
       if (validItems.length > 0) {
         resultText += `\n✅ Valid Items:\n`;
         validItems.forEach((item, index) => {
-          resultText += `${index + 1}. Line ${item.lineID}: ${item.custPN} - ${item.description}\n`;
+          resultText += `${index + 1}. Line ${item.lineID}: ${item.mfgPN} - ${item.description}\n`;
         });
       }
 

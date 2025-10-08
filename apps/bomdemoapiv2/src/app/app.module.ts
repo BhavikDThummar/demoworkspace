@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { MinimalGoRulesController } from './test-minimal-gorules/minimal-gorules.controller';
 import { BomRulesModule } from './bom-rules';
 import { CustomRuleEngineModule } from './custom-rule-engine';
+import { NestjsRuleEngineModule } from './nestjs-rule-engine';
 
 @Module({
   imports: [
@@ -23,6 +24,8 @@ import { CustomRuleEngineModule } from './custom-rule-engine';
     BomRulesModule,
     // Custom Rule Engine Module (separate from GoRules)
     CustomRuleEngineModule,
+    // NestJS Rule Engine Module (cm-rule-engine with NestJS binding)
+    NestjsRuleEngineModule,
   ],
   controllers: [AppController, MinimalGoRulesController],
   providers: [AppService],

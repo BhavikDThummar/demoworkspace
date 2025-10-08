@@ -22,6 +22,9 @@
   ],
   "references": [
     {
+      "path": "../../libs/cm-rule-engine/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/minimal-gorules/tsconfig.lib.json"
     }
   ]

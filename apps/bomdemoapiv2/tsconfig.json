@@ -4,6 +4,9 @@
   "include": [],
   "references": [
     {
+      "path": "../../libs/cm-rule-engine"
+    },
+    {
       "path": "../../libs/minimal-gorules"
     },
     {

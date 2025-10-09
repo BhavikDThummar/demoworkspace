@@ -24,19 +24,19 @@ export class RuleModuleController {
   async getQpaRefDesModule(@Res() res: Response) {
     try {
       this.logger.log('Serving QPA RefDes rule module');
-      
+
       const compiledModule = await this.ruleModuleBuilder.getCompiledModule();
-      
+
       // Set additional security headers
       res.setHeader('Access-Control-Allow-Origin', '*'); // Adjust for production
       res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-      
+
       return res.send(compiledModule);
     } catch (error) {
       this.logger.error('Failed to serve rule module', error);
       throw new HttpException(
         `Failed to serve rule module: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -48,7 +48,7 @@ export class RuleModuleController {
   async getModuleInfo() {
     try {
       const info = this.ruleModuleBuilder.getModuleInfo();
-      
+
       return {
         success: true,
         data: {
@@ -60,7 +60,7 @@ export class RuleModuleController {
     } catch (error) {
       throw new HttpException(
         `Failed to get module info: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -73,10 +73,10 @@ export class RuleModuleController {
     try {
       this.logger.log('Clearing rule module cache');
       this.ruleModuleBuilder.clearCache();
-      
+
       // Trigger recompilation
       await this.ruleModuleBuilder.getCompiledModule();
-      
+
       return {
         success: true,
         message: 'Rule module cache cleared and recompiled',
@@ -85,7 +85,7 @@ export class RuleModuleController {
     } catch (error) {
       throw new HttpException(
         `Failed to refresh module: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

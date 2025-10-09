@@ -20,21 +20,15 @@ export const availableComponents: ComponentInfo[] = [
     icon: '🔧',
   },
   {
-    id: 'qpa-refdes-api',
-    name: 'QPA RefDes API Demo (Old)',
-    description: 'Dynamic rules with eval() - DEPRECATED',
-    icon: '⚠️',
-  },
-  {
     id: 'qpa-refdes-module',
-    name: 'QPA RefDes Module Demo (New)',
+    name: 'QPA RefDes Module Demo',
     description: 'Secure dynamic rules using ES modules',
     icon: '🔒',
   },
   {
     id: 'nestjs-rule-engine',
     name: 'NestJS Rule Engine',
-    description: 'API-side validation using NestJS binding',
+    description: 'API-side validation using secure TypeScript rules',
     icon: '🚀',
   },
 ];

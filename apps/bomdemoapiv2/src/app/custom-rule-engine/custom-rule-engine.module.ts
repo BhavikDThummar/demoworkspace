@@ -4,14 +4,12 @@
  */
 
 import { Module } from '@nestjs/common';
-import { QpaRefDesRulesController } from './controllers/qpa-refdes-rules.controller';
 import { RuleModuleController } from './controllers/rule-module.controller';
-import { QpaRefDesRulesService } from './services/qpa-refdes-rules.service';
 import { RuleModuleBuilderService } from './services/rule-module-builder.service';
 
 @Module({
-  controllers: [QpaRefDesRulesController, RuleModuleController],
-  providers: [QpaRefDesRulesService, RuleModuleBuilderService],
-  exports: [QpaRefDesRulesService, RuleModuleBuilderService],
+  controllers: [RuleModuleController],
+  providers: [RuleModuleBuilderService],
+  exports: [RuleModuleBuilderService],
 })
 export class CustomRuleEngineModule {}

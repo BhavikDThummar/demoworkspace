@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Navigation, availableComponents, BOMRuleEngineDemo, QpaRefDesApiDemo, QpaRefDesModuleDemo, NestJSRuleEngineDemo } from '../components';
+import { Navigation, availableComponents, BOMRuleEngineDemo, QpaRefDesModuleDemo, NestJSRuleEngineDemo } from '../components';
 import './App.css';
 
 function App() {
@@ -9,8 +9,6 @@ function App() {
     switch (activeComponent) {
       case 'bom-rule-engine':
         return <BOMRuleEngineDemo />;
-      case 'qpa-refdes-api':
-        return <QpaRefDesApiDemo />;
       case 'qpa-refdes-module':
         return <QpaRefDesModuleDemo />;
       case 'nestjs-rule-engine':

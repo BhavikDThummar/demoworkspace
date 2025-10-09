@@ -4,7 +4,7 @@ This module demonstrates the use of the `cm-rule-engine` library with NestJS bin
 
 ## Overview
 
-This implementation uses the `RuleEngineService` from `@org/cm-rule-engine/nestjs` to perform ultra-fast BOM validation entirely on the server side. Rules are loaded from `dynamicQpaRefDesRules.ts` and executed using the rule engine's optimized execution pipeline.
+This implementation uses the `RuleEngineService` from `@org/cm-rule-engine/nestjs` to perform ultra-fast BOM validation entirely on the server side. Rules are loaded from the secure TypeScript module `qpaRefDesRules.module.ts` and executed using the rule engine's optimized execution pipeline.
 
 ## Architecture
 
@@ -14,8 +14,7 @@ nestjs-rule-engine/
 │   └── bom-validation.controller.ts    # API endpoint for validation
 ├── services/
 │   └── rule-engine.service.ts          # Service wrapping RuleEngineService
-├── rules/
-│   └── dynamicQpaRefDesRules.ts        # Rule definitions (copied from custom-rule-engine)
+├── (rules loaded from ../custom-rule-engine/rules/qpaRefDesRules.module.ts)
 ├── utils/
 │   └── rule-helpers.ts                 # Helper functions for rules
 ├── interfaces/
@@ -90,7 +89,7 @@ const result = await response.json();
 
 ## Rule Loading
 
-Rules are loaded from `dynamicQpaRefDesRules.ts` which contains:
+Rules are loaded from the secure TypeScript module `../custom-rule-engine/rules/qpaRefDesRules.module.ts` which contains:
 
 1. **transform_parse_and_initialize**: Parses refDesig strings and prepares data
 2. **validate_qpa_refdes_rules**: Validates QPA vs RefDesig relationships

@@ -129,7 +129,7 @@ export function NestJSRuleEngineDemo() {
         <ul style={{ margin: '0', paddingLeft: '1.5rem' }}>
           <li>Uses the cm-rule-engine library with NestJS binding</li>
           <li>All validation happens on the API side using RuleEngineService</li>
-          <li>Rules are loaded from dynamicQpaRefDesRules.ts on the server</li>
+          <li>Rules are loaded from secure TypeScript module on the server</li>
           <li>Ultra-fast performance with no client-side processing</li>
           <li>API endpoint: <code>POST /api/nestjs-rule-engine/validate</code></li>
         </ul>

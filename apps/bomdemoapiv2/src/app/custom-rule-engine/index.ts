@@ -3,8 +3,8 @@
  */
 
 export * from './custom-rule-engine.module';
-export * from './controllers/qpa-refdes-rules.controller';
-export * from './services/qpa-refdes-rules.service';
+export * from './controllers/rule-module.controller';
+export * from './services/rule-module-builder.service';
 export * from './interfaces/bom-types.interface';
 export * from './utils/BOMUtils';
-export * from './rules/dynamicQpaRefDesRules';
+export * from './rules/qpaRefDesRules.module';

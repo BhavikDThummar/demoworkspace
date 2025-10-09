@@ -328,6 +328,37 @@ export class MinimalGoRulesEngine {
   }
 
   /**
+   * Execute all rules on all inputs in parallel - maximum performance mode
+   * All inputs and all rules are executed concurrently without batching
+   * Similar to cm-rule-engine's executeParallel method
+   */
+  async executeAllParallel<T = unknown>(
+    inputs: Record<string, unknown>[],
+    ruleIds: string[],
+    options?: BatchExecutionOptions,
+  ): Promise<BatchExecutionResult<T>> {
+    this.ensureInitialized();
+    return this.executionEngine.executeAllParallel<T>(inputs, ruleIds, options);
+  }
+
+  /**
+   * Execute all rules on all inputs in parallel by tags
+   * Convenience method that resolves tags to rule IDs first
+   */
+  async executeAllParallelByTags<T = unknown>(
+    inputs: Record<string, unknown>[],
+    tags: string[],
+    options?: BatchExecutionOptions,
+  ): Promise<BatchExecutionResult<T>> {
+    this.ensureInitialized();
+
+    // Resolve tags to rule IDs
+    const ruleIds = await this.getRulesByTags(tags);
+    
+    return this.executionEngine.executeAllParallel<T>(inputs, ruleIds, options);
+  }
+
+  /**
    * Check rule versions against GoRules Cloud and identify outdated rules
    */
   async checkVersions(): Promise<VersionCheckResult> {

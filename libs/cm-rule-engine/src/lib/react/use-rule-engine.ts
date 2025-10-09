@@ -85,6 +85,40 @@ export function useRuleEngine<T = unknown>(
     [engine]
   );
 
+  // Process all data items with all rules in parallel - ultra-fast performance mode
+  const processAllParallel = useCallback(
+    async (
+      data: T[],
+      selector: RuleSelector,
+      options?: { continueOnError?: boolean }
+    ) => {
+      setProcessing(true);
+      try {
+        const res = await engine.processAllParallel(data, selector, options);
+        setResult(res);
+        return res;
+      } finally {
+        setProcessing(false);
+      }
+    },
+    [engine]
+  );
+
+  // Process all data items with all enabled rules in parallel - convenience method
+  const processAllParallelWithAllRules = useCallback(
+    async (data: T[], options?: { continueOnError?: boolean }) => {
+      setProcessing(true);
+      try {
+        const res = await engine.processAllParallelWithAllRules(data, options);
+        setResult(res);
+        return res;
+      } finally {
+        setProcessing(false);
+      }
+    },
+    [engine]
+  );
+
   return {
     engine,
     processing,
@@ -95,5 +129,7 @@ export function useRuleEngine<T = unknown>(
     toggleRule,
     getRules,
     getRulesByTags,
+    processAllParallel,
+    processAllParallelWithAllRules,
   };
 }

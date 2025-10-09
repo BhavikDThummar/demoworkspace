@@ -98,4 +98,28 @@ export class RuleEngine<T = unknown> {
     const rules = this.ruleManager.resolveSelector(selector);
     return this.executionEngine.executeBatch(data, rules, options);
   }
+
+  /**
+   * Process all data items with all rules in parallel - ultra-fast performance mode
+   * All combinations of data items and rules are executed concurrently without batching
+   */
+  async processAllParallel(
+    data: T[],
+    selector: RuleSelector,
+    options?: { continueOnError?: boolean }
+  ): Promise<RuleExecutionResult<T>> {
+    const rules = this.ruleManager.resolveSelector(selector);
+    return this.executionEngine.executeAllParallel(data, rules, options);
+  }
+
+  /**
+   * Process all data items with all enabled rules in parallel - convenience method
+   */
+  async processAllParallelWithAllRules(
+    data: T[],
+    options?: { continueOnError?: boolean }
+  ): Promise<RuleExecutionResult<T>> {
+    const rules = this.ruleManager.getEnabledRules();
+    return this.executionEngine.executeAllParallel(data, rules, options);
+  }
 }

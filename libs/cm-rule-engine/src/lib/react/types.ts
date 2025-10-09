@@ -38,4 +38,17 @@ export interface UseRuleEngineReturn<T = unknown> {
 
   /** Get rules by tags */
   getRulesByTags: (tags: string[]) => Rule<T>[];
+
+  /** Process all data items with all rules in parallel - ultra-fast performance mode */
+  processAllParallel: (
+    data: T[],
+    selector: RuleSelector,
+    options?: { continueOnError?: boolean }
+  ) => Promise<RuleExecutionResult<T>>;
+
+  /** Process all data items with all enabled rules in parallel - convenience method */
+  processAllParallelWithAllRules: (
+    data: T[],
+    options?: { continueOnError?: boolean }
+  ) => Promise<RuleExecutionResult<T>>;
 }

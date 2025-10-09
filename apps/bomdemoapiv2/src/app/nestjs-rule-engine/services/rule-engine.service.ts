@@ -48,4 +48,26 @@ export class BomRuleEngineService {
   async validateBomItems(items: IBOMItem[]) {
     return this.ruleEngine.process(items);
   }
+
+  /**
+   * Validate BOM items using ultra-fast parallel execution
+   * All items and all rules are executed concurrently without batching
+   */
+  async validateBomItemsAllParallel(
+    items: IBOMItem[],
+    options?: { continueOnError?: boolean }
+  ) {
+    return this.ruleEngine.processAllParallelWithAllRules(items, options);
+  }
+
+  /**
+   * Validate BOM items using ultra-fast parallel execution with specific tags
+   */
+  async validateBomItemsAllParallelByTags(
+    items: IBOMItem[],
+    tags: string[],
+    options?: { continueOnError?: boolean }
+  ) {
+    return this.ruleEngine.processAllParallel(items, { tags }, options);
+  }
 }

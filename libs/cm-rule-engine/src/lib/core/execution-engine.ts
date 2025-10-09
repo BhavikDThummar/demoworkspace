@@ -20,7 +20,7 @@ export class ExecutionEngine<T = unknown> {
   async execute(
     data: T[],
     rules: Rule<T>[],
-    mode: ExecutionMode = 'parallel'
+    mode: ExecutionMode = 'parallel',
   ): Promise<RuleExecutionResult<T>> {
     const startTime = performance.now();
 
@@ -44,7 +44,7 @@ export class ExecutionEngine<T = unknown> {
   async executeBatch(
     data: T[],
     rules: Rule<T>[],
-    options: BatchOptions = {}
+    options: BatchOptions = {},
   ): Promise<RuleExecutionResult<T>> {
     const startTime = performance.now();
     const {
@@ -60,13 +60,7 @@ export class ExecutionEngine<T = unknown> {
     for (let i = 0; i < data.length; i += batchSize) {
       const batch = data.slice(i, Math.min(i + batchSize, data.length));
       const batchPromises = batch.map((item, batchIndex) =>
-        this.processItem(
-          item,
-          i + batchIndex,
-          data,
-          rules,
-          ruleExecutionMode
-        ).catch((error) => {
+        this.processItem(item, i + batchIndex, data, rules, ruleExecutionMode).catch((error) => {
           if (!continueOnError) {
             throw error;
           }
@@ -84,7 +78,7 @@ export class ExecutionEngine<T = unknown> {
             warnings: [],
             isValid: false,
           };
-        })
+        }),
       );
 
       const batchResults = await Promise.all(batchPromises);
@@ -112,13 +106,10 @@ export class ExecutionEngine<T = unknown> {
    * Execute rules in parallel mode
    * All items are processed concurrently
    */
-  private async executeParallel(
-    data: T[],
-    rules: Rule<T>[]
-  ): Promise<RuleExecutionResult<T>> {
+  private async executeParallel(data: T[], rules: Rule<T>[]): Promise<RuleExecutionResult<T>> {
     // Process all items in parallel
     const itemPromises = data.map((item, index) =>
-      this.processItem(item, index, data, rules, 'parallel')
+      this.processItem(item, index, data, rules, 'parallel'),
     );
 
     const results = await Promise.all(itemPromises);
@@ -143,21 +134,12 @@ export class ExecutionEngine<T = unknown> {
    * Execute rules in sequential mode
    * Items are processed one after another
    */
-  private async executeSequential(
-    data: T[],
-    rules: Rule<T>[]
-  ): Promise<RuleExecutionResult<T>> {
+  private async executeSequential(data: T[], rules: Rule<T>[]): Promise<RuleExecutionResult<T>> {
     const results: BatchItemResult<T>[] = [];
 
     // Process items sequentially
     for (let index = 0; index < data.length; index++) {
-      const result = await this.processItem(
-        data[index],
-        index,
-        data,
-        rules,
-        'sequential'
-      );
+      const result = await this.processItem(data[index], index, data, rules, 'sequential');
       results.push(result);
     }
 
@@ -185,7 +167,7 @@ export class ExecutionEngine<T = unknown> {
     index: number,
     allItems: T[],
     rules: Rule<T>[],
-    mode: ExecutionMode
+    mode: ExecutionMode,
   ): Promise<BatchItemResult<T>> {
     const context: RuleContext<T> = {
       item,
@@ -194,12 +176,7 @@ export class ExecutionEngine<T = unknown> {
     };
 
     // Apply transformations
-    const transformedItem = await this.applyTransformations(
-      item,
-      context,
-      rules,
-      mode
-    );
+    const transformedItem = await this.applyTransformations(item, context, rules, mode);
 
     // Update context with transformed item
     const transformedContext: RuleContext<T> = {
@@ -212,7 +189,7 @@ export class ExecutionEngine<T = unknown> {
       transformedItem,
       transformedContext,
       rules,
-      mode
+      mode,
     );
 
     // Separate errors and warnings
@@ -235,7 +212,7 @@ export class ExecutionEngine<T = unknown> {
     item: T,
     context: RuleContext<T>,
     rules: Rule<T>[],
-    mode: ExecutionMode
+    mode: ExecutionMode,
   ): Promise<T> {
     let transformedItem = item;
 
@@ -273,13 +250,167 @@ export class ExecutionEngine<T = unknown> {
   }
 
   /**
+   * Execute all rules on all data items in parallel - ultra-fast performance mode
+   * All combinations of data items and rules are executed concurrently without batching
+   * Similar to minimal-gorules executeAllParallel method
+   */
+  async executeAllParallel(
+    data: T[],
+    rules: Rule<T>[],
+    options: { continueOnError?: boolean } = {},
+  ): Promise<RuleExecutionResult<T>> {
+    const startTime = performance.now();
+    const { continueOnError = true } = options;
+
+    // Execute all combinations of data items and rules in parallel
+    const allPromises = data.flatMap((item, itemIndex) =>
+      rules.map(async (rule) => {
+        const context: RuleContext<T> = {
+          item,
+          allItems: data,
+          index: itemIndex,
+        };
+
+        try {
+          // Apply transformation if exists
+          let transformedItem = item;
+          if (rule.transform) {
+            transformedItem = await rule.transform({
+              ...context,
+              item: transformedItem,
+            });
+          }
+
+          // Apply validation if exists
+          let validationErrors: ValidationError[] = [];
+          if (rule.validate) {
+            validationErrors = await rule.validate({
+              ...context,
+              item: transformedItem,
+            });
+          }
+
+          return {
+            itemIndex,
+            ruleName: rule.name,
+            transformedItem,
+            validationErrors,
+            error: null,
+          };
+        } catch (error) {
+          return {
+            itemIndex,
+            ruleName: rule.name,
+            transformedItem: item,
+            validationErrors: [],
+            error: error as Error,
+          };
+        }
+      }),
+    );
+
+    // Wait for all executions to complete
+    const allResults = await Promise.all(allPromises);
+
+    // Group results by item index
+    const resultsByItem = new Map<
+      number,
+      {
+        transformedItem: T;
+        errors: ValidationError[];
+        warnings: ValidationError[];
+        hasSystemError: boolean;
+      }
+    >();
+
+    // Initialize results for each item
+    for (let i = 0; i < data.length; i++) {
+      resultsByItem.set(i, {
+        transformedItem: data[i],
+        errors: [],
+        warnings: [],
+        hasSystemError: false,
+      });
+    }
+
+    // Process all results
+    for (const result of allResults) {
+      const itemResult = resultsByItem.get(result.itemIndex) || {
+        transformedItem: data[result.itemIndex],
+        errors: [],
+        warnings: [],
+        hasSystemError: false,
+      };
+
+      if (result.error) {
+        // System error during rule execution
+        itemResult.errors.push({
+          field: '_system',
+          message: `Rule '${result.ruleName}' execution error: ${result.error.message}`,
+          severity: 'error',
+        });
+        itemResult.hasSystemError = true;
+        if (!continueOnError) {
+          // In fail-fast mode, we still collect all results but mark as failed
+        }
+      } else {
+        // Use the transformed item (last transformation wins for simplicity)
+        if (result.transformedItem !== data[result.itemIndex]) {
+          itemResult.transformedItem = result.transformedItem;
+        }
+
+        // Add validation errors and warnings
+        for (const validationError of result.validationErrors) {
+          if (validationError.severity === 'error') {
+            itemResult.errors.push(validationError);
+          } else {
+            itemResult.warnings.push(validationError);
+          }
+        }
+      }
+
+      resultsByItem.set(result.itemIndex, itemResult);
+    }
+
+    // Convert to final result format
+    const transformedData: T[] = [];
+    const allErrors: ValidationError[] = [];
+    const allWarnings: ValidationError[] = [];
+
+    for (let i = 0; i < data.length; i++) {
+      const itemResult = resultsByItem.get(i) || {
+        transformedItem: data[i],
+        errors: [],
+        warnings: [],
+        hasSystemError: false,
+      };
+
+      transformedData.push(itemResult.transformedItem);
+      allErrors.push(...itemResult.errors);
+      allWarnings.push(...itemResult.warnings);
+    }
+
+    const executionTime = performance.now() - startTime;
+    const isValid = allErrors.length === 0;
+
+    return {
+      data: transformedData,
+      errors: allErrors,
+      warnings: allWarnings,
+      isValid,
+      executionTime,
+      rulesExecuted: rules.length,
+    };
+  }
+
+  /**
    * Apply validation rules
    */
   private async applyValidations(
     item: T,
     context: RuleContext<T>,
     rules: Rule<T>[],
-    mode: ExecutionMode
+    mode: ExecutionMode,
   ): Promise<ValidationError[]> {
     // Filter rules that have validate functions
     const validationRules = rules.filter((rule) => rule.validate);

@@ -125,6 +125,35 @@ export class RuleEngineService<T = unknown> {
   }
 
   /**
+   * Process all data items with all rules in parallel - ultra-fast performance mode
+   * All combinations of data items and rules are executed concurrently without batching
+   * @param data Array of items to process
+   * @param selector Rule selector (names, tags, mode)
+   * @param options Options for parallel execution
+   * @returns Rule execution result with transformed data and validation errors
+   */
+  async processAllParallel(
+    data: T[],
+    selector: RuleSelector,
+    options?: { continueOnError?: boolean }
+  ): Promise<RuleExecutionResult<T>> {
+    return this.engine.processAllParallel(data, selector, options);
+  }
+
+  /**
+   * Process all data items with all enabled rules in parallel - convenience method
+   * @param data Array of items to process
+   * @param options Options for parallel execution
+   * @returns Rule execution result with transformed data and validation errors
+   */
+  async processAllParallelWithAllRules(
+    data: T[],
+    options?: { continueOnError?: boolean }
+  ): Promise<RuleExecutionResult<T>> {
+    return this.engine.processAllParallelWithAllRules(data, options);
+  }
+
+  /**
    * Get the underlying RuleEngine instance
    * @returns RuleEngine instance
    */

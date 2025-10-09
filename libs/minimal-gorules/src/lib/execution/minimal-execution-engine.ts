@@ -80,7 +80,7 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
         result = await this.executeSequential(rulePlan.ruleIds, input);
         break;
       case 'mixed':
-        result = await this.executeMixed(selector.mode.groups!, input);
+        result = await this.executeMixed(selector.mode.groups || [], input);
         break;
       default:
         result = await this.executeParallel(rulePlan.ruleIds, input);
@@ -316,6 +316,77 @@ export class MinimalExecutionEngine implements IMinimalExecutionEngine {
       executionTime: 0,
       errors: errors.size > 0 ? errors : undefined,
     };
+  }
+
+  /**
+   * Execute all rules on all inputs in parallel - maximum performance mode
+   * All inputs and all rules are executed concurrently without batching
+   * Similar to cm-rule-engine's executeParallel method
+   */
+  async executeAllParallel<T>(
+    inputs: Record<string, unknown>[],
+    ruleIds: string[],
+    options: BatchExecutionOptions = {},
+  ): Promise<BatchExecutionResult<T>> {
+    const { continueOnError = true } = options;
+
+    // Execute all combinations of inputs and rules in parallel
+    const allPromises = inputs.flatMap((input, inputIndex) =>
+      ruleIds.map(async (ruleId) => {
+        try {
+          const result = await this.zenEngine.evaluate(ruleId, input);
+          return { inputIndex, ruleId, result: result.result, error: null };
+        } catch (error) {
+          return { inputIndex, ruleId, result: null, error: error as Error };
+        }
+      })
+    );
+
+    // Wait for all executions to complete
+    const allResults = await Promise.all(allPromises);
+
+    // Group results by input index
+    const resultsByInput = new Map<number, { results: Map<string, T>; errors: Map<string, Error> }>();
+
+    for (const { inputIndex, ruleId, result, error } of allResults) {
+      if (!resultsByInput.has(inputIndex)) {
+        resultsByInput.set(inputIndex, {
+          results: new Map<string, T>(),
+          errors: new Map<string, Error>(),
+        });
+      }
+
+      const inputResult = resultsByInput.get(inputIndex) || {
+        results: new Map<string, T>(),
+        errors: new Map<string, Error>(),
+      };
+
+      if (error) {
+        inputResult.errors.set(ruleId, error);
+        if (!continueOnError) {
+          // In fail-fast mode, we still collect all results but mark as failed
+        }
+      } else {
+        inputResult.results.set(ruleId, result);
+      }
+    }
+
+    // Convert to BatchExecutionResult format
+    const results: BatchInputResult<T>[] = inputs.map((_, inputIndex) => {
+      const inputResult = resultsByInput.get(inputIndex) || {
+        results: new Map<string, T>(),
+        errors: new Map<string, Error>(),
+      };
+
+      return {
+        inputIndex,
+        results: inputResult.results,
+        errors: inputResult.errors.size > 0 ? inputResult.errors : undefined,
+        success: inputResult.errors.size === 0,
+      };
+    });
+
+    return { results };
   }
 
   /**

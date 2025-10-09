@@ -36,7 +36,6 @@ export function useDynamicRuleModule(moduleName = 'qpa-refdes'): UseDynamicRuleM
     setError(null);
     
     try {
-      debugger;
       console.log(`Loading rule module: ${moduleName}`);
       const result = await loadRuleModule(moduleName);
 

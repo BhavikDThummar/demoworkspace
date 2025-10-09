@@ -2,6 +2,11 @@ import { Controller, Post, Body } from '@nestjs/common';
 import { BomRuleEngineService } from '../services/rule-engine.service';
 import { IBOMItem } from '../interfaces/bom-types.interface';
 
+interface ValidateBomRequest {
+  inputs: IBOMItem[];
+  multiplyInputBy?: number;
+}
+
 @Controller('nestjs-rule-engine')
 export class BomValidationController {
   constructor(private readonly bomRuleEngineService: BomRuleEngineService) {}
@@ -9,7 +14,7 @@ export class BomValidationController {
   @Post('validate')
   async validateBom(@Body() items: IBOMItem[]) {
     const result = await this.bomRuleEngineService.validateBomItems(items);
-    
+
     // Return data with message - will be wrapped by ResponseInterceptor
     return {
       data: {
@@ -22,9 +27,45 @@ export class BomValidationController {
           totalErrors: result.errors.length,
         },
       },
-      message: result.errors.length > 0 
-        ? `Validation completed with ${result.errors.length} error(s)` 
-        : 'Validation completed successfully',
+      message:
+        result.errors.length > 0
+          ? `Validation completed with ${result.errors.length} error(s)`
+          : 'Validation completed successfully',
+    };
+  }
+
+  @Post('validate-multiply')
+  async validateAndMultiplyBom(@Body() request: ValidateBomRequest) {
+    let effectiveInputs = request.inputs;
+
+    // Multiply BOM items if requested
+    if (request.multiplyInputBy && request.multiplyInputBy > 1) {
+      const multiplier = Math.floor(request.multiplyInputBy);
+
+      effectiveInputs = Array.from({ length: multiplier }, () =>
+        request.inputs.map((input) => ({ ...input })),
+      ).flat();
+    }
+
+    // Validate the (possibly multiplied) BOM items
+    const result = await this.bomRuleEngineService.validateBomItems(effectiveInputs);
+
+    // Return data with summary
+    return {
+      data: {
+        items: result.data,
+        errors: result.errors,
+        summary: {
+          totalItems: effectiveInputs.length,
+          validItems: effectiveInputs.length - result.errors.length,
+          invalidItems: result.errors.length,
+          totalErrors: result.errors.length,
+        },
+      },
+      message:
+        result.errors.length > 0
+          ? `Validation completed with ${result.errors.length} error(s)`
+          : 'Validation completed successfully',
     };
   }
 }

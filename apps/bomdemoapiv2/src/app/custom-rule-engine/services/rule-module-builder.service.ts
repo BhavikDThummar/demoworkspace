@@ -7,6 +7,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as ts from 'typescript';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ModuleSigningService, SignedModule } from './module-signing.service';
 
 @Injectable()
 export class RuleModuleBuilderService {
@@ -20,11 +21,13 @@ export class RuleModuleBuilderService {
     process.cwd(),
     'apps/bomdemoapiv2/src/app/custom-rule-engine/rules/compiled/qpaRefDesRules.module.js'
   );
-  private cachedModule: string | null = null;
+  private cachedModule: SignedModule | null = null;
   private lastCompileTime = 0;
 
+  constructor(private readonly moduleSigningService: ModuleSigningService) {}
+
   /**
-   * Get the compiled JavaScript module
+   * Get the compiled and signed JavaScript module
    * Compiles on-demand if not cached or source has changed
    */
   async getCompiledModule(): Promise<string> {
@@ -43,26 +46,43 @@ export class RuleModuleBuilderService {
       // Return cached version if still valid
       if (this.cachedModule && sourceModifiedTime <= this.lastCompileTime) {
         this.logger.debug('Returning cached compiled module');
-        return this.cachedModule;
+        return this.cachedModule.content;
       }
 
       // Compile the TypeScript file
-      this.logger.log('Compiling rule module from TypeScript...');
+      this.logger.log('Compiling and signing rule module from TypeScript...');
       const compiledCode = await this.compileTypeScriptToJS();
 
-      // Cache the result
-      this.cachedModule = compiledCode;
+      // Sign the compiled module
+      const signedModule = this.moduleSigningService.signModule(compiledCode);
+
+      // Cache the signed result
+      this.cachedModule = signedModule;
       this.lastCompileTime = Date.now();
 
       // Optionally save to disk for debugging
       this.saveCompiledModule(compiledCode);
 
-      this.logger.log('Rule module compiled successfully');
-      return compiledCode;
+      this.logger.log('Rule module compiled and signed successfully');
+      return signedModule.content;
     } catch (error) {
       this.logger.error('Failed to compile rule module', error);
       throw new Error(`Failed to compile rule module: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+  }
+
+  /**
+   * Get the signed module with signature information
+   */
+  async getSignedModule(): Promise<SignedModule> {
+    // Ensure module is compiled and cached
+    await this.getCompiledModule();
+    
+    if (!this.cachedModule) {
+      throw new Error('No compiled module available');
+    }
+
+    return this.cachedModule;
   }
 
   /**
@@ -135,6 +155,21 @@ export class RuleModuleBuilderService {
     this.cachedModule = null;
     this.lastCompileTime = 0;
     this.logger.log('Rule module cache cleared');
+  }
+
+  /**
+   * Get signing key information
+   */
+  getSigningInfo() {
+    return this.moduleSigningService.getKeyInfo();
+  }
+
+  /**
+   * Rotate signing keys
+   */
+  rotateSigningKeys(): string {
+    this.clearCache(); // Clear cache to force re-signing with new key
+    return this.moduleSigningService.rotateKeys();
   }
 
   /**

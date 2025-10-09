@@ -18,6 +18,8 @@ export interface UseDynamicRuleModuleResult {
     loaded: boolean;
     timestamp?: string;
     moduleUrl?: string;
+    signatureVerified?: boolean;
+    keyId?: string;
   };
 }
 
@@ -29,6 +31,8 @@ export function useDynamicRuleModule(moduleName = 'qpa-refdes'): UseDynamicRuleM
     loaded: boolean;
     timestamp?: string;
     moduleUrl?: string;
+    signatureVerified?: boolean;
+    keyId?: string;
   }>({ loaded: false });
 
   const loadRules = useCallback(async () => {
@@ -48,6 +52,8 @@ export function useDynamicRuleModule(moduleName = 'qpa-refdes'): UseDynamicRuleM
         loaded: true,
         timestamp: result.timestamp,
         moduleUrl: result.moduleUrl,
+        signatureVerified: result.signatureVerified,
+        keyId: result.keyId,
       });
       
       console.log(`Successfully loaded ${result.rules.length} rules from module`);

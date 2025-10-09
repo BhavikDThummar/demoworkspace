@@ -60,6 +60,8 @@ export function QpaRefDesModuleDemo() {
 
 📦 Module Info:
 - Module loaded: ${moduleInfo.loaded ? '✅ Yes' : '❌ No'}
+- Signature verified: ${moduleInfo.signatureVerified ? '✅ Yes' : '❌ No'}
+- Signing key ID: ${moduleInfo.keyId || 'N/A'}
 - Module URL: ${moduleInfo.moduleUrl || 'N/A'}
 - Loaded at: ${moduleInfo.timestamp || 'N/A'}
 
@@ -204,8 +206,10 @@ export function QpaRefDesModuleDemo() {
         <ul style={{ margin: '0', paddingLeft: '1.5rem' }}>
           <li>No <code>eval()</code> or <code>Function()</code> constructor</li>
           <li>Uses browser's native module system with proper scope isolation</li>
+          <li>✨ <strong>Cryptographic signature verification</strong> - modules are signed with RSA keys</li>
+          <li>✨ <strong>Tamper detection</strong> - any modification invalidates the signature</li>
+          <li>✨ <strong>Key rotation support</strong> - keys can be rotated regularly for security</li>
           <li>Module served with proper MIME type and security headers</li>
-          <li>Can add integrity checks (SRI) for additional security</li>
           <li>Compatible with strict Content Security Policy</li>
         </ul>
       </div>

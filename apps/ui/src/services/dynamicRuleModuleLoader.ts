@@ -1,7 +1,7 @@
 /**
  * Dynamic Rule Module Loader
  * Securely loads compiled JavaScript modules from the API at runtime
- * 
+ *
  * This approach is more secure than eval() because:
  * 1. Uses native ES module loading
  * 2. Proper scope isolation
@@ -11,6 +11,7 @@
 
 import { Rule } from '@org/cm-rule-engine';
 import { IBOMItem } from '../types/BOMTypes';
+import { moduleSignatureVerifier, SignedModule, PublicKeyInfo } from './moduleSignatureVerifier';
 
 const API_BASE_URL = 'https://localhost:8001/api';
 
@@ -20,31 +21,50 @@ interface ModuleLoadResult {
   error?: string;
   moduleUrl?: string;
   timestamp?: string;
+  signatureVerified?: boolean;
+  keyId?: string;
 }
 
 /**
- * Dynamically load a rule module from the API
- * Uses dynamic import with blob URL for security
+ * Dynamically load a rule module from the API with signature verification
+ * Uses dynamic import with blob URL and cryptographic verification
  */
 export async function loadRuleModule(moduleName = 'qpa-refdes'): Promise<ModuleLoadResult> {
   try {
-    const moduleUrl = `${API_BASE_URL}/custom-rules/modules/${moduleName}.js`;
-    console.log(`Loading rule module from: ${moduleUrl}`);
+    console.log(`Loading signed rule module: ${moduleName}`);
 
-    // Fetch the module code
-    const response = await fetch(moduleUrl, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/javascript',
-      },
-      cache: 'no-cache', // Always get fresh rules
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch module: ${response.status} ${response.statusText}`);
+    // Step 1: Get public key information
+    const keyInfo = await getPublicKeyInfo(moduleName);
+    if (!keyInfo.success || !keyInfo.data) {
+      throw new Error('Failed to get public key information');
     }
 
-    const moduleCode = await response.text();
+    // Step 2: Import public key for verification
+    await moduleSignatureVerifier.importPublicKey(keyInfo.data);
+
+    // Step 3: Get signed module
+    const signedModuleResponse = await getSignedModule(moduleName);
+    if (!signedModuleResponse.success || !signedModuleResponse.data) {
+      throw new Error('Failed to get signed module');
+    }
+
+    const signedModule: SignedModule = signedModuleResponse.data;
+
+    // Step 4: Verify signature
+    const isSignatureValid = await moduleSignatureVerifier.verifyModule(signedModule);
+    if (!isSignatureValid) {
+      throw new Error('Module signature verification failed - module may be tampered with');
+    }
+
+    console.log(`Module signature verified successfully with key: ${signedModule.signature.keyId}`);
+
+    // Step 5: Check signature age
+    if (!moduleSignatureVerifier.isSignatureRecent(signedModule.signature, 60)) {
+      console.warn('Module signature is older than 60 minutes');
+    }
+
+    // Step 6: Load the verified module
+    const moduleCode = signedModule.content;
 
     // Verify it's valid JavaScript (basic check)
     if (!moduleCode || moduleCode.trim().length === 0) {
@@ -57,7 +77,6 @@ export async function loadRuleModule(moduleName = 'qpa-refdes'): Promise<ModuleL
 
     try {
       // Dynamically import the module
-      // This is safer than eval() as it uses the browser's native module system
       const module = await import(/* @vite-ignore */ blobUrl);
 
       // Extract rules from the module
@@ -67,24 +86,101 @@ export async function loadRuleModule(moduleName = 'qpa-refdes'): Promise<ModuleL
         throw new Error('Module did not export valid rules array');
       }
 
-      console.log(`Successfully loaded ${rules.length} rules from module`);
+      console.log(`Successfully loaded ${rules.length} verified rules from signed module`);
 
       return {
         success: true,
         rules,
-        moduleUrl,
+        moduleUrl: `${API_BASE_URL}/custom-rules/modules/${moduleName}/signed`,
         timestamp: new Date().toISOString(),
+        signatureVerified: true,
+        keyId: signedModule.signature.keyId,
       };
     } finally {
       // Clean up the blob URL
       URL.revokeObjectURL(blobUrl);
     }
   } catch (error) {
-    console.error('Failed to load rule module:', error);
+    console.error('Failed to load signed rule module:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString(),
+      signatureVerified: false,
+    };
+  }
+}
+
+/**
+ * Get public key information for module verification
+ */
+async function getPublicKeyInfo(moduleName: string): Promise<{
+  success: boolean;
+  data?: PublicKeyInfo;
+  error?: string;
+}> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/custom-rules/modules/${moduleName}/public-key`);
+
+    if (!response.ok) {
+      throw new Error(`Failed to get public key: ${response.status}`);
+    }
+
+    const apiResponse = await response.json();
+
+    // Handle the wrapped API response format
+    if (apiResponse.statusCode === 200 && apiResponse.status === 'SUCCESS' && apiResponse.data) {
+      return {
+        success: true,
+        data: apiResponse.data as PublicKeyInfo,
+      };
+    } else {
+      throw new Error(apiResponse.message || 'Failed to get public key from API');
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
+ * Get signed module from API
+ */
+async function getSignedModule(moduleName: string): Promise<{
+  success: boolean;
+  data?: SignedModule;
+  error?: string;
+}> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/custom-rules/modules/${moduleName}/signed`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      cache: 'no-cache',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to get signed module: ${response.status}`);
+    }
+
+    const apiResponse = await response.json();
+
+    // Handle the wrapped API response format
+    if (apiResponse.statusCode === 200 && apiResponse.status === 'SUCCESS' && apiResponse.data) {
+      return {
+        success: true,
+        data: apiResponse.data as SignedModule,
+      };
+    } else {
+      throw new Error(apiResponse.message || 'Failed to get signed module from API');
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -105,8 +201,17 @@ export async function getModuleInfo(moduleName = 'qpa-refdes'): Promise<{
       throw new Error(`Failed to fetch module info: ${response.status}`);
     }
 
-    const data = await response.json();
-    return data;
+    const apiResponse = await response.json();
+
+    // Handle the wrapped API response format
+    if (apiResponse.statusCode === 200 && apiResponse.status === 'SUCCESS' && apiResponse.data) {
+      return {
+        success: true,
+        data: apiResponse.data,
+      };
+    } else {
+      throw new Error(apiResponse.message || 'Failed to get module info from API');
+    }
   } catch (error) {
     return {
       success: false,
@@ -131,8 +236,17 @@ export async function refreshModule(moduleName = 'qpa-refdes'): Promise<{
       throw new Error(`Failed to refresh module: ${response.status}`);
     }
 
-    const data = await response.json();
-    return data;
+    const apiResponse = await response.json();
+
+    // Handle the wrapped API response format
+    if (apiResponse.statusCode === 200 && apiResponse.status === 'SUCCESS') {
+      return {
+        success: true,
+        message: apiResponse.message || 'Module refreshed successfully',
+      };
+    } else {
+      throw new Error(apiResponse.message || 'Failed to refresh module');
+    }
   } catch (error) {
     return {
       success: false,
@@ -146,7 +260,7 @@ export async function refreshModule(moduleName = 'qpa-refdes'): Promise<{
  */
 export async function preloadModule(moduleName = 'qpa-refdes'): Promise<void> {
   const moduleUrl = `${API_BASE_URL}/custom-rules/modules/${moduleName}.js`;
-  
+
   // Use link preload hint
   const link = document.createElement('link');
   link.rel = 'preload';

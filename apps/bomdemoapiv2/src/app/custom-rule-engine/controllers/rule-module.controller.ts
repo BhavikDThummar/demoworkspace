@@ -89,4 +89,83 @@ export class RuleModuleController {
       );
     }
   }
+
+  /**
+   * Get signed module with cryptographic signature
+   */
+  @Get('qpa-refdes/signed')
+  async getSignedModule() {
+    try {
+      this.logger.log('Serving signed QPA RefDes rule module');
+      
+      const signedModule = await this.ruleModuleBuilder.getSignedModule();
+      
+      return {
+        success: true,
+        data: signedModule,
+        message: 'Signed module retrieved successfully',
+      };
+    } catch (error) {
+      this.logger.error('Failed to serve signed module', error);
+      throw new HttpException(
+        `Failed to serve signed module: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Get public key for signature verification
+   */
+  @Get('qpa-refdes/public-key')
+  async getPublicKey() {
+    try {
+      this.logger.log('Serving public key for module verification');
+      
+      const keyInfo = this.ruleModuleBuilder.getSigningInfo();
+      
+      return {
+        success: true,
+        data: {
+          keyId: keyInfo.keyId,
+          publicKey: keyInfo.publicKey,
+          algorithm: keyInfo.algorithm,
+        },
+        message: 'Public key retrieved successfully',
+      };
+    } catch (error) {
+      this.logger.error('Failed to serve public key', error);
+      throw new HttpException(
+        `Failed to serve public key: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Rotate signing keys
+   */
+  @Get('qpa-refdes/rotate-keys')
+  async rotateKeys() {
+    try {
+      this.logger.log('Rotating signing keys');
+      
+      const newKeyId = this.ruleModuleBuilder.rotateSigningKeys();
+      
+      return {
+        success: true,
+        data: {
+          newKeyId,
+          message: 'Signing keys rotated successfully',
+        },
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('Failed to rotate keys', error);
+      throw new HttpException(
+        `Failed to rotate keys: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

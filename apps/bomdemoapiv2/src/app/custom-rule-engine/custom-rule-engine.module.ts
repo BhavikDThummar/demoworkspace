@@ -6,10 +6,11 @@
 import { Module } from '@nestjs/common';
 import { RuleModuleController } from './controllers/rule-module.controller';
 import { RuleModuleBuilderService } from './services/rule-module-builder.service';
+import { ModuleSigningService } from './services/module-signing.service';
 
 @Module({
   controllers: [RuleModuleController],
-  providers: [RuleModuleBuilderService],
-  exports: [RuleModuleBuilderService],
+  providers: [RuleModuleBuilderService, ModuleSigningService],
+  exports: [RuleModuleBuilderService, ModuleSigningService],
 })
 export class CustomRuleEngineModule {}

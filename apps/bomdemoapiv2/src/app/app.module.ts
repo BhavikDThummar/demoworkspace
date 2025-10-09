@@ -5,7 +5,6 @@ import { MinimalGoRulesModule } from '@org/minimal-gorules';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MinimalGoRulesController } from './test-minimal-gorules/minimal-gorules.controller';
-import { BomRulesModule } from './bom-rules';
 import { CustomRuleEngineModule } from './custom-rule-engine';
 import { NestjsRuleEngineModule } from './nestjs-rule-engine';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
@@ -23,8 +22,6 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
       autoInitialize: true, // Auto-initialize on app startup
       configKey: 'minimalGoRules', // Look for config under this key, fallback to env vars
     }),
-    // BOM Rules Module (GoRules)
-    BomRulesModule,
     // Custom Rule Engine Module (separate from GoRules)
     CustomRuleEngineModule,
     // NestJS Rule Engine Module (cm-rule-engine with NestJS binding)

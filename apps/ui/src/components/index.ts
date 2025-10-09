@@ -4,5 +4,6 @@
 
 export { BOMRuleEngineDemo } from './BOMRuleEngineDemo';
 export { QpaRefDesApiDemo } from './QpaRefDesApiDemo';
+export { QpaRefDesModuleDemo } from './QpaRefDesModuleDemo';
 export { NestJSRuleEngineDemo } from './NestJSRuleEngineDemo';
 export { Navigation, availableComponents } from './Navigation';

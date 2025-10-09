@@ -21,9 +21,15 @@ export const availableComponents: ComponentInfo[] = [
   },
   {
     id: 'qpa-refdes-api',
-    name: 'QPA RefDes API Demo',
-    description: 'Dynamic QPA RefDes rules loaded from API',
-    icon: '🌐',
+    name: 'QPA RefDes API Demo (Old)',
+    description: 'Dynamic rules with eval() - DEPRECATED',
+    icon: '⚠️',
+  },
+  {
+    id: 'qpa-refdes-module',
+    name: 'QPA RefDes Module Demo (New)',
+    description: 'Secure dynamic rules using ES modules',
+    icon: '🔒',
   },
   {
     id: 'nestjs-rule-engine',

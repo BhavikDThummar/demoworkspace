@@ -1,4 +1,8 @@
 /**
+ * Note: Not in use.
+ */
+
+/**
  * Service for QPA RefDes Rules - Dynamic Rule Engine
  */
 

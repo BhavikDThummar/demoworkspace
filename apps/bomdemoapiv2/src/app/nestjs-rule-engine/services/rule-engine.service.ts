@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { RuleEngineService as BaseRuleEngineService } from '@org/cm-rule-engine/nestjs';
 import { Rule } from '@org/cm-rule-engine/nestjs';
 import { IBOMItem } from '../interfaces/bom-types.interface';
-import { dynamicQpaRefDesRules, DynamicRuleDefinition } from '../rules/dynamicQpaRefDesRules';
-import { parseRefDesig, normalizeQPA, createError } from '../utils/rule-helpers';
+// Import the secure TypeScript rules instead of eval-based rules
+import { qpaRefDesRules } from '../../custom-rule-engine/rules/qpaRefDesRules.module';
 
 @Injectable()
 export class BomRuleEngineService {
+  private readonly logger = new Logger(BomRuleEngineService.name);
   private ruleEngine: BaseRuleEngineService<IBOMItem>;
 
   constructor() {
@@ -14,35 +15,24 @@ export class BomRuleEngineService {
     this.loadRules();
   }
 
+  /**
+   * Load rules from the secure TypeScript module
+   * These are the same rules used by the UI
+   */
   private loadRules() {
-    const helperFunctions = { parseRefDesig, normalizeQPA, createError };
+    this.logger.log('Loading QPA RefDes rules from secure TypeScript module...');
 
-    dynamicQpaRefDesRules.forEach((ruleDef: DynamicRuleDefinition) => {
-      const rule: Rule<IBOMItem> = {
-        name: ruleDef.name,
-        description: ruleDef.description,
-        priority: ruleDef.priority,
-        enabled: ruleDef.enabled,
-        tags: ruleDef.tags,
-      };
-
-      if (ruleDef.transformCode) {
-        rule.transform = this.createFunction(ruleDef.transformCode, helperFunctions);
+    // Load rules from the TypeScript module
+    qpaRefDesRules.forEach((rule: Rule<IBOMItem>) => {
+      if (rule.enabled) {
+        this.ruleEngine.addRule(rule);
+        this.logger.debug(`Loaded rule: ${rule.name}`);
       }
-
-      if (ruleDef.validateCode) {
-        rule.validate = this.createFunction(ruleDef.validateCode, helperFunctions);
-      }
-
-      this.ruleEngine.addRule(rule);
     });
-    console.log('Custom Rule engine: Rules are loaded!');
-  }
 
-  private createFunction(code: string, helpers: Record<string, unknown>) {
-    const helperNames = Object.keys(helpers);
-    const helperValues = Object.values(helpers);
-    return new Function(...helperNames, `return ${code}`)(...helperValues);
+    this.logger.log(
+      `Successfully loaded ${qpaRefDesRules.length} rules from qpaRefDesRules.module.ts`,
+    );
   }
 
   async validateBomItems(items: IBOMItem[]) {
@@ -53,10 +43,7 @@ export class BomRuleEngineService {
    * Validate BOM items using ultra-fast parallel execution
    * All items and all rules are executed concurrently without batching
    */
-  async validateBomItemsAllParallel(
-    items: IBOMItem[],
-    options?: { continueOnError?: boolean }
-  ) {
+  async validateBomItemsAllParallel(items: IBOMItem[], options?: { continueOnError?: boolean }) {
     return this.ruleEngine.processAllParallelWithAllRules(items, options);
   }
 
@@ -66,7 +53,7 @@ export class BomRuleEngineService {
   async validateBomItemsAllParallelByTags(
     items: IBOMItem[],
     tags: string[],
-    options?: { continueOnError?: boolean }
+    options?: { continueOnError?: boolean },
   ) {
     return this.ruleEngine.processAllParallel(items, { tags }, options);
   }

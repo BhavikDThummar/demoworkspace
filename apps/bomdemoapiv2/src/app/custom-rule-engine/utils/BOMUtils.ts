@@ -1,4 +1,8 @@
 /**
+ * Note: Not in use.
+ */
+
+/**
  * BOM Utilities for parsing and validating BOM data
  */
 

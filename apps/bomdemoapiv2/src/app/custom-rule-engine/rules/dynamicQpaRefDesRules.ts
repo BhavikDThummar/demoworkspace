@@ -1,4 +1,8 @@
 /**
+ * Note: This file Not in use.
+ */
+
+/**
  * Dynamic QPA RefDes Rules - Clean function definitions for API serialization
  * These functions are written as clean strings without closure dependencies
  */

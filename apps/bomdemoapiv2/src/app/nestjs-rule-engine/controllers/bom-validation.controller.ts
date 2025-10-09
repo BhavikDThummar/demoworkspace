@@ -26,11 +26,12 @@ export class BomValidationController {
           invalidItems: result.errors.length,
           totalErrors: result.errors.length,
         },
+        rulesSource: 'qpaRefDesRules.module.ts (Secure TypeScript Module)',
       },
       message:
         result.errors.length > 0
-          ? `Validation completed with ${result.errors.length} error(s)`
-          : 'Validation completed successfully',
+          ? `Validation completed with ${result.errors.length} error(s) using secure TypeScript rules`
+          : 'Validation completed successfully using secure TypeScript rules',
     };
   }
 

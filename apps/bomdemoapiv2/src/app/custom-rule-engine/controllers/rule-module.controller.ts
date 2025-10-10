@@ -4,7 +4,7 @@
  */
 
 import { Controller, Get, Header, HttpException, HttpStatus, Logger, Res } from '@nestjs/common';
-import type { Response } from 'express';
+import type { FastifyReply } from 'fastify';
 import { RuleModuleBuilderService } from '../services/rule-module-builder.service';
 
 @Controller('custom-rules/modules')
@@ -21,15 +21,15 @@ export class RuleModuleController {
   @Header('Content-Type', 'application/javascript; charset=utf-8')
   @Header('Cache-Control', 'no-cache, no-store, must-revalidate')
   @Header('X-Content-Type-Options', 'nosniff')
-  async getQpaRefDesModule(@Res() res: Response) {
+  async getQpaRefDesModule(@Res() res: FastifyReply) {
     try {
       this.logger.log('Serving QPA RefDes rule module');
 
       const compiledModule = await this.ruleModuleBuilder.getCompiledModule();
 
       // Set additional security headers
-      res.setHeader('Access-Control-Allow-Origin', '*'); // Adjust for production
-      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.header('Access-Control-Allow-Origin', '*'); // Adjust for production
+      res.header('Cross-Origin-Resource-Policy', 'cross-origin');
 
       return res.send(compiledModule);
     } catch (error) {

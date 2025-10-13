@@ -146,7 +146,7 @@ export class DataEnrichmentService {
 
     // For demo purposes, we'll use the same UOM ID (-1) as in the batch data example
     // In a real scenario, you'd extract unique UOM IDs from the items
-    const uniqueUomIds = [...new Set(items.map((item) => item.dbUomId).filter(Boolean))]; // This would be: [...new Set(items.map(item => item.uomId).filter(Boolean))]
+    const uniqueUomIds = [...new Set(items.map((item) => item.uomID).filter(Boolean))]; // This would be: [...new Set(items.map(item => item.uomId).filter(Boolean))]
 
     this.logger.debug(`🔍 Fetching UOM data for ${uniqueUomIds.length} unique UOM IDs`);
 

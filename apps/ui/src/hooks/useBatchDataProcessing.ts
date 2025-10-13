@@ -10,7 +10,7 @@ interface BOMItem {
   custPN?: string;
   qpa: number;
   refDesig: string;
-  uomID: string;
+  uomID: string | number;
   dbUomId?: number;
   dnpQty?: number;
   dnpDesig?: string;
@@ -67,8 +67,14 @@ interface BatchDataResult {
 interface UseBatchDataProcessingResult {
   processing: boolean;
   error: string | null;
-  processBatchData: (items: BOMItem[], options?: BatchDataOptions) => Promise<BatchDataResult | null>;
-  processWithPreEnrichment: (items: BOMItem[], options?: BatchDataOptions) => Promise<BatchDataResult | null>;
+  processBatchData: (
+    items: BOMItem[],
+    options?: BatchDataOptions,
+  ) => Promise<BatchDataResult | null>;
+  processWithPreEnrichment: (
+    items: BOMItem[],
+    options?: BatchDataOptions,
+  ) => Promise<BatchDataResult | null>;
   clearError: () => void;
 }
 
@@ -82,92 +88,95 @@ export function useBatchDataProcessing(): UseBatchDataProcessingResult {
     setError(null);
   }, []);
 
-  const processBatchData = useCallback(async (
-    items: BOMItem[], 
-    options: BatchDataOptions = {}
-  ): Promise<BatchDataResult | null> => {
-    setProcessing(true);
-    setError(null);
+  const processBatchData = useCallback(
+    async (items: BOMItem[], options: BatchDataOptions = {}): Promise<BatchDataResult | null> => {
+      setProcessing(true);
+      setError(null);
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/nestjs-rule-engine/process-with-batch-data`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          inputs: items,
-          options: {
-            continueOnError: true,
-            includeBatchDataRules: true,
-            includeValidationRules: false,
-            ...options,
+      try {
+        const response = await fetch(`${API_BASE_URL}/nestjs-rule-engine/process-with-batch-data`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            inputs: items,
+            options: {
+              continueOnError: true,
+              includeBatchDataRules: true,
+              includeValidationRules: false,
+              ...options,
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
+
+        const apiResponse = await response.json();
+
+        if (apiResponse.statusCode !== 200) {
+          throw new Error(apiResponse.message || 'API request failed');
+        }
+
+        return apiResponse.data;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+        setError(errorMessage);
+        console.error('Batch data processing error:', err);
+        return null;
+      } finally {
+        setProcessing(false);
+      }
+    },
+    [],
+  );
+
+  const processWithPreEnrichment = useCallback(
+    async (items: BOMItem[], options: BatchDataOptions = {}): Promise<BatchDataResult | null> => {
+      setProcessing(true);
+      setError(null);
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/nestjs-rule-engine/validate-with-pre-enrichment`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              inputs: items,
+              options: {
+                continueOnError: true,
+                includeUomData: true,
+                includePartData: false,
+                includeSupplierData: false,
+                ...options,
+              },
+            }),
           },
-        }),
-      });
+        );
 
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
+
+        const apiResponse = await response.json();
+
+        if (apiResponse.statusCode !== 200) {
+          throw new Error(apiResponse.message || 'API request failed');
+        }
+
+        return apiResponse.data;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+        setError(errorMessage);
+        console.error('Pre-enrichment processing error:', err);
+        return null;
+      } finally {
+        setProcessing(false);
       }
-
-      const apiResponse = await response.json();
-      
-      if (apiResponse.statusCode !== 200) {
-        throw new Error(apiResponse.message || 'API request failed');
-      }
-
-      return apiResponse.data;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      setError(errorMessage);
-      console.error('Batch data processing error:', err);
-      return null;
-    } finally {
-      setProcessing(false);
-    }
-  }, []);
-
-  const processWithPreEnrichment = useCallback(async (
-    items: BOMItem[], 
-    options: BatchDataOptions = {}
-  ): Promise<BatchDataResult | null> => {
-    setProcessing(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/nestjs-rule-engine/validate-with-pre-enrichment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          inputs: items,
-          options: {
-            continueOnError: true,
-            includeUomData: true,
-            includePartData: false,
-            includeSupplierData: false,
-            ...options,
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
-      }
-
-      const apiResponse = await response.json();
-      
-      if (apiResponse.statusCode !== 200) {
-        throw new Error(apiResponse.message || 'API request failed');
-      }
-
-      return apiResponse.data;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      setError(errorMessage);
-      console.error('Pre-enrichment processing error:', err);
-      return null;
-    } finally {
-      setProcessing(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   return {
     processing,
@@ -188,11 +197,13 @@ export function useTestDataGenerator() {
       custPN: `TEST-PART-${String(index + 1).padStart(6, '0')}`,
       qpa: Math.floor(Math.random() * 10) + 1,
       refDesig: `R${index + 1}`,
-      uomID: ['EACH', 'EA', 'PCS'][Math.floor(Math.random() * 3)],
+      uomID: [-1, -2, 8][Math.floor(Math.random() * 3)],
       mfgPNDescription: `Test component ${index + 1}`,
       mfgCode: `MFR-${String.fromCharCode(65 + (index % 26))}`,
       mfgPN: `MPN-${String(index + 1).padStart(4, '0')}`,
-      description: `Test component ${index + 1} - ${['Resistor', 'Capacitor', 'Inductor', 'IC'][Math.floor(Math.random() * 4)]}`,
+      description: `Test component ${index + 1} - ${
+        ['Resistor', 'Capacitor', 'Inductor', 'IC'][Math.floor(Math.random() * 4)]
+      }`,
       mountingtypes: ['SMD', 'Through-hole'][Math.floor(Math.random() * 2)],
       functionaltypes: ['Resistor', 'Capacitor', 'Inductor', 'IC'][Math.floor(Math.random() * 4)],
     }));

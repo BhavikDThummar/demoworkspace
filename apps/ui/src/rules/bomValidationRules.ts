@@ -77,7 +77,7 @@ export const bomValidationRules: Rule<IBOMItem>[] = [
       const { item } = context;
       const errors: ValidationError[] = [];
 
-      if (item.uomID === 'EACH') {
+      if (+item.uomID === -1) {
         const refDesigArray = BOMUtils.parseRefDesig(item.refDesig);
         const qpaValue = BOMUtils.normalizeQPA(item.qpa);
 

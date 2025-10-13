@@ -169,8 +169,7 @@ export class DataEnrichmentService {
 
       // For demo, we'll use UOM ID -1 for all items
       // In real scenario: const uomId = item.uomId || -1;
-      const uomId = item.dbUomId || -1;
-      const uomEntity = uomLookup.get(uomId);
+      const uomEntity = uomLookup.get(+item.uomID);
 
       if (uomEntity) {
         item.cmHidden.uomId_fromDB = uomEntity.unitName || 'unknown';

@@ -85,7 +85,7 @@ export const qpaRefDesValidationRules: Rule<IBOMItem>[] = [
         dnpQPARefDesStep = 7;
       }
       // EACH UOM specific validations
-      else if (item.uomID === 'EACH') {
+      else if (+item.uomID === -1) {
         const qpaValue = BOMUtils.normalizeQPA(item.qpa);
         const dnpQtyValue = BOMUtils.normalizeQPA(item.dnpQty || 0);
 

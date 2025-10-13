@@ -7,7 +7,7 @@ export interface IBOMItem {
   custPN?: string;
   qpa: number;
   refDesig: string;
-  uomID: string;
+  uomID: string | number;
   dbUomId?: number;
   dnpQty?: number | string;
   dnpDesig?: string;

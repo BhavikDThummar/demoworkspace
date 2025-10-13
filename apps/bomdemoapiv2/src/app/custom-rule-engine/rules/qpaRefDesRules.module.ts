@@ -15,7 +15,7 @@ interface IBOMItem {
   mfgPN?: string;
   description?: string;
   qpa?: number | string;
-  uomID?: string;
+  uomID?: string | number;
   dbUomId?: number;
   refDesig?: string;
   dnpDesig?: string;
@@ -134,7 +134,7 @@ export const validateQpaRefDesRules: Rule<IBOMItem> = {
       dnpQPARefDesStep = 7;
     }
     // EACH UOM specific validations
-    else if (item.uomID === 'EACH') {
+    else if (+item.uomID === -1) {
       const qpaValue = normalizeQPA(item.qpa || 0);
       const dnpQtyValue = normalizeQPA(item.dnpQty || 0);
 

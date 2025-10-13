@@ -19,7 +19,7 @@ interface IBOMItem {
   mfgPN?: string;
   description?: string;
   qpa?: number | string;
-  uomID?: string;
+  uomID?: string | number;
   dbUomId?: number;
   refDesig?: string;
   dnpDesig?: string;
@@ -138,7 +138,7 @@ export const uomLookupRule: Rule<IBOMItem> = {
     const batchData = context.metadata?.batchData as BatchDataContext;
 
     if (batchData?.uomLookupData && item.uomID) {
-      const uomRecord = batchData.uomLookupData.find((uom) => uom.id.toString() === item.uomID);
+      const uomRecord = batchData.uomLookupData.find((uom) => +uom.id === +(item.uomID || 0));
 
       if (uomRecord) {
         item.cmHidden.uomLookupResult = {

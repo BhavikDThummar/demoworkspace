@@ -58,7 +58,7 @@ export const validateQpaRefDesRules = {
             errors.push(createError('DNP QPA', `DNP Designator count (${dnpDesigCount}) exceeds maximum allowed (${maxRefDesAllow})`, item.lineID));
             dnpQPARefDesStep = 7;
         }
-        else if (item.uomID === 'EACH') {
+        else if (+item.uomID === -1) {
             const qpaValue = normalizeQPA(item.qpa || 0);
             const dnpQtyValue = normalizeQPA(item.dnpQty || 0);
             if (qpaValue <= 0 && dnpQtyValue <= 0) {

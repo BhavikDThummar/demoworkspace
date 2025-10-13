@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Navigation, availableComponents, BOMRuleEngineDemo, QpaRefDesModuleDemo, NestJSRuleEngineDemo } from '../components';
+import { Navigation, availableComponents, BOMRuleEngineDemo, QpaRefDesModuleDemo, NestJSRuleEngineDemo, BatchDataDemo } from '../components';
 import './App.css';
 
 function App() {
@@ -13,6 +13,8 @@ function App() {
         return <QpaRefDesModuleDemo />;
       case 'nestjs-rule-engine':
         return <NestJSRuleEngineDemo />;
+      case 'batch-data-demo':
+        return <BatchDataDemo />;
       default:
         return <BOMRuleEngineDemo />;
     }

@@ -1,10 +1,10 @@
 /**
  * Batch Data Rules Module - BOM-specific batch data fetching rules
  * This file can be compiled to JavaScript and served to the UI
- * 
+ *
  * IMPORTANT: Keep this file free of Node.js-specific imports for UI compatibility
  * For API-side usage, use the companion service file
- * 
+ *
  * UI Usage: Rules receive pre-fetched data via context.metadata.batchData
  * API Usage: Rules make actual database/API calls (handled by service layer)
  */
@@ -82,10 +82,10 @@ export const uomEnrichmentRule: Rule<IBOMItem> = {
   priority: 1,
   enabled: true,
   tags: ['batch-data', 'uom', 'database'],
-  
+
   transform: (context: RuleContext<IBOMItem>): IBOMItem => {
     const { item } = context;
-    
+
     // Initialize cmHidden if it doesn't exist
     if (!item.cmHidden) {
       item.cmHidden = {};
@@ -93,24 +93,26 @@ export const uomEnrichmentRule: Rule<IBOMItem> = {
 
     // For UI: Get pre-fetched data from metadata
     const batchData = context.metadata?.batchData as BatchDataContext;
-    
+
     if (batchData?.uomData) {
       item.cmHidden.uomId_fromDB = batchData.uomData.unitName || 'unknown';
-      
+
       // Log only for first few items to avoid spam
       if (context.index < 3) {
-        console.log(`✅ Item ${context.index + 1}: Added uomId_fromDB = "${item.cmHidden.uomId_fromDB}"`);
+        console.log(
+          `✅ Item ${context.index + 1}: Added uomId_fromDB = "${item.cmHidden.uomId_fromDB}"`,
+        );
       }
     } else {
       item.cmHidden.uomId_fromDB = 'not-found';
-      
+
       if (context.index < 3) {
         console.log(`❌ Item ${context.index + 1}: UOM not found, set uomId_fromDB = "not-found"`);
       }
     }
 
     return item;
-  }
+  },
 };
 
 /**
@@ -123,22 +125,20 @@ export const uomLookupRule: Rule<IBOMItem> = {
   priority: 2,
   enabled: true,
   tags: ['batch-data', 'uom', 'lookup'],
-  
+
   transform: (context: RuleContext<IBOMItem>): IBOMItem => {
     const { item } = context;
-    
+
     if (!item.cmHidden) {
       item.cmHidden = {};
     }
 
     // For UI: Get pre-fetched lookup data
     const batchData = context.metadata?.batchData as BatchDataContext;
-    
+
     if (batchData?.uomLookupData && item.uomID) {
-      const uomRecord = batchData.uomLookupData.find(uom => 
-        uom.id.toString() === item.uomID
-      );
-      
+      const uomRecord = batchData.uomLookupData.find((uom) => uom.id.toString() === item.uomID);
+
       if (uomRecord) {
         item.cmHidden.uomLookupResult = {
           id: uomRecord.id,
@@ -161,7 +161,7 @@ export const uomLookupRule: Rule<IBOMItem> = {
     }
 
     return item;
-  }
+  },
 };
 
 /**
@@ -174,17 +174,17 @@ export const apiEnrichmentRule: Rule<IBOMItem> = {
   priority: 3,
   enabled: true,
   tags: ['batch-data', 'api', 'external'],
-  
+
   transform: (context: RuleContext<IBOMItem>): IBOMItem => {
     const { item } = context;
-    
+
     if (!item.cmHidden) {
       item.cmHidden = {};
     }
 
     // For UI: Get pre-fetched API data
     const batchData = context.metadata?.batchData as BatchDataContext;
-    
+
     if (batchData?.externalApiData) {
       item.cmHidden.apiEnrichment = {
         processedAt: batchData.externalApiData.timestamp,
@@ -194,7 +194,7 @@ export const apiEnrichmentRule: Rule<IBOMItem> = {
     }
 
     return item;
-  }
+  },
 };
 
 /**

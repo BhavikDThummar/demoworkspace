@@ -31,6 +31,12 @@ export const availableComponents: ComponentInfo[] = [
     description: 'API-side validation using secure TypeScript rules',
     icon: '🚀',
   },
+  {
+    id: 'batch-data-demo',
+    name: 'Batch Data Processing',
+    description: 'Efficient DB/API integration with 1 call per batch',
+    icon: '⚡',
+  },
 ];
 
 export function Navigation({ activeComponent, onComponentChange }: NavigationProps) {

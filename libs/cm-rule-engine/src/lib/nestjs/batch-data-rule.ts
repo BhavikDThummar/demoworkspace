@@ -56,19 +56,22 @@ export class BatchDataRuleFactory {
       tags: config.tags || ['batch-data'],
       enabled: true,
       transform: async (context: RuleContext<TInput>) => {
-        // Create batch context
+        // Initialize batch on first item
+        if (context.index === 0) {
+          this.batchDataProvider.initializeBatch();
+          console.log(`🔄 [BatchDataRule] Processing ${context.allItems.length} items`);
+        }
+
+        // Create batch context - use the current batch ID from provider
+        const currentBatchId = this.batchDataProvider.getCurrentBatchId();
         const batchContext: BatchDataContext = {
-          batchId: this.generateBatchId(context),
+          batchId: currentBatchId || 'default-batch',
           allItems: context.allItems,
           metadata: context.metadata,
         };
 
-        // Initialize batch if this is the first item
-        if (context.index === 0) {
-          this.batchDataProvider.initializeBatch(batchContext.batchId);
-        }
-
-        // Fetch data (will be cached after first call)
+        // Fetch data (cache manager handles caching and logging)
+        // Only log for first few items to avoid spam
         const fetchedData = await this.batchDataProvider.fetchData(
           config.cacheKey,
           config.dataFetcher,
@@ -134,14 +137,14 @@ export class BatchDataRuleFactory {
   /**
    * Create a NestJS service-based batch data rule
    */
-  createServiceRule<TInput = any, TServiceResponse = any>(config: {
+  createServiceRule<TInput = any, TServiceResponse = unknown>(config: {
     name: string;
     description: string;
     priority: number;
     tags?: string[];
-    service: any;
+    service: Record<string, (...args: unknown[]) => Promise<TServiceResponse>>;
     serviceMethod: string;
-    serviceArgs?: (context: BatchDataContext) => any[];
+    serviceArgs?: (context: BatchDataContext) => unknown[];
     enrichItem: (item: TInput, serviceResponse: TServiceResponse, context: RuleContext<TInput>) => TInput | Promise<TInput>;
     cacheKey?: string;
   }): Rule<TInput> {
@@ -159,27 +162,7 @@ export class BatchDataRuleFactory {
     });
   }
 
-  /**
-   * Generate a unique batch ID based on context
-   */
-  private generateBatchId(context: RuleContext): string {
-    // Use a combination of timestamp and data hash for uniqueness
-    const timestamp = Date.now();
-    const dataHash = this.hashData(context.allItems);
-    return `batch_${timestamp}_${dataHash}`;
-  }
 
-  /**
-   * Simple hash function for data
-   */
-  private hashData(data: any[]): string {
-    const str = JSON.stringify(data.map((item, index) => ({ index, keys: Object.keys(item || {}) })));
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    return Math.abs(hash).toString(36);
-  }
+
+
 }

@@ -10,7 +10,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Your Request                             │
-│  "I want to add cmHidden.uomId_fromDB to each BOM item"    │
+│  "I want to add cmHidden.uomName_FromDB to each BOM item"    │
 │  "But I don't want 10K database calls for 10K items"      │
 └─────────────────────────────────────────────────────────────┘
                               │
@@ -111,7 +111,7 @@ createUomEnrichmentRule(): Rule<IBOMItem> {
       if (!item.cmHidden) item.cmHidden = {};
       
       if (uomEntities.length > 0) {
-        item.cmHidden.uomId_fromDB = uomEntities[0].unitName;
+        item.cmHidden.uomName_FromDB = uomEntities[0].unitName;
       }
       
       return item;
@@ -216,7 +216,7 @@ createUomEnrichmentRule() {
     },
     enrichItem: async (item, uomData) => {
       // This runs for EACH item
-      item.cmHidden.uomId_fromDB = uomData.unitName;
+      item.cmHidden.uomName_FromDB = uomData.unitName;
       return item;
     }
   });
@@ -230,7 +230,7 @@ createUomEnrichmentRule() {
 // BAD: This would run for each item
 for (const item of bomItems) {
   const uomData = await database.findOne(UomEntity, { id: -1 }); // 10K DB calls!
-  item.cmHidden.uomId_fromDB = uomData.unitName;
+  item.cmHidden.uomName_FromDB = uomData.unitName;
 }
 ```
 
@@ -240,7 +240,7 @@ for (const item of bomItems) {
 const uomData = await database.findOne(UomEntity, { id: -1 }); // 1 DB call!
 
 for (const item of bomItems) {
-  item.cmHidden.uomId_fromDB = uomData.unitName; // Just memory access
+  item.cmHidden.uomName_FromDB = uomData.unitName; // Just memory access
 }
 ```
 
@@ -270,7 +270,7 @@ Each item will have:
   "lineID": 1,
   "custPN": "PART-001",
   "cmHidden": {
-    "uomId_fromDB": "EA"  ← This was added with 1 DB call!
+    "uomName_FromDB": "EA"  ← This was added with 1 DB call!
   }
 }
 ```

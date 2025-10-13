@@ -263,7 +263,7 @@ export class BomValidationController {
     );
 
     // Count enriched items
-    const enrichedItems = result.data.filter((item) => item.cmHidden?.uomId_fromDB !== undefined);
+    const enrichedItems = result.data.filter((item) => item.cmHidden?.uomName_FromDB !== undefined);
 
     return {
       data: {

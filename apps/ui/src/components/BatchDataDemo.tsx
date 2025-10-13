@@ -57,18 +57,18 @@ ${data.performance.dataFetches?.map(fetch =>
 ✅ Key Achievement:
 - ${data.summary.totalItems} items processed with minimal database calls
 - Pre-enrichment + ultra-fast parallel validation
-- Each item now has cmHidden.uomId_fromDB populated
+- Each item now has cmHidden.uomName_FromDB populated
 - Combines efficiency with speed!
 
 `;
 
     // Show sample enriched items
-    const enrichedItems = data.items.filter((item) => item.cmHidden?.uomId_fromDB);
+    const enrichedItems = data.items.filter((item) => item.cmHidden?.uomName_FromDB);
     if (enrichedItems.length > 0) {
       resultText += `\n📋 Sample Enriched Items:\n`;
       enrichedItems.slice(0, 5).forEach((item, index) => {
-        resultText += `${index + 1}. Line ${item.lineID}: ${item.custPN} - uomId_fromDB: "${
-          item.cmHidden?.uomId_fromDB
+        resultText += `${index + 1}. Line ${item.lineID}: ${item.custPN} - uomName_FromDB: "${
+          item.cmHidden?.uomName_FromDB
         }"\n`;
       });
     }
@@ -128,18 +128,18 @@ ${data.performance.dataFetches?.map(fetch =>
 
 ✅ Key Achievement:
 - ${data.summary.totalItems} items processed with 1 database call
-- Each item now has cmHidden.uomId_fromDB populated
+- Each item now has cmHidden.uomName_FromDB populated
 - Traditional approach would need ${data.summary.totalItems} database calls
 
 `;
 
     // Show sample enriched items
-    const enrichedItems = data.items.filter((item) => item.cmHidden?.uomId_fromDB);
+    const enrichedItems = data.items.filter((item) => item.cmHidden?.uomName_FromDB);
     if (enrichedItems.length > 0) {
       resultText += `\n📋 Sample Enriched Items:\n`;
       enrichedItems.slice(0, 5).forEach((item, index) => {
-        resultText += `${index + 1}. Line ${item.lineID}: ${item.custPN} - uomId_fromDB: "${
-          item.cmHidden?.uomId_fromDB
+        resultText += `${index + 1}. Line ${item.lineID}: ${item.custPN} - uomName_FromDB: "${
+          item.cmHidden?.uomName_FromDB
         }"\n`;
       });
     }

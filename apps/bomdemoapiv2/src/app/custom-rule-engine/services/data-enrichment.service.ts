@@ -172,11 +172,11 @@ export class DataEnrichmentService {
       const uomEntity = uomLookup.get(+item.uomID);
 
       if (uomEntity) {
-        item.cmHidden.uomId_fromDB = uomEntity.unitName || 'unknown';
+        item.cmHidden.uomName_FromDB = uomEntity.unitName || 'unknown';
         item.cmHidden.uomId_enriched = true;
         enrichedCount++;
       } else {
-        item.cmHidden.uomId_fromDB = 'not-found';
+        item.cmHidden.uomName_FromDB = 'not-found';
         item.cmHidden.uomId_enriched = false;
       }
     }
@@ -205,7 +205,7 @@ export class DataEnrichmentService {
     enrichmentRate: string;
   } {
     const uomEnrichedItems = items.filter(
-      (item) => item.cmHidden?.uomId_fromDB !== undefined && item.cmHidden?.uomId_enriched === true,
+      (item) => item.cmHidden?.uomName_FromDB !== undefined && item.cmHidden?.uomId_enriched === true,
     ).length;
 
     return {

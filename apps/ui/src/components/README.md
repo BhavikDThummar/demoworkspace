@@ -15,7 +15,7 @@ This directory contains React components that demonstrate the batch data process
 - Error handling and user feedback
 
 **Key Functionality**:
-- Adds `cmHidden.uomId_fromDB` to each BOM item
+- Adds `cmHidden.uomName_FromDB` to each BOM item
 - Shows efficiency gains (1 DB call vs N DB calls)
 - Demonstrates linear scaling with item count
 
@@ -120,7 +120,7 @@ npx nx serve ui
 
 ### 3. Test Sample Data Processing
 - Click "Process Sample Data" to test with existing sample BOM data
-- View results showing enrichment with `uomId_fromDB` field
+- View results showing enrichment with `uomName_FromDB` field
 
 ### 4. Run Scalability Tests
 - Adjust the item count (10 - 10,000 items)

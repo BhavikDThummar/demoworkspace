@@ -32,7 +32,7 @@ interface IBOMItem {
     qpaDesignatorStep?: number;
     dnpQPARefDesStep?: number;
     // Batch data fields
-    uomId_fromDB?: string;
+    uomName_FromDB?: string;
     uomLookupResult?: {
       id: number | null;
       unitName: string | null;
@@ -96,19 +96,19 @@ export const uomEnrichmentRule: Rule<IBOMItem> = {
     const batchData = context.metadata?.batchData as BatchDataContext;
 
     if (batchData?.uomData) {
-      item.cmHidden.uomId_fromDB = batchData.uomData.unitName || 'unknown';
+      item.cmHidden.uomName_FromDB = batchData.uomData.unitName || 'unknown';
 
       // Log only for first few items to avoid spam
       if (context.index < 3) {
         console.log(
-          `✅ Item ${context.index + 1}: Added uomId_fromDB = "${item.cmHidden.uomId_fromDB}"`,
+          `✅ Item ${context.index + 1}: Added uomName_FromDB = "${item.cmHidden.uomName_FromDB}"`,
         );
       }
     } else {
-      item.cmHidden.uomId_fromDB = 'not-found';
+      item.cmHidden.uomName_FromDB = 'not-found';
 
       if (context.index < 3) {
-        console.log(`❌ Item ${context.index + 1}: UOM not found, set uomId_fromDB = "not-found"`);
+        console.log(`❌ Item ${context.index + 1}: UOM not found, set uomName_FromDB = "not-found"`);
       }
     }
 

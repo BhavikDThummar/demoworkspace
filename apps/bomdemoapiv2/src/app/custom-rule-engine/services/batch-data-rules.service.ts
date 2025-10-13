@@ -52,25 +52,25 @@ export class BatchDataRulesService {
           item.cmHidden = {};
         }
 
-        // Add uomId_fromDB field
+        // Add uomName_FromDB field
         if (uomEntities.length > 0) {
           const uomEntity = uomEntities[0];
-          item.cmHidden.uomId_fromDB = uomEntity.unitName || 'unknown';
+          item.cmHidden.uomName_FromDB = uomEntity.unitName || 'unknown';
 
           // Log only for first few items to avoid spam
           if (context.index < 3) {
             console.log(
-              `✅ [API] Item ${context.index + 1}: Added uomId_fromDB = "${
-                item.cmHidden.uomId_fromDB
+              `✅ [API] Item ${context.index + 1}: Added uomName_FromDB = "${
+                item.cmHidden.uomName_FromDB
               }"`,
             );
           }
         } else {
-          item.cmHidden.uomId_fromDB = 'not-found';
+          item.cmHidden.uomName_FromDB = 'not-found';
 
           if (context.index < 3) {
             console.log(
-              `❌ [API] Item ${context.index + 1}: UOM not found, set uomId_fromDB = "not-found"`,
+              `❌ [API] Item ${context.index + 1}: UOM not found, set uomName_FromDB = "not-found"`,
             );
           }
         }

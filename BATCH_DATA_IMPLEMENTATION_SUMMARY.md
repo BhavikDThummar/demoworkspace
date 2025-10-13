@@ -1,7 +1,7 @@
 # Batch Data Implementation Summary
 
 ## 🎯 Requirement Solved
-Add functionality to fetch data from database/API only once during batch execution of 10K+ items, then enrich each item with the fetched data (e.g., `cmHidden.uomId_fromDB`).
+Add functionality to fetch data from database/API only once during batch execution of 10K+ items, then enrich each item with the fetched data (e.g., `cmHidden.uomName_FromDB`).
 
 ## 🏗️ Implementation Overview
 
@@ -53,7 +53,7 @@ POST /api/nestjs-rule-engine/process-with-batch-data
 ```
 
 ### Example Response
-Each item will have `cmHidden.uomId_fromDB` populated from database with only 1 DB call.
+Each item will have `cmHidden.uomName_FromDB` populated from database with only 1 DB call.
 
 ## 📊 Performance
 - **Before**: N items = N database calls
@@ -70,7 +70,7 @@ Each item will have `cmHidden.uomId_fromDB` populated from database with only 1 
 ## 🎮 Testing
 1. Start app: `npx nx serve bomdemoapiv2`
 2. Test endpoint: `POST /api/nestjs-rule-engine/process-with-batch-data`
-3. Verify: Each item gets `cmHidden.uomId_fromDB` with 1 DB call
+3. Verify: Each item gets `cmHidden.uomName_FromDB` with 1 DB call
 
 The implementation is minimal, focused, and solves the exact requirement efficiently! 🎯
 #
@@ -165,14 +165,14 @@ private generateBatchId(): string {
    ❌ [BatchDataProvider] Cache MISS for key: batch_1697198630123_1:uom-data-id-minus-one - fetching data...
    🔍 [API] Fetching UOM data from database (executed once per batch)
    💾 [BatchDataProvider] Data cached for key: batch_1697198630123_1:uom-data-id-minus-one
-   ✅ [API] Item 1: Added uomId_fromDB = "EACH"
+   ✅ [API] Item 1: Added uomName_FromDB = "EACH"
    🔍 [BatchDataRule] Item 2: Cache HIT for key: uom-data-id-minus-one
    ✅ [BatchDataProvider] Cache HIT for key: batch_1697198630123_1:uom-data-id-minus-one
-   ✅ [API] Item 2: Added uomId_fromDB = "EACH"
+   ✅ [API] Item 2: Added uomName_FromDB = "EACH"
    [query] select `u0`.* from `uoms` as `u0` where `u0`.`id` = -1 limit 1 [took 31 ms, 1 result]
    ```
 
-4. **Expected response** (each item should have `cmHidden.uomId_fromDB`):
+4. **Expected response** (each item should have `cmHidden.uomName_FromDB`):
    ```json
    {
      "statusCode": 200,
@@ -183,7 +183,7 @@ private generateBatchId(): string {
            "lineID": 1,
            "custPN": "PART-001",
            "cmHidden": {
-             "uomId_fromDB": "EACH"
+             "uomName_FromDB": "EACH"
            }
          }
        ],
@@ -201,7 +201,7 @@ private generateBatchId(): string {
 ### 🎯 **Success Criteria**
 - ✅ Only 1 database query in logs (not N queries for N items)
 - ✅ Cache HIT messages for items 2+
-- ✅ All items have `cmHidden.uomId_fromDB` populated
+- ✅ All items have `cmHidden.uomName_FromDB` populated
 - ✅ Fast execution time (< 100ms for small batches)
 
 The batch data processing is now working correctly! 🎉

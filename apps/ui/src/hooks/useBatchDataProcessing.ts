@@ -21,7 +21,7 @@ interface BOMItem {
   mountingtypes: string;
   functionaltypes: string;
   cmHidden?: {
-    uomId_fromDB?: string;
+    uomName_FromDB?: string;
     uomId_enriched?: boolean;
     [key: string]: unknown;
   };

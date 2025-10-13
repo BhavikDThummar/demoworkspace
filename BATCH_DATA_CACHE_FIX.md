@@ -90,15 +90,15 @@ Batch Processing (13 items)
 ❌ [BatchCacheManager] Cache MISS for key: batch_1697198630123_1:uom-data-id-minus-one - fetching data...
 🔍 [API] Fetching UOM data from database (executed once per batch)
 💾 [BatchCacheManager] Data cached for key: batch_1697198630123_1:uom-data-id-minus-one
-✅ [API] Item 1: Added uomId_fromDB = "EACH"
+✅ [API] Item 1: Added uomName_FromDB = "EACH"
 
 🔍 [BatchDataRule] Item 2: Cache HIT for key: uom-data-id-minus-one
 ✅ [BatchCacheManager] Cache HIT for key: batch_1697198630123_1:uom-data-id-minus-one
-✅ [API] Item 2: Added uomId_fromDB = "EACH"
+✅ [API] Item 2: Added uomName_FromDB = "EACH"
 
 🔍 [BatchDataRule] Item 3: Cache HIT for key: uom-data-id-minus-one
 ✅ [BatchCacheManager] Cache HIT for key: batch_1697198630123_1:uom-data-id-minus-one
-✅ [API] Item 3: Added uomId_fromDB = "EACH"
+✅ [API] Item 3: Added uomName_FromDB = "EACH"
 
 ... (items 4-13 all show Cache HIT)
 

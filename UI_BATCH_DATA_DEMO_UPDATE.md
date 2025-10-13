@@ -62,7 +62,7 @@ Updated the `BatchDataDemo.tsx` component to showcase both the original batch da
 ✅ Key Achievement:
 - 13 items processed with minimal database calls
 - Pre-enrichment + ultra-fast parallel validation
-- Each item now has cmHidden.uomId_fromDB populated
+- Each item now has cmHidden.uomName_FromDB populated
 - Combines efficiency with speed!
 ```
 

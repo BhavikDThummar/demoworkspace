@@ -4,6 +4,7 @@ export interface IBOMItem {
   qpa: number;
   refDesig: string;
   uomID: string;
+  dbUomId?: number;
   dnpQty?: number;
   dnpDesig?: string;
   mfgPNDescription: string;

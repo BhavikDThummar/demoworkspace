@@ -180,6 +180,67 @@ export class BomValidationController {
   }
 
   /**
+   * OPTIMIZED: Pre-enrich data then validate with ultra-fast parallel execution
+   * This approach combines the best of both worlds:
+   * 1. Efficient data fetching (minimal DB calls)
+   * 2. Ultra-fast parallel validation (no batch overhead)
+   */
+  @Post('validate-with-pre-enrichment')
+  async validateWithPreEnrichment(@Body() request: BatchDataProcessRequest) {
+    let effectiveInputs = request.inputs;
+
+    // Multiply BOM items if requested
+    if (request.multiplyInputBy && request.multiplyInputBy > 1) {
+      const multiplier = Math.floor(request.multiplyInputBy);
+      effectiveInputs = Array.from({ length: multiplier }, () =>
+        request.inputs.map((input) => ({ ...input })),
+      ).flat();
+    }
+
+    // Use the new optimized flow
+    const result = await this.bomRuleEngineService.validateWithPreEnrichment(
+      effectiveInputs,
+      request.options,
+    );
+
+    return {
+      data: {
+        items: result.data,
+        errors: result.errors,
+        warnings: result.warnings,
+        summary: {
+          totalItems: effectiveInputs.length,
+          validItems: result.data.length - result.errors.length,
+          invalidItems: result.errors.length,
+          totalErrors: result.errors.length,
+          totalWarnings: result.warnings.length,
+          executionTime: result.executionTime,
+          rulesExecuted: result.rulesExecuted,
+          enrichedItems: result.enrichmentStats.enrichedItems,
+          enrichmentRate: `${Math.round((result.enrichmentStats.enrichedItems / result.enrichmentStats.totalItems) * 100)}%`,
+        },
+        performance: {
+          itemsPerSecond: Math.round(effectiveInputs.length / (result.executionTime / 1000)),
+          avgTimePerItem: `${(result.executionTime / effectiveInputs.length).toFixed(2)}ms`,
+          enrichmentTime: `${result.enrichmentStats.executionTime.toFixed(2)}ms`,
+          validationTime: `${result.validationTime.toFixed(2)}ms`,
+          dataFetches: result.enrichmentStats.dataFetches,
+        },
+      },
+      message:
+        result.errors.length > 0
+          ? `OPTIMIZED: Pre-enrichment + ultra-fast validation completed with ${
+              result.errors.length
+            } error(s) in ${result.executionTime.toFixed(2)}ms. ${
+              result.enrichmentStats.enrichedItems
+            } items enriched.`
+          : `OPTIMIZED: Pre-enrichment + ultra-fast validation completed successfully in ${result.executionTime.toFixed(
+              2,
+            )}ms. ${result.enrichmentStats.enrichedItems} items enriched.`,
+    };
+  }
+
+  /**
    * Process BOM items with batch data enrichment
    * This endpoint demonstrates the main requirement: efficient DB/API calls
    */

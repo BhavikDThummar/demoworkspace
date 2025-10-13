@@ -16,6 +16,7 @@ interface IBOMItem {
   description?: string;
   qpa?: number | string;
   uomID?: string;
+  dbUomId?: number;
   refDesig?: string;
   dnpDesig?: string;
   dnpQty?: number | string;

@@ -169,5 +169,5 @@ export class RfqMountingTypeEntity {
 
   // Relationships
   @OneToMany('ComponentAttributesEntity', 'mountingType')
-  componentAttributes = new Collection<unknown>(this);
+  componentAttributes = new Collection<any>(this);
 }

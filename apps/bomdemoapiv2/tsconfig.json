@@ -4,6 +4,12 @@
   "include": [],
   "references": [
     {
+      "path": "../../libs/database"
+    },
+    {
+      "path": "../../libs/entities"
+    },
+    {
       "path": "../../libs/cm-rule-engine"
     },
     {

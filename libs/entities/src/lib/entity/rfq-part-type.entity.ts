@@ -138,5 +138,5 @@ export class RfqPartTypeEntity {
 
   // Relationships
   @OneToMany('ComponentAttributesEntity', 'functionalCategory')
-  componentAttributes = new Collection<unknown>(this);
+  componentAttributes = new Collection<any>(this);
 }

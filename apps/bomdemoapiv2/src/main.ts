@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app/app.module';
 import { loadSSLCertificates } from './utils/ssl-config';
 import { join } from 'path';
+import { initializeMikroORM } from '@org/database';
 
 async function bootstrap() {
   const configService = new ConfigService();
@@ -34,9 +35,9 @@ async function bootstrap() {
 
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter({ 
+    new FastifyAdapter({
       bodyLimit: bodyLimitBytes,
-      https: enableHttps ? httpsOptions : undefined 
+      https: enableHttps ? httpsOptions : undefined,
     }),
     {
       bufferLogs: true,
@@ -78,6 +79,9 @@ async function bootstrap() {
     Logger.warn('⚠️  Uploads directory not found, static file serving disabled', error);
   }
 
+  // Initialize database connections
+  await initializeMikroORM(app);
+
   const port = configService.get('PORT', 8001);
   const nodeEnv = configService.get('NODE_ENV', 'development');
 
@@ -111,7 +115,7 @@ function parsePayloadLimit(limit: string): number {
 
   const value = parseFloat(match[1]);
   const unit = match[2] || 'b';
-  
+
   return Math.floor(value * units[unit]);
 }
 

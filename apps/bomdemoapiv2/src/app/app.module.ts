@@ -9,6 +9,7 @@ import { CustomRuleEngineModule } from './custom-rule-engine';
 import { NestjsRuleEngineModule } from './nestjs-rule-engine';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     CustomRuleEngineModule,
     // NestJS Rule Engine Module (cm-rule-engine with NestJS binding)
     NestjsRuleEngineModule,
+    DatabaseModule,
   ],
   controllers: [AppController, MinimalGoRulesController],
   providers: [

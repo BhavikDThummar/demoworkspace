@@ -19,6 +19,8 @@
     "baseUrl": ".",
     "paths": {
       "@org/cm-rule-engine": ["libs/cm-rule-engine/src/index.ts"],
+      "@org/database": ["libs/database/src/index.ts"],
+      "@org/entities": ["libs/entities/src/index.ts"],
       "@org/minimal-gorules": ["libs/minimal-gorules/src/index.ts"]
     }
   }

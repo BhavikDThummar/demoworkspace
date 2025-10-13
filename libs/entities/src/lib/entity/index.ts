@@ -8,3 +8,6 @@ export * from './rfq-rohs-main-category.entity';
 export * from './rfq-rohs.entity';
 export * from './rfq-part-type.entity';
 export * from './rfq-mounting-type.entity';
+
+// Convenience exports
+export * from './sql-entities';

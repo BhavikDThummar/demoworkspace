@@ -11,7 +11,9 @@ import { RuleModuleBuilderService } from '../services/rule-module-builder.servic
 export class RuleModuleController {
   private readonly logger = new Logger(RuleModuleController.name);
 
-  constructor(private readonly ruleModuleBuilder: RuleModuleBuilderService) {}
+  constructor(
+    private readonly ruleModuleBuilder: RuleModuleBuilderService
+  ) {}
 
   /**
    * Serve the compiled JavaScript module

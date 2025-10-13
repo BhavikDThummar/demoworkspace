@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { MinimalGoRulesController } from './test-minimal-gorules/minimal-gorules.controller';
 import { CustomRuleEngineModule } from './custom-rule-engine';
 import { NestjsRuleEngineModule } from './nestjs-rule-engine';
+
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { DatabaseModule } from './database/database.module';

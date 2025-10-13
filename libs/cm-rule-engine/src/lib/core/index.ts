@@ -26,3 +26,7 @@ export { RuleManager } from './rule-manager';
 
 // Export ExecutionEngine for advanced use cases
 export { ExecutionEngine } from './execution-engine';
+
+// Export BatchDataProvider for batch data management
+export { BatchDataProvider } from './batch-data-provider';
+export type { BatchDataContext, DataFetcher } from './batch-data-provider';

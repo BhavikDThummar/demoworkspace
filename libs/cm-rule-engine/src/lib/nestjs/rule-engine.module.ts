@@ -1,5 +1,7 @@
 import { Module, DynamicModule, Provider } from '@nestjs/common';
 import { RuleEngineService, RULE_ENGINE_OPTIONS } from './rule-engine.service';
+import { BatchDataProvider } from '../core/batch-data-provider';
+import { BatchDataRuleFactory } from './batch-data-rule';
 import {
   RuleEngineModuleOptions,
   RuleEngineModuleAsyncOptions,
@@ -29,8 +31,10 @@ export class RuleEngineModule {
           },
         },
         RuleEngineService,
+        BatchDataProvider,
+        BatchDataRuleFactory,
       ],
-      exports: [RuleEngineService],
+      exports: [RuleEngineService, BatchDataProvider, BatchDataRuleFactory],
     };
   }
 
@@ -45,8 +49,13 @@ export class RuleEngineModule {
       module: RuleEngineModule,
       global: options.isGlobal ?? false,
       imports: options.imports || [],
-      providers: [...this.createAsyncProviders(options), RuleEngineService],
-      exports: [RuleEngineService],
+      providers: [
+        ...this.createAsyncProviders(options), 
+        RuleEngineService,
+        BatchDataProvider,
+        BatchDataRuleFactory,
+      ],
+      exports: [RuleEngineService, BatchDataProvider, BatchDataRuleFactory],
     };
   }
 

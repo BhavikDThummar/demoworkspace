@@ -5,11 +5,20 @@
 
 export { RuleEngineModule } from './rule-engine.module';
 export { RuleEngineService, RULE_ENGINE_OPTIONS } from './rule-engine.service';
+export { BatchDataProvider } from '../core/batch-data-provider';
+export { BatchDataRuleFactory } from './batch-data-rule';
 export type {
   RuleEngineModuleOptions,
   RuleEngineModuleOptionsFactory,
   RuleEngineModuleAsyncOptions,
 } from './types';
+export type {
+  BatchDataContext,
+  DataFetcher,
+} from '../core/batch-data-provider';
+export type {
+  BatchDataRuleConfig,
+} from './batch-data-rule';
 
 // Re-export core types for convenience
 export type {

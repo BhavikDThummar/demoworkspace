@@ -43,12 +43,13 @@ apps/bomdemoapiv2/src/app/
 │   │   └── batch-data-rules.service.ts ← Creates UOM enrichment rule
 │   ├── rules/
 │   │   └── batchDataRules.module.ts    ← UI-compatible rules
-│   └── custom-rule-engine.module.ts    ← Registers the service
+│   └── custom-rule-engine.module.ts    ← Provides BatchDataRulesService
 ├── nestjs-rule-engine/
 │   ├── controllers/
 │   │   └── bom-validation.controller.ts ← API endpoint
-│   └── services/
-│       └── rule-engine.service.ts       ← Orchestrates everything
+│   ├── services/
+│   │   └── rule-engine.service.ts       ← Orchestrates everything
+│   └── nestjs-rule-engine.module.ts     ← Imports CustomRuleEngineModule
 ```
 
 ## 🔄 How It Works (Step by Step)
@@ -325,3 +326,36 @@ A: Yes! The common library is generic. Just create your own service like `BatchD
 A: Check console logs - they show when DB calls happen vs when cache is used.
 
 This architecture gives you the exact functionality you requested: efficient batch processing with minimal database calls! 🚀
+## 🔧 M
+odule Dependencies Fixed
+
+The dependency injection issue was resolved by ensuring proper module imports:
+
+### NestjsRuleEngineModule
+```typescript
+@Module({
+  imports: [
+    RuleEngineModule.forRoot({ isGlobal: true }),
+    CustomRuleEngineModule, // ← Import to get BatchDataRulesService
+  ],
+  providers: [BomRuleEngineService],
+  // ...
+})
+```
+
+### CustomRuleEngineModule  
+```typescript
+@Module({
+  imports: [
+    RuleEngineModule.forRoot(), // ← Import to get BatchDataRuleFactory
+  ],
+  providers: [BatchDataRulesService],
+  exports: [BatchDataRulesService], // ← Export for other modules
+  // ...
+})
+```
+
+This ensures:
+- `BomRuleEngineService` can inject `BatchDataRulesService`
+- `BatchDataRulesService` can inject `BatchDataRuleFactory`
+- All dependencies are properly resolved by NestJS DI container

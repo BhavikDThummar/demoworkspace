@@ -1,26 +1,21 @@
 export interface IBOMItem {
   lineID: number;
-  custPN?: string;
-  qpa?: number | string;
-  refDesig?: string;
-  uomID?: string | number;
-  dnpQty?: number | string;
+  custPN?: string | null;
+  qpa: number;
+  refDesig: string;
+  dnpQty?: number;
   dnpDesig?: string;
-  mfgPNDescription?: string;
-  mfgCode?: string;
-  mfgPN?: string;
-  description?: string;
+  uomID: string | number;
+  dbUomId?: number;
+  mfgPNDescription: string;
+  mfgCode: string;
+  mfgCodeID?: number;
+  mfgPN: string;
+  mfgPNID?: number;
+  description: string;
   mountingtypes?: string;
   functionaltypes?: string;
-  cmHidden?: {
-    refDesigParsed?: string[];
-    dnpDesigParsed?: string[];
-    refDesigCount?: number;
-    dnpDesigCount?: number;
-    qpaDesignatorStep?: number;
-    dnpQPARefDesStep?: number;
-    [key: string]: unknown;
-  };
+  cmHidden?: Record<string, any>;
   field1?: string;
   field2?: string;
   field3?: string;
@@ -28,5 +23,4 @@ export interface IBOMItem {
   field5?: string;
   field6?: string;
   field7?: string;
-  [key: string]: unknown;
 }

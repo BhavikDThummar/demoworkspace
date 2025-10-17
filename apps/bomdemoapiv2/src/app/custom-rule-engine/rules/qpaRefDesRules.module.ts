@@ -11,26 +11,32 @@ import { Rule, RuleContext, ValidationError } from '@org/cm-rule-engine';
 // Type definition for BOM items (duplicated to avoid import issues)
 interface IBOMItem {
   lineID: number;
-  custPN?: string;
-  mfgPN?: string;
-  description?: string;
-  qpa?: number | string;
-  uomID?: string | number;
-  dbUomId?: number;
-  refDesig?: string;
+  custPN?: string | null;
+  qpa: number;
+  refDesig: string;
+  dnpQty?: number;
   dnpDesig?: string;
-  dnpQty?: number | string;
-  cmHidden?: {
-    refDesigParsed?: string[];
-    dnpDesigParsed?: string[];
-    refDesigCount?: number;
-    dnpDesigCount?: number;
-    qpaDesignatorStep?: number;
-    dnpQPARefDesStep?: number;
-    [key: string]: unknown;
-  };
-  [key: string]: unknown;
+  uomID: string | number;
+  dbUomId?: number;
+  mfgPNDescription: string;
+  mfgCode: string;
+  mfgCodeID?: number;
+  mfgPN: string;
+  mfgPNID?: number;
+  description: string;
+  mountingtypes?: string;
+  functionaltypes?: string;
+  cmHidden?: Record<string, any>;
+  field1?: string;
+  field2?: string;
+  field3?: string;
+  field4?: string;
+  field5?: string;
+  field6?: string;
+  field7?: string;
 }
+
+
 
 /** Utility: Parse RefDesig string into array */
 function parseRefDesig(refDesig: string): string[] {

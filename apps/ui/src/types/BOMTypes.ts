@@ -1,18 +1,20 @@
 export interface IBOMItem {
   lineID: number;
-  custPN?: string;
+  custPN?: string | null;
   qpa: number;
   refDesig: string;
-  uomID: string | number;
-  dbUomId?: number;
   dnpQty?: number;
   dnpDesig?: string;
+  uomID: string | number;
+  dbUomId?: number;
   mfgPNDescription: string;
   mfgCode: string;
+  mfgCodeID?: number;
   mfgPN: string;
+  mfgPNID?: number;
   description: string;
-  mountingtypes: string;
-  functionaltypes: string;
+  mountingtypes?: string;
+  functionaltypes?: string;
   cmHidden?: Record<string, any>;
   field1?: string;
   field2?: string;

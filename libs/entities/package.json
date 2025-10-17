@@ -1,0 +1,19 @@
+{
+  "name": "@org/entities",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/index.js",
+  "module": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    }
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  }
+}

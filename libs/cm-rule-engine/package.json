@@ -1,0 +1,98 @@
+{
+  "name": "@org/cm-rule-engine",
+  "version": "0.0.1",
+  "description": "A flexible, type-safe rule engine for data transformation and validation with React and NestJS integrations",
+  "private": true,
+  "sideEffects": false,
+  "keywords": [
+    "rule-engine",
+    "validation",
+    "transformation",
+    "react",
+    "nestjs",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "main": "./dist/node/src/index.node.js",
+  "module": "./dist/browser/src/index.browser.js",
+  "browser": "./dist/browser/src/index.browser.js",
+  "types": "./dist/node/src/index.node.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "@org/source": "./src/index.ts",
+      "node": {
+        "types": "./dist/node/src/index.node.d.ts",
+        "require": "./dist/node/src/index.node.js",
+        "default": "./dist/node/src/index.node.js"
+      },
+      "browser": {
+        "types": "./dist/browser/src/index.browser.d.ts",
+        "import": "./dist/browser/src/index.browser.js",
+        "default": "./dist/browser/src/index.browser.js"
+      },
+      "types": "./dist/node/src/index.node.d.ts",
+      "require": "./dist/node/src/index.node.js",
+      "default": "./dist/node/src/index.node.js"
+    },
+    "./react": {
+      "@org/source": "./src/lib/react/index.ts",
+      "types": "./dist/browser/src/lib/react/index.d.ts",
+      "import": "./dist/browser/src/lib/react/index.js",
+      "require": "./dist/browser/src/lib/react/index.js",
+      "default": "./dist/browser/src/lib/react/index.js"
+    },
+    "./nestjs": {
+      "@org/source": "./src/lib/nestjs/index.ts",
+      "types": "./dist/node/src/lib/nestjs/index.d.ts",
+      "require": "./dist/node/src/lib/nestjs/index.js",
+      "default": "./dist/node/src/lib/nestjs/index.js"
+    }
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0 || ^11.0.0",
+    "@nestjs/config": "^3.0.0 || ^4.0.0",
+    "@nestjs/core": "^10.0.0 || ^11.0.0",
+    "reflect-metadata": "^0.1.13 || ^0.2.0",
+    "rxjs": "^7.8.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@nestjs/common": {
+      "optional": true
+    },
+    "@nestjs/config": {
+      "optional": true
+    },
+    "@nestjs/core": {
+      "optional": true
+    },
+    "reflect-metadata": {
+      "optional": true
+    },
+    "rxjs": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

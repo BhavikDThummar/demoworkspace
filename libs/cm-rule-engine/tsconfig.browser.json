@@ -1,0 +1,38 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": "src",
+    "outDir": "dist/browser",
+    "tsBuildInfoFile": "dist/browser/tsconfig.browser.tsbuildinfo",
+    "emitDeclarationOnly": false,
+    "forceConsistentCasingInFileNames": true,
+    // Browser environment with DOM and WebWorker APIs
+    "lib": ["ES2022", "DOM", "WebWorker"],
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "target": "ES2022",
+    // Module interop
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    // Output options
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    // React JSX support
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "jest.config.ts",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "src/**/examples/**/*",
+    "src/test-setup.ts",
+    "src/**/testing/**/*",
+    "src/**/version/demo-*.ts",
+    "src/**/nestjs/**/*",
+    "src/index.node.ts"
+  ]
+}

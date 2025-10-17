@@ -11,6 +11,21 @@
     },
     {
       "path": "./libs/minimal-gorules"
+    },
+    {
+      "path": "./libs/cm-rule-engine"
+    },
+    {
+      "path": "./apps/ui-e2e"
+    },
+    {
+      "path": "./apps/ui"
+    },
+    {
+      "path": "./libs/database"
+    },
+    {
+      "path": "./libs/entities"
     }
   ]
 }

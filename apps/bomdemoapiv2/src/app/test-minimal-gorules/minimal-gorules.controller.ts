@@ -21,9 +21,9 @@ export interface ExecuteRuleRequest {
  */
 export interface ExecuteRuleResponse<T = unknown> {
   success: boolean;
-  results?: Map<string, T> | T;
+  results?: Record<string, T> | T;
   executionTime?: number;
-  errors?: Map<string, string>;
+  errors?: Record<string, string>;
   message?: string;
 }
 
@@ -59,6 +59,30 @@ export interface BatchExecuteResponse<T = unknown> {
 @Controller('minimal-gorules')
 export class MinimalGoRulesController {
   constructor(private readonly minimalGoRulesService: MinimalGoRulesService) {}
+
+  /**
+   * Helper method to convert batch results for JSON serialization
+   */
+  private serializeBatchResults<T>(results: Array<{
+    inputIndex: number;
+    results: Map<string, T>;
+    errors?: Map<string, Error>;
+    success: boolean;
+  }>): Array<{
+    inputIndex: number;
+    results: Record<string, T>;
+    errors?: Record<string, string>;
+    success: boolean;
+  }> {
+    return results.map((inputResult) => ({
+      inputIndex: inputResult.inputIndex,
+      results: Object.fromEntries(inputResult.results),
+      errors: inputResult.errors ? Object.fromEntries(
+        Array.from(inputResult.errors.entries()).map(([key, error]) => [key, error.message])
+      ) : undefined,
+      success: inputResult.success,
+    }));
+  }
 
   /**
    * Execute a single rule by ID
@@ -101,7 +125,9 @@ export class MinimalGoRulesController {
 
       // Convert Map to object for JSON serialization
       const resultsObj = Object.fromEntries(result.results);
-      const errorsObj = result.errors ? Object.fromEntries(result.errors) : undefined;
+      const errorsObj = result.errors ? Object.fromEntries(
+        Array.from(result.errors.entries()).map(([key, error]) => [key, error.message])
+      ) : undefined;
 
       return {
         success: true,
@@ -131,11 +157,13 @@ export class MinimalGoRulesController {
       const result = await this.minimalGoRulesService.executeByTags(
         request.tags,
         request.input,
-        request.mode || 'parallel',
+        (request.mode === 'mixed' ? 'parallel' : request.mode) || 'parallel',
       );
 
       const resultsObj = Object.fromEntries(result.results);
-      const errorsObj = result.errors ? Object.fromEntries(result.errors) : undefined;
+      const errorsObj = result.errors ? Object.fromEntries(
+        Array.from(result.errors.entries()).map(([key, error]) => [key, error.message])
+      ) : undefined;
 
       return {
         success: true,
@@ -413,12 +441,7 @@ export class MinimalGoRulesController {
         );
       }
       // Convert Map objects to plain objects for JSON serialization
-      const serializedResults = result.results.map((inputResult) => ({
-        inputIndex: inputResult.inputIndex,
-        results: Object.fromEntries(inputResult.results),
-        errors: inputResult.errors ? Object.fromEntries(inputResult.errors) : undefined,
-        success: inputResult.success,
-      }));
+      const serializedResults = this.serializeBatchResults(result.results);
       const response: BatchExecuteResponse = {
         success: true,
         results: serializedResults,
@@ -485,12 +508,7 @@ export class MinimalGoRulesController {
         request.options,
       );
       // Convert Map objects to plain objects for JSON serialization
-      const serializedResults = result.results.map((inputResult) => ({
-        inputIndex: inputResult.inputIndex,
-        results: Object.fromEntries(inputResult.results),
-        errors: inputResult.errors ? Object.fromEntries(inputResult.errors) : undefined,
-        success: inputResult.success,
-      }));
+      const serializedResults = this.serializeBatchResults(result.results);
       const response: BatchExecuteResponse = {
         success: true,
         results: serializedResults,
@@ -559,12 +577,7 @@ export class MinimalGoRulesController {
         request.options,
       );
       // Convert Map objects to plain objects for JSON serialization
-      const serializedResults = result.results.map((inputResult) => ({
-        inputIndex: inputResult.inputIndex,
-        results: Object.fromEntries(inputResult.results),
-        errors: inputResult.errors ? Object.fromEntries(inputResult.errors) : undefined,
-        success: inputResult.success,
-      }));
+      const serializedResults = this.serializeBatchResults(result.results);
       const response: BatchExecuteResponse = {
         success: true,
         results: serializedResults,
@@ -576,6 +589,153 @@ export class MinimalGoRulesController {
     } catch (error) {
       throw new HttpException(
         `Batch execution by tags failed: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Execute all rules on all inputs in parallel - maximum performance mode
+   * All inputs and all rules are executed concurrently without batching
+   * Similar to cm-rule-engine's executeParallel method
+   */
+  @Post('execute-all-parallel')
+  async executeAllParallel(
+    @Body()
+    request: {
+      inputs: Record<string, unknown>[];
+      ruleIds: string[];
+      options?: BatchExecutionOptions;
+      multiplyInputBy?: number;
+    },
+  ): Promise<BatchExecuteResponse> {
+    try {
+      if (!request.inputs || request.inputs.length === 0) {
+        throw new HttpException(
+          'inputs array is required and cannot be empty',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      if (!request.ruleIds || request.ruleIds.length === 0) {
+        throw new HttpException(
+          'ruleIds array is required and cannot be empty',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      let effectiveInputs = request.inputs;
+      if (request.multiplyInputBy && request.multiplyInputBy > 1) {
+        const multiplier = Math.floor(request.multiplyInputBy);
+        const newLength = request.inputs.length * multiplier;
+        if (newLength > 100000) {
+          throw new HttpException(
+            'Maximum 100,000 inputs allowed per batch after multiplication',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        effectiveInputs = Array.from({ length: multiplier }, () =>
+          request.inputs.map((input) => ({ ...input })),
+        ).flat();
+      }
+
+      if (effectiveInputs.length > 100000) {
+        throw new HttpException('Maximum 100,000 inputs allowed per batch', HttpStatus.BAD_REQUEST);
+      }
+
+      const result = await this.minimalGoRulesService.executeAllParallel(
+        effectiveInputs,
+        request.ruleIds,
+        request.options,
+      );
+
+      // Convert Map objects to plain objects for JSON serialization
+      const serializedResults = this.serializeBatchResults(result.results);
+
+      const response: BatchExecuteResponse = {
+        success: true,
+        results: serializedResults,
+        message: `Successfully executed all ${request.ruleIds.length} rules on all ${result.results.length} inputs in parallel`,
+      };
+
+      return response;
+    } catch (error) {
+      throw new HttpException(
+        `Execute all parallel failed: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Execute all rules on all inputs in parallel by tags
+   * Convenience method that resolves tags to rule IDs first
+   */
+  @Post('execute-all-parallel-by-tags')
+  async executeAllParallelByTags(
+    @Body()
+    request: {
+      inputs: Record<string, unknown>[];
+      tags: string[];
+      options?: BatchExecutionOptions;
+      multiplyInputBy?: number;
+    },
+  ): Promise<BatchExecuteResponse> {
+    try {
+      if (!request.inputs || request.inputs.length === 0) {
+        throw new HttpException(
+          'inputs array is required and cannot be empty',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      if (!request.tags || request.tags.length === 0) {
+        throw new HttpException(
+          'tags array is required and cannot be empty',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      let effectiveInputs = request.inputs;
+      if (request.multiplyInputBy && request.multiplyInputBy > 1) {
+        const multiplier = Math.floor(request.multiplyInputBy);
+        const newLength = request.inputs.length * multiplier;
+        if (newLength > 100000) {
+          throw new HttpException(
+            'Maximum 100,000 inputs allowed per batch after multiplication',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        effectiveInputs = Array.from({ length: multiplier }, () =>
+          request.inputs.map((input) => ({ ...input })),
+        ).flat();
+      }
+
+      if (effectiveInputs.length > 100000) {
+        throw new HttpException('Maximum 100,000 inputs allowed per batch', HttpStatus.BAD_REQUEST);
+      }
+
+      const result = await this.minimalGoRulesService.executeAllParallelByTags(
+        effectiveInputs,
+        request.tags,
+        request.options,
+      );
+
+      // Convert Map objects to plain objects for JSON serialization
+      const serializedResults = this.serializeBatchResults(result.results);
+
+      const response: BatchExecuteResponse = {
+        success: true,
+        results: serializedResults,
+        message: `Successfully executed all rules with tags [${request.tags.join(', ')}] on all ${result.results.length} inputs in parallel`,
+      };
+
+      return response;
+    } catch (error) {
+      throw new HttpException(
+        `Execute all parallel by tags failed: ${
           error instanceof Error ? error.message : 'Unknown error'
         }`,
         HttpStatus.INTERNAL_SERVER_ERROR,

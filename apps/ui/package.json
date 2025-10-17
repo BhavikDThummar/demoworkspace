@@ -1,0 +1,20 @@
+{
+  "name": "ui",
+  "private": true,
+  "type": "module",
+  "scripts": {},
+  "sideEffects": false,
+  "nx": {
+    "name": "ui"
+  },
+  "dependencies": {
+    "@org/cm-rule-engine": "*",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9"
+  }
+}

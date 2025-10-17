@@ -376,4 +376,15 @@ export interface IMinimalExecutionEngine {
    * Update execution engine configuration
    */
   updateConfig(config: Partial<ExecutionEngineConfig>): void;
+
+  /**
+   * Execute all rules on all inputs in parallel - maximum performance mode
+   * All inputs and all rules are executed concurrently without batching
+   * Similar to cm-rule-engine's executeParallel method
+   */
+  executeAllParallel<T>(
+    inputs: Record<string, unknown>[],
+    ruleIds: string[],
+    options?: BatchExecutionOptions,
+  ): Promise<BatchExecutionResult<T>>;
 }

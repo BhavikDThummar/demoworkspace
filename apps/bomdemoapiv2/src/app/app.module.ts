@@ -1,10 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 import { MinimalGoRulesModule } from '@org/minimal-gorules';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MinimalGoRulesController } from './test-minimal-gorules/minimal-gorules.controller';
-import { BomRulesModule } from './bom-rules';
+import { CustomRuleEngineModule } from './custom-rule-engine';
+import { NestjsRuleEngineModule } from './nestjs-rule-engine';
+
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
@@ -18,10 +24,25 @@ import { BomRulesModule } from './bom-rules';
       autoInitialize: true, // Auto-initialize on app startup
       configKey: 'minimalGoRules', // Look for config under this key, fallback to env vars
     }),
-    // BOM Rules Module
-    BomRulesModule,
+    // Custom Rule Engine Module (separate from GoRules)
+    CustomRuleEngineModule,
+    // NestJS Rule Engine Module (cm-rule-engine with NestJS binding)
+    NestjsRuleEngineModule,
+    DatabaseModule,
   ],
   controllers: [AppController, MinimalGoRulesController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // Global response interceptor
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
+    },
+    // Global exception filter
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}

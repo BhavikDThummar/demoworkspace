@@ -28,6 +28,7 @@ export function BOMRuleEngineDemo() {
 
       // Process the BOM data using the hook
       const executionResult = await process(sampleBOMData);
+      console.log('executionResult:', executionResult);
 
       // Format results
       const validItems = executionResult.data.filter(
@@ -125,14 +126,31 @@ ${validItems
         </div>
 
         <div className="form-group">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1rem',
+            }}
+          >
             <h3>Available Rules ({bomValidationRules.length})</h3>
-            <button onClick={toggleAllRules} className="btn" style={{ backgroundColor: '#6c757d', color: 'white' }}>
+            <button
+              onClick={toggleAllRules}
+              className="btn"
+              style={{ backgroundColor: '#6c757d', color: 'white' }}
+            >
               {selectedRules.length === bomValidationRules.length ? 'Deselect All' : 'Select All'}
             </button>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '10px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+              gap: '10px',
+            }}
+          >
             {bomValidationRules.map((rule) => (
               <div
                 key={rule.name}
@@ -170,16 +188,31 @@ ${validItems
 
       <div className="card">
         <h3>Sample BOM Data ({sampleBOMData.length} items)</h3>
-        <div style={{ maxHeight: '300px', overflow: 'auto', border: '1px solid #ddd', borderRadius: '6px' }}>
+        <div
+          style={{
+            maxHeight: '300px',
+            overflow: 'auto',
+            border: '1px solid #ddd',
+            borderRadius: '6px',
+          }}
+        >
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
             <thead style={{ backgroundColor: '#f5f5f5', position: 'sticky', top: 0 }}>
               <tr>
-                <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>Line ID</th>
-                <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>Description</th>
+                <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>
+                  Line ID
+                </th>
+                <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>
+                  Description
+                </th>
                 <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>QPA</th>
-                <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>RefDesig</th>
+                <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>
+                  RefDesig
+                </th>
                 <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>UOM</th>
-                <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>Mfg PN</th>
+                <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>
+                  Mfg PN
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -188,7 +221,9 @@ ${validItems
                   <td style={{ padding: '4px', border: '1px solid #ddd' }}>{item.lineID}</td>
                   <td style={{ padding: '4px', border: '1px solid #ddd' }}>{item.description}</td>
                   <td style={{ padding: '4px', border: '1px solid #ddd' }}>{item.qpa}</td>
-                  <td style={{ padding: '4px', border: '1px solid #ddd' }}>{item.refDesig || '(empty)'}</td>
+                  <td style={{ padding: '4px', border: '1px solid #ddd' }}>
+                    {item.refDesig || '(empty)'}
+                  </td>
                   <td style={{ padding: '4px', border: '1px solid #ddd' }}>{item.uomID}</td>
                   <td style={{ padding: '4px', border: '1px solid #ddd' }}>{item.mfgPN}</td>
                 </tr>
@@ -236,12 +271,24 @@ ${validItems
 
         <h4 style={{ margin: '0 0 0.5rem 0' }}>Rule Engine Features Demonstrated:</h4>
         <ul style={{ margin: '0', paddingLeft: '1.5rem' }}>
-          <li>🔄 <strong>Rule Chaining:</strong> Transform rules prepare data for validation rules</li>
-          <li>🎯 <strong>Priority-based Execution:</strong> Rules run in priority order</li>
-          <li>🏷️ <strong>Tag-based Organization:</strong> Rules are categorized with tags</li>
-          <li>⚡ <strong>Conditional Logic:</strong> Rules can have complex validation logic</li>
-          <li>📊 <strong>Error Aggregation:</strong> Multiple validation errors per item</li>
-          <li>📈 <strong>Performance Tracking:</strong> Execution metrics</li>
+          <li>
+            🔄 <strong>Rule Chaining:</strong> Transform rules prepare data for validation rules
+          </li>
+          <li>
+            🎯 <strong>Priority-based Execution:</strong> Rules run in priority order
+          </li>
+          <li>
+            🏷️ <strong>Tag-based Organization:</strong> Rules are categorized with tags
+          </li>
+          <li>
+            ⚡ <strong>Conditional Logic:</strong> Rules can have complex validation logic
+          </li>
+          <li>
+            📊 <strong>Error Aggregation:</strong> Multiple validation errors per item
+          </li>
+          <li>
+            📈 <strong>Performance Tracking:</strong> Execution metrics
+          </li>
         </ul>
       </div>
     </div>
